@@ -126,6 +126,7 @@ export default {
       isDarkTheme: false,
       showAboutModal: false,
       apiStatus: 'checking',
+      healthInterval: null,
       routes: [
         { path: '/', name: 'Home', icon: '🏠' },
         { path: '/oracle', name: 'Oracle', icon: '🔮' },
@@ -143,14 +144,30 @@ export default {
   async mounted() {
     await this.checkApiStatus()
     this.loadThemePreference()
+    
+    // 启动定期健康检查
+    this.healthInterval = setInterval(this.checkApiStatus, 30000) // 每30秒检查一次
+  },
+  beforeUnmount() {
+    // 清理定时器
+    if (this.healthInterval) {
+      clearInterval(this.healthInterval)
+    }
   },
   methods: {
     async checkApiStatus() {
       try {
-        await oracleAPI.healthCheck()
-        this.apiStatus = 'online'
+        const health = await oracleAPI.healthCheck()
+        // 检查后端返回的状态是否为 'healthy'
+        if (health && health.status === 'healthy') {
+          this.apiStatus = 'online'
+        } else {
+          this.apiStatus = 'offline'
+          console.warn('API returned unhealthy status:', health)
+        }
       } catch (error) {
         this.apiStatus = 'offline'
+        console.error('API health check failed:', error)
       }
     },
     
