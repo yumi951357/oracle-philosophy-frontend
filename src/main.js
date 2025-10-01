@@ -2,7 +2,7 @@ import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import App from './App.vue'
 
-// Import components - 每个组件只导入一次！
+// Import components
 import OracleInterface from './components/OracleInterface.vue'
 import BlockchainViewer from './components/BlockchainViewer.vue'
 import TransparencyDashboard from './components/TransparencyDashboard.vue'

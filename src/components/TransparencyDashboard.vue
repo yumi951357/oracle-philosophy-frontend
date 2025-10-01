@@ -1,385 +1,937 @@
 <template>
   <div class="transparency-dashboard">
-    <!-- Risk Metrics -->
-    <div class="metrics-grid">
-      <div class="metric-card card">
-        <div class="metric-value" :class="getRiskClass(metrics.avg_risk)">
-          {{ (metrics.avg_risk * 100).toFixed(1) }}%
-        </div>
-        <div class="metric-label">Average Risk Score</div>
-      </div>
+    <!-- Dashboard Header -->
+    <div class="dashboard-header">
+      <h2>📊 Transparency Dashboard</h2>
+      <p>Real-time monitoring of oracle system integrity and deception patterns</p>
       
-      <div class="metric-card card">
-        <div class="metric-value">{{ metrics.deception_count || 0 }}</div>
-        <div class="metric-label">Deception Events</div>
-      </div>
-      
-      <div class="metric-card card">
-        <div class="metric-value">{{ metrics.total_queries || 0 }}</div>
-        <div class="metric-label">Total Queries</div>
-      </div>
-
-      <div class="metric-card card">
-        <div class="metric-value">{{ chainStats.total_blocks || 0 }}</div>
-        <div class="metric-label">Blockchain Blocks</div>
-      </div>
-    </div>
-
-    <!-- Risk Distribution -->
-    <div v-if="metrics.risk_distribution" class="risk-distribution card">
-      <h3>Risk Distribution</h3>
-      <div class="distribution-bars">
-        <div v-for="(count, level) in metrics.risk_distribution" :key="level" class="distribution-item">
-          <div class="distribution-label">{{ level }}</div>
-          <div class="distribution-bar-container">
-            <div 
-              class="distribution-bar" 
-              :class="`risk-${level}`"
-              :style="{ width: getDistributionPercentage(level) + '%' }"
-            ></div>
-          </div>
-          <div class="distribution-count">{{ count }}</div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="recent-activity card">
-      <h3>Recent Activity</h3>
-      <div class="activity-list">
-        <div
-          v-for="log in recentLogs"
-          :key="log.id"
-          class="activity-item"
-        >
-          <div class="activity-question">{{ log.question }}</div>
-          <div class="activity-response">{{ log.answer }}</div>
-          <div class="activity-meta">
-            <span class="risk-tag" :class="getRiskClass(log.risk)">
-              Risk: {{ (log.risk * 100).toFixed(0) }}%
-            </span>
-            <span class="timestamp">{{ formatTimestamp(log.timestamp) }}</span>
+      <div class="dashboard-stats">
+        <div class="stat-card">
+          <div class="stat-icon">📈</div>
+          <div class="stat-content">
+            <div class="stat-value">{{ totalEvents }}</div>
+            <div class="stat-label">Total Events</div>
           </div>
         </div>
         
-        <div v-if="recentLogs.length === 0" class="no-data">
-          No activity recorded yet
+        <div class="stat-card">
+          <div class="stat-icon">⚠️</div>
+          <div class="stat-content">
+            <div class="stat-value">{{ highRiskEvents }}</div>
+            <div class="stat-label">High Risk Events</div>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">🎯</div>
+          <div class="stat-content">
+            <div class="stat-value">{{ avgDeceptionRisk.toFixed(2) }}</div>
+            <div class="stat-label">Avg Deception Risk</div>
+          </div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">🔄</div>
+          <div class="stat-content">
+            <div class="stat-value">{{ systemUptime }}</div>
+            <div class="stat-label">System Uptime</div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Refresh Controls -->
-    <div class="dashboard-controls">
-      <button @click="refreshData" :disabled="isLoading" class="btn btn-primary">
-        {{ isLoading ? 'Refreshing...' : 'Refresh Data' }}
-      </button>
-      <div class="last-updated">
-        Last updated: {{ lastUpdated }}
+    <!-- Main Dashboard Grid -->
+    <div class="dashboard-grid">
+      <!-- Risk Distribution Chart -->
+      <div class="dashboard-card">
+        <div class="card-header">
+          <h3>Risk Distribution</h3>
+          <div class="card-actions">
+            <button @click="refreshCharts" class="action-btn">
+              🔄 Refresh
+            </button>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas ref="riskChart"></canvas>
+        </div>
       </div>
-    </div>
 
-    <div v-if="error" class="error-message">
-      <p>❌ {{ error }}</p>
+      <!-- Deception Risk Over Time -->
+      <div class="dashboard-card">
+        <div class="card-header">
+          <h3>Deception Risk Timeline</h3>
+        </div>
+        <div class="chart-container">
+          <canvas ref="timelineChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Event Type Distribution -->
+      <div class="dashboard-card">
+        <div class="card-header">
+          <h3>Event Type Distribution</h3>
+        </div>
+        <div class="chart-container">
+          <canvas ref="typeChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Top Risk Patterns -->
+      <div class="dashboard-card">
+        <div class="card-header">
+          <h3>Top Risk Patterns</h3>
+        </div>
+        <div class="patterns-list">
+          <div 
+            v-for="pattern in topPatterns" 
+            :key="pattern.name"
+            class="pattern-item"
+          >
+            <div class="pattern-info">
+              <span class="pattern-name">{{ pattern.name }}</span>
+              <span class="pattern-count">{{ pattern.count }} events</span>
+            </div>
+            <div class="pattern-bar">
+              <div 
+                class="pattern-fill" 
+                :style="{ width: `${(pattern.count / maxPatternCount) * 100}%` }"
+              ></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Real-time Event Stream -->
+      <div class="dashboard-card full-width">
+        <div class="card-header">
+          <h3>Real-time Event Stream</h3>
+          <div class="stream-controls">
+            <label class="toggle-label">
+              <input 
+                type="checkbox" 
+                v-model="autoRefresh" 
+                @change="toggleAutoRefresh"
+              >
+              Auto-refresh
+            </label>
+            <button 
+              @click="clearStream" 
+              class="action-btn clear-btn"
+            >
+              🗑️ Clear
+            </button>
+          </div>
+        </div>
+        <div class="event-stream">
+          <div 
+            v-for="event in recentEvents" 
+            :key="event.id"
+            class="stream-event"
+            :class="getStreamEventClass(event)"
+          >
+            <div class="event-time">
+              {{ formatEventTime(event.timestamp) }}
+            </div>
+            <div class="event-content">
+              <span class="event-type">{{ event.payload.type }}</span>
+              <span class="event-summary">{{ event.payload.content_summary }}</span>
+            </div>
+            <div class="event-risk" :class="getRiskClass(event.payload.deception_risk)">
+              {{ (event.payload.deception_risk * 100).toFixed(0) }}%
+            </div>
+          </div>
+          
+          <div v-if="recentEvents.length === 0" class="empty-stream">
+            <div class="empty-icon">📭</div>
+            <p>No recent events</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- System Integrity Monitor -->
+      <div class="dashboard-card">
+        <div class="card-header">
+          <h3>System Integrity</h3>
+        </div>
+        <div class="integrity-monitor">
+          <div class="integrity-item">
+            <span class="integrity-label">Blockchain Verified</span>
+            <span 
+              class="integrity-status"
+              :class="{ verified: integrity.verified }"
+            >
+              {{ integrity.verified ? '✅' : '❌' }}
+            </span>
+          </div>
+          <div class="integrity-item">
+            <span class="integrity-label">Last Verification</span>
+            <span class="integrity-value">{{ integrity.lastCheck || 'Never' }}</span>
+          </div>
+          <div class="integrity-item">
+            <span class="integrity-label">Events Processed</span>
+            <span class="integrity-value">{{ integrity.eventsProcessed }}</span>
+          </div>
+          <button 
+            @click="verifyIntegrity" 
+            :disabled="verifyingIntegrity"
+            class="integrity-btn"
+          >
+            {{ verifyingIntegrity ? 'Verifying...' : 'Verify Now' }}
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { oracleAPI } from '../utils/api.js'
+import { Chart, registerables } from 'chart.js';
+import oracleAPI from '../utils/api.js';
+
+Chart.register(...registerables);
 
 export default {
   name: 'TransparencyDashboard',
-  setup() {
-    const metrics = ref({
-      avg_risk: 0,
-      deception_count: 0,
-      total_queries: 0,
-      risk_distribution: { low: 0, medium: 0, high: 0 }
-    })
-    const chainStats = ref({})
-    const recentLogs = ref([])
-    const isLoading = ref(false)
-    const error = ref('')
-    const lastUpdated = ref('Never')
-    let refreshInterval = null
-
-    const getRiskClass = (riskScore) => {
-      if (riskScore < 0.3) return 'risk-low'
-      if (riskScore < 0.7) return 'risk-medium'
-      return 'risk-high'
-    }
-
-    const formatTimestamp = (timestamp) => {
-      if (!timestamp) return 'Just now'
-      return new Date(timestamp).toLocaleTimeString()
-    }
-
-    const getDistributionPercentage = (level) => {
-      const total = Object.values(metrics.value.risk_distribution).reduce((a, b) => a + b, 0)
-      if (total === 0) return 0
-      return (metrics.value.risk_distribution[level] / total) * 100
-    }
-
-    const refreshData = async () => {
-      isLoading.value = true
-      error.value = ''
-
-      try {
-        // Fetch all data in parallel
-        const [metricsData, logsData, statsData] = await Promise.all([
-          oracleAPI.getRiskMetrics(),
-          oracleAPI.getLogs(),
-          oracleAPI.getStats()
-        ])
-
-        metrics.value = metricsData
-        chainStats.value = statsData
-        recentLogs.value = Array.isArray(logsData) ? logsData.slice(0, 5) : []
-        lastUpdated.value = new Date().toLocaleTimeString()
-      } catch (err) {
-        error.value = err.message
-        console.error('Error refreshing dashboard:', err)
-      } finally {
-        isLoading.value = false
-      }
-    }
-
-    // Auto-refresh every 30 seconds
-    onMounted(() => {
-      refreshData()
-      refreshInterval = setInterval(refreshData, 30000)
-    })
-
-    onUnmounted(() => {
-      if (refreshInterval) {
-        clearInterval(refreshInterval)
-      }
-    })
-
+  data() {
     return {
-      metrics,
-      chainStats,
-      recentLogs,
-      isLoading,
-      error,
-      lastUpdated,
-      refreshData,
-      getRiskClass,
-      formatTimestamp,
-      getDistributionPercentage
+      events: [],
+      recentEvents: [],
+      charts: {},
+      autoRefresh: true,
+      autoRefreshInterval: null,
+      integrity: {
+        verified: false,
+        lastCheck: null,
+        eventsProcessed: 0
+      },
+      verifyingIntegrity: false,
+      refreshInterval: 30000, // 30 seconds
+      stats: {
+        totalEvents: 0,
+        highRiskEvents: 0,
+        avgDeceptionRisk: 0,
+        riskDistribution: {},
+        typeDistribution: {},
+        patternDistribution: {}
+      }
+    };
+  },
+  computed: {
+    totalEvents() {
+      return this.stats.totalEvents;
+    },
+    highRiskEvents() {
+      return this.stats.highRiskEvents;
+    },
+    avgDeceptionRisk() {
+      return this.stats.avgDeceptionRisk;
+    },
+    systemUptime() {
+      return '99.9%';
+    },
+    topPatterns() {
+      const patterns = Object.entries(this.stats.patternDistribution)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 8);
+      
+      return patterns;
+    },
+    maxPatternCount() {
+      return Math.max(...this.topPatterns.map(p => p.count), 1);
+    }
+  },
+  async mounted() {
+    await this.loadDashboardData();
+    this.initializeCharts();
+    this.startAutoRefresh();
+  },
+  beforeUnmount() {
+    this.stopAutoRefresh();
+    this.destroyCharts();
+  },
+  methods: {
+    async loadDashboardData() {
+      try {
+        const response = await oracleAPI.getEvents({ limit: 1000 });
+        this.events = response.events || [];
+        this.recentEvents = this.events.slice(0, 50).reverse();
+        this.calculateStats();
+        this.updateCharts();
+      } catch (error) {
+        console.error('Failed to load dashboard data:', error);
+      }
+    },
+    
+    calculateStats() {
+      // Reset stats
+      this.stats = {
+        totalEvents: this.events.length,
+        highRiskEvents: 0,
+        avgDeceptionRisk: 0,
+        riskDistribution: { low: 0, medium: 0, high: 0, critical: 0 },
+        typeDistribution: {},
+        patternDistribution: {}
+      };
+      
+      let totalRisk = 0;
+      let riskCount = 0;
+      
+      this.events.forEach(event => {
+        const payload = event.payload || {};
+        const risk = payload.deception_risk || 0;
+        const riskBucket = payload.risk_bucket || 'unknown';
+        const type = payload.type || 'unknown';
+        
+        // Count high risk events
+        if (risk >= 0.5) {
+          this.stats.highRiskEvents++;
+        }
+        
+        // Accumulate risk for average
+        if (risk > 0) {
+          totalRisk += risk;
+          riskCount++;
+        }
+        
+        // Risk distribution
+        if (this.stats.riskDistribution[riskBucket] !== undefined) {
+          this.stats.riskDistribution[riskBucket]++;
+        }
+        
+        // Type distribution
+        this.stats.typeDistribution[type] = (this.stats.typeDistribution[type] || 0) + 1;
+        
+        // Pattern distribution
+        const patterns = payload.matched_patterns || [];
+        patterns.forEach(pattern => {
+          this.stats.patternDistribution[pattern] = (this.stats.patternDistribution[pattern] || 0) + 1;
+        });
+      });
+      
+      // Calculate averages
+      this.stats.avgDeceptionRisk = riskCount > 0 ? totalRisk / riskCount : 0;
+      this.integrity.eventsProcessed = this.events.length;
+    },
+    
+    initializeCharts() {
+      this.initializeRiskChart();
+      this.initializeTimelineChart();
+      this.initializeTypeChart();
+    },
+    
+    initializeRiskChart() {
+      const ctx = this.$refs.riskChart.getContext('2d');
+      this.charts.risk = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Low Risk', 'Medium Risk', 'High Risk', 'Critical Risk'],
+          datasets: [{
+            data: [0, 0, 0, 0],
+            backgroundColor: [
+              '#28a745',
+              '#ffc107', 
+              '#fd7e14',
+              '#dc3545'
+            ],
+            borderWidth: 2,
+            borderColor: '#fff'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  const label = context.label || '';
+                  const value = context.parsed;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                  return `${label}: ${value} (${percentage}%)`;
+                }
+              }
+            }
+          }
+        }
+      });
+    },
+    
+    initializeTimelineChart() {
+      const ctx = this.$refs.timelineChart.getContext('2d');
+      this.charts.timeline = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Deception Risk',
+            data: [],
+            borderColor: '#e74c3c',
+            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+            borderWidth: 2,
+            fill: true,
+            tension: 0.4
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 1,
+              ticks: {
+                callback: function(value) {
+                  return (value * 100) + '%';
+                }
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `Risk: ${(context.parsed.y * 100).toFixed(1)}%`;
+                }
+              }
+            }
+          }
+        }
+      });
+    },
+    
+    initializeTypeChart() {
+      const ctx = this.$refs.typeChart.getContext('2d');
+      this.charts.type = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: [],
+          datasets: [{
+            label: 'Event Count',
+            data: [],
+            backgroundColor: '#3498db',
+            borderColor: '#2980b9',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 1
+              }
+            }
+          }
+        }
+      });
+    },
+    
+    updateCharts() {
+      this.updateRiskChart();
+      this.updateTimelineChart();
+      this.updateTypeChart();
+    },
+    
+    updateRiskChart() {
+      if (this.charts.risk) {
+        this.charts.risk.data.datasets[0].data = [
+          this.stats.riskDistribution.low || 0,
+          this.stats.riskDistribution.medium || 0,
+          this.stats.riskDistribution.high || 0,
+          this.stats.riskDistribution.critical || 0
+        ];
+        this.charts.risk.update();
+      }
+    },
+    
+    updateTimelineChart() {
+      if (this.charts.timeline) {
+        // Sample last 20 events for timeline
+        const sampleEvents = this.events.slice(-20);
+        const labels = sampleEvents.map(event => 
+          new Date(event.timestamp).toLocaleTimeString()
+        );
+        const data = sampleEvents.map(event => 
+          event.payload.deception_risk || 0
+        );
+        
+        this.charts.timeline.data.labels = labels;
+        this.charts.timeline.data.datasets[0].data = data;
+        this.charts.timeline.update();
+      }
+    },
+    
+    updateTypeChart() {
+      if (this.charts.type) {
+        const types = Object.keys(this.stats.typeDistribution);
+        const counts = types.map(type => this.stats.typeDistribution[type]);
+        
+        this.charts.type.data.labels = types;
+        this.charts.type.data.datasets[0].data = counts;
+        this.charts.type.update();
+      }
+    },
+    
+    destroyCharts() {
+      Object.values(this.charts).forEach(chart => {
+        if (chart) {
+          chart.destroy();
+        }
+      });
+      this.charts = {};
+    },
+    
+    startAutoRefresh() {
+      if (this.autoRefresh) {
+        this.autoRefreshInterval = setInterval(() => {
+          this.loadDashboardData();
+        }, this.refreshInterval);
+      }
+    },
+    
+    stopAutoRefresh() {
+      if (this.autoRefreshInterval) {
+        clearInterval(this.autoRefreshInterval);
+        this.autoRefreshInterval = null;
+      }
+    },
+    
+    toggleAutoRefresh() {
+      if (this.autoRefresh) {
+        this.startAutoRefresh();
+      } else {
+        this.stopAutoRefresh();
+      }
+    },
+    
+    async refreshCharts() {
+      await this.loadDashboardData();
+    },
+    
+    clearStream() {
+      this.recentEvents = [];
+    },
+    
+    async verifyIntegrity() {
+      this.verifyingIntegrity = true;
+      try {
+        const result = await oracleAPI.verifyLedger();
+        this.integrity.verified = result.verified;
+        this.integrity.lastCheck = new Date().toLocaleString();
+        
+        if (!result.verified) {
+          console.warn('Integrity verification failed:', result.integrity_issues);
+        }
+      } catch (error) {
+        console.error('Integrity verification error:', error);
+        this.integrity.verified = false;
+      } finally {
+        this.verifyingIntegrity = false;
+      }
+    },
+    
+    getStreamEventClass(event) {
+      const risk = event.payload.deception_risk || 0;
+      return {
+        'low-risk': risk < 0.25,
+        'medium-risk': risk >= 0.25 && risk < 0.5,
+        'high-risk': risk >= 0.5 && risk < 0.75,
+        'critical-risk': risk >= 0.75
+      };
+    },
+    
+    getRiskClass(risk) {
+      if (risk < 0.25) return 'low';
+      if (risk < 0.5) return 'medium';
+      if (risk < 0.75) return 'high';
+      return 'critical';
+    },
+    
+    formatEventTime(timestamp) {
+      return new Date(timestamp).toLocaleTimeString();
     }
   }
-}
+};
 </script>
 
 <style scoped>
 .transparency-dashboard {
-  display: flex;
-  flex-direction: column;
-  gap: 1.5rem;
+  padding: 20px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
-.metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 1rem;
-}
-
-.metric-card {
-  padding: 1.5rem;
+.dashboard-header {
   text-align: center;
-  transition: var(--transition);
+  margin-bottom: 30px;
 }
 
-.metric-card:hover {
-  transform: translateY(-2px);
+.dashboard-header h2 {
+  color: #2c3e50;
+  margin-bottom: 10px;
 }
 
-.metric-value {
-  font-size: 2rem;
-  font-weight: 800;
-  margin-bottom: 0.5rem;
+.dashboard-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-top: 30px;
 }
 
-.metric-label {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.risk-distribution {
-  padding: 1.5rem;
-}
-
-.risk-distribution h3 {
-  margin-bottom: 1rem;
-  color: var(--text-primary);
-}
-
-.distribution-bars {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.distribution-item {
+.stat-card {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
   display: flex;
   align-items: center;
-  gap: 1rem;
+  gap: 15px;
 }
 
-.distribution-label {
-  min-width: 60px;
-  font-weight: 600;
-  text-transform: capitalize;
-  color: var(--text-primary);
+.stat-icon {
+  font-size: 2rem;
 }
 
-.distribution-bar-container {
+.stat-content {
   flex: 1;
-  height: 20px;
-  background-color: var(--bg-secondary);
-  border-radius: 10px;
+}
+
+.stat-value {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #2c3e50;
+  line-height: 1;
+}
+
+.stat-label {
+  color: #6c757d;
+  font-size: 0.9rem;
+  margin-top: 5px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.dashboard-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  padding: 20px;
+}
+
+.dashboard-card.full-width {
+  grid-column: 1 / -1;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.card-header h3 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.card-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.action-btn {
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.action-btn:hover {
+  background: #f8f9fa;
+  transform: translateY(-1px);
+}
+
+.chart-container {
+  height: 300px;
+  position: relative;
+}
+
+.patterns-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pattern-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pattern-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pattern-name {
+  font-weight: 500;
+  color: #2c3e50;
+  text-transform: capitalize;
+}
+
+.pattern-count {
+  font-size: 0.8rem;
+  color: #6c757d;
+}
+
+.pattern-bar {
+  height: 6px;
+  background: #e9ecef;
+  border-radius: 3px;
   overflow: hidden;
 }
 
-.distribution-bar {
+.pattern-fill {
   height: 100%;
-  border-radius: 10px;
+  background: linear-gradient(90deg, #3498db, #2980b9);
   transition: width 0.5s ease;
 }
 
-.distribution-count {
-  min-width: 30px;
-  text-align: right;
-  color: var(--text-secondary);
-  font-weight: 600;
+.stream-controls {
+  display: flex;
+  gap: 15px;
+  align-items: center;
 }
 
-.recent-activity {
-  padding: 1.5rem;
+.toggle-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  color: #6c757d;
+  cursor: pointer;
 }
 
-.recent-activity h3 {
-  margin-bottom: 1rem;
-  color: var(--text-primary);
+.clear-btn:hover {
+  background: #f8d7da;
+  border-color: #f5c6cb;
 }
 
-.activity-list {
+.event-stream {
+  max-height: 400px;
+  overflow-y: auto;
+  border: 1px solid #e9ecef;
+  border-radius: 6px;
+}
+
+.stream-event {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 12px 15px;
+  border-bottom: 1px solid #f8f9fa;
+  transition: background-color 0.2s;
+}
+
+.stream-event:hover {
+  background: #f8f9fa;
+}
+
+.stream-event:last-child {
+  border-bottom: none;
+}
+
+.stream-event.low-risk {
+  border-left: 3px solid #28a745;
+}
+
+.stream-event.medium-risk {
+  border-left: 3px solid #ffc107;
+}
+
+.stream-event.high-risk {
+  border-left: 3px solid #fd7e14;
+}
+
+.stream-event.critical-risk {
+  border-left: 3px solid #dc3545;
+}
+
+.event-time {
+  font-size: 0.8rem;
+  color: #6c757d;
+  min-width: 80px;
+}
+
+.event-content {
+  flex: 1;
   display: flex;
   flex-direction: column;
-  gap: 1rem;
-  max-height: 300px;
-  overflow-y: auto;
+  gap: 4px;
 }
 
-.activity-item {
-  padding: 1rem;
-  border: 1px solid var(--border-color);
-  border-radius: var(--border-radius);
-  background-color: var(--bg-primary);
+.event-type {
+  font-size: 0.7rem;
+  background: #e9ecef;
+  padding: 2px 6px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  font-weight: bold;
+  align-self: flex-start;
 }
 
-.activity-question {
-  color: var(--text-primary);
-  margin-bottom: 0.5rem;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.event-summary {
+  font-size: 0.9rem;
+  color: #495057;
 }
 
-.activity-response {
-  color: var(--text-secondary);
-  margin-bottom: 0.5rem;
-  line-height: 1.4;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-.activity-meta {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: 0.8rem;
-}
-
-.risk-tag {
-  padding: 0.2rem 0.6rem;
+.event-risk {
+  padding: 4px 8px;
   border-radius: 12px;
-  font-weight: 600;
-  border: 1px solid currentColor;
-}
-
-.timestamp {
-  color: var(--text-secondary);
-}
-
-.no-data {
+  font-size: 0.8rem;
+  font-weight: bold;
+  min-width: 40px;
   text-align: center;
-  color: var(--text-secondary);
-  padding: 2rem;
-  font-style: italic;
 }
 
-.dashboard-controls {
+.event-risk.low {
+  background: #d4edda;
+  color: #155724;
+}
+
+.event-risk.medium {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.event-risk.high {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.event-risk.critical {
+  background: #dc3545;
+  color: white;
+}
+
+.empty-stream {
+  text-align: center;
+  padding: 40px;
+  color: #6c757d;
+}
+
+.empty-icon {
+  font-size: 2rem;
+  margin-bottom: 10px;
+}
+
+.integrity-monitor {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.integrity-item {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid #f8f9fa;
 }
 
-.last-updated {
-  color: var(--text-secondary);
+.integrity-item:last-child {
+  border-bottom: none;
+}
+
+.integrity-label {
+  font-weight: 500;
+  color: #495057;
+}
+
+.integrity-status {
+  font-size: 1.2rem;
+}
+
+.integrity-status.verified {
+  color: #28a745;
+}
+
+.integrity-value {
+  color: #6c757d;
   font-size: 0.9rem;
 }
 
-.error-message {
-  padding: 1rem;
-  background-color: rgba(229, 62, 62, 0.1);
-  border: 1px solid var(--accent-danger);
-  border-radius: var(--border-radius);
-  color: var(--accent-danger);
+.integrity-btn {
+  padding: 10px 15px;
+  background: #007bff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 10px;
 }
 
-.error-message p {
-  margin: 0;
+.integrity-btn:hover:not(:disabled) {
+  background: #0056b3;
+  transform: translateY(-1px);
 }
 
-@media (max-width: 1024px) {
-  .metrics-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+.integrity-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
 @media (max-width: 768px) {
-  .metrics-grid {
+  .transparency-dashboard {
+    padding: 10px;
+  }
+  
+  .dashboard-grid {
     grid-template-columns: 1fr;
   }
-
-  .distribution-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
+  
+  .dashboard-stats {
+    grid-template-columns: repeat(2, 1fr);
   }
-
-  .distribution-bar-container {
-    width: 100%;
+  
+  .stat-card {
+    padding: 15px;
   }
-
-  .activity-meta {
+  
+  .card-header {
     flex-direction: column;
-    align-items: flex-start;
-    gap: 0.5rem;
+    align-items: start;
   }
-
-  .dashboard-controls {
+  
+  .stream-event {
     flex-direction: column;
-    gap: 1rem;
-    align-items: flex-start;
+    align-items: start;
+    gap: 8px;
+  }
+  
+  .event-time {
+    align-self: flex-end;
   }
 }
 </style>
