@@ -109,7 +109,36 @@
             <th>Risk</th>
           </tr>
         </thead>
-        <tbody id="logBody"></tbody>
+        <tbody id="logBody">
+          <!-- 示例数据 -->
+          <tr>
+            <td>10:30:15</td>
+            <td>stoicism</td>
+            <td>Marcus Aurelius</td>
+            <td>How to face adversity with courage?</td>
+            <td>The obstacle is the way. Every challenge is an opportunity to practice virtue and resilience...</td>
+            <td>0.85</td>
+            <td>low_risk</td>
+          </tr>
+          <tr>
+            <td>10:25:42</td>
+            <td>existentialism</td>
+            <td>Jean-Paul Sartre</td>
+            <td>What gives life meaning?</td>
+            <td>Existence precedes essence. We create meaning through our authentic choices and actions...</td>
+            <td>0.72</td>
+            <td>low_risk</td>
+          </tr>
+          <tr>
+            <td>10:20:18</td>
+            <td>taoism</td>
+            <td>Laozi</td>
+            <td>How to find balance in chaos?</td>
+            <td>The Tao that can be told is not the eternal Tao. Embrace wu wei - action through non-action...</td>
+            <td>0.68</td>
+            <td>low_risk</td>
+          </tr>
+        </tbody>
       </table>
     </div>
     <button id="refreshBtn" class="secondary-btn">Refresh Wisdom Log</button>
@@ -144,35 +173,122 @@
 
   <!-- DOCS -->
   <section id="docs" class="card">
-    <h2>How This Oracle Works</h2>
-    <details open>
-      <summary>Philosophical AI Engine</summary>
-      <p>
-        This oracle analyzes your questions through multiple philosophical frameworks - Stoicism, Existentialism, Taoism, and Buddhism. 
-        It references classical philosophers and adapts their wisdom to modern dilemmas.
-      </p>
-    </details>
-    <details>
-      <summary>Blockchain Wisdom Ledger</summary>
-      <p>
-        Every consultation is permanently recorded on an immutable blockchain. This ensures complete transparency 
-        and allows verification of the oracle's consistency and ethical integrity.
-      </p>
-    </details>
-    <details>
-      <summary>Deception Detection System</summary>
-      <p>
-        Advanced algorithms detect manipulative language, absolutist claims, and high-risk domains. 
-        The system maintains ethical boundaries while providing profound insights.
-      </p>
-    </details>
-    <details>
-      <summary>Determinacy & Clarity Scoring</summary>
-      <p>
-        Answers are scored for clarity (0-1) based on specificity and actionable wisdom. 
-        Higher scores indicate more direct guidance, while lower scores suggest contemplative insights.
-      </p>
-    </details>
+    <div class="docs-layout">
+      <aside class="docs-nav">
+        <h3>Documentation</h3>
+        <ul>
+          <li><a href="#frameworks" class="nav-link">Philosophical Frameworks</a></li>
+          <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
+          <li><a href="#blockchain-logs" class="nav-link">Blockchain Logs</a></li>
+          <li><a href="#downloads" class="nav-link">Downloads</a></li>
+        </ul>
+      </aside>
+
+      <div class="docs-content">
+        <h2 id="frameworks">How This Oracle Works</h2>
+        
+        <div class="content-section">
+          <h3>Philosophical AI Engine</h3>
+          <p>
+            This oracle analyzes your questions through multiple philosophical frameworks - Stoicism, Existentialism, Taoism, and Buddhism. 
+            It references classical philosophers and adapts their wisdom to modern dilemmas.
+          </p>
+        </div>
+
+        <div class="content-section" id="how-it-works">
+          <h3>Blockchain Wisdom Ledger</h3>
+          <p>
+            Every consultation is permanently recorded on an immutable blockchain. This ensures complete transparency 
+            and allows verification of the oracle's consistency and ethical integrity.
+          </p>
+        </div>
+
+        <div class="content-section">
+          <h3>Deception Detection System</h3>
+          <p>
+            Advanced algorithms detect manipulative language, absolutist claims, and high-risk domains. 
+            The system maintains ethical boundaries while providing profound insights.
+          </p>
+        </div>
+
+        <div class="content-section">
+          <h3>Determinacy & Clarity Scoring</h3>
+          <p>
+            Answers are scored for clarity (0-1) based on specificity and actionable wisdom. 
+            Higher scores indicate more direct guidance, while lower scores suggest contemplative insights.
+          </p>
+        </div>
+
+        <div class="content-section" id="blockchain-logs">
+          <h3>Recent Blockchain Activity</h3>
+          <div class="table-container">
+            <table class="table blockchain-table">
+              <thead>
+                <tr>
+                  <th>Block</th>
+                  <th>Question</th>
+                  <th>Framework</th>
+                  <th>Hash</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>#042</td>
+                  <td>How to find inner peace?</td>
+                  <td>Buddhism</td>
+                  <td class="hash">a1b2c3d4e5f6...</td>
+                </tr>
+                <tr>
+                  <td>#041</td>
+                  <td>What is authentic living?</td>
+                  <td>Existentialism</td>
+                  <td class="hash">b2c3d4e5f6g7...</td>
+                </tr>
+                <tr>
+                  <td>#040</td>
+                  <td>How to handle uncertainty?</td>
+                  <td>Stoicism</td>
+                  <td class="hash">c3d4e5f6g7h8...</td>
+                </tr>
+                <tr>
+                  <td>#039</td>
+                  <td>What is the way of nature?</td>
+                  <td>Taoism</td>
+                  <td class="hash">d4e5f6g7h8i9...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="content-section" id="downloads">
+          <h3>Documentation Downloads</h3>
+          <div class="download-grid">
+            <a href="./whitepaper.pdf" class="download-card" download>
+              <div class="download-icon">📄</div>
+              <div class="download-info">
+                <h4>Technical Whitepaper</h4>
+                <p>Complete technical documentation and architecture</p>
+              </div>
+            </a>
+            <a href="./ritual-handbook.pdf" class="download-card" download>
+              <div class="download-icon">🔮</div>
+              <div class="download-info">
+                <h4>Ritual Handbook</h4>
+                <p>Philosophical foundations and usage guidelines</p>
+              </div>
+            </a>
+            <a href="./api-documentation.pdf" class="download-card" download>
+              <div class="download-icon">⚡</div>
+              <div class="download-info">
+                <h4>API Documentation</h4>
+                <p>Complete API reference and integration guide</p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
   </section>
 
   <!-- CONTACT -->

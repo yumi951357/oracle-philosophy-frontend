@@ -53,12 +53,21 @@ askBtn.addEventListener("click", async () => {
     dec.textContent = data.deception_prob.toFixed(2);
     risk.textContent = (data.risk_tags || ["-"]).join(", ");
     
-    // 新增哲学字段
+    // 新增哲学字段 - 修复Depth Score显示
     framework.textContent = data.philosophical_framework || "-";
     philosopher.textContent = data.referenced_philosopher || "-";
     frameworkText.textContent = data.philosophical_framework || "-";
     philosopherText.textContent = data.referenced_philosopher || "-";
-    depth.textContent = data.depth_analysis ? (data.depth_analysis.depth_score * 100).toFixed(0) + '%' : "-";
+    
+    // 修复Depth Score显示问题
+    if (data.depth_analysis && data.depth_analysis.depth_score !== undefined) {
+      depth.textContent = (data.depth_analysis.depth_score * 100).toFixed(0) + '%';
+    } else if (data.depth_analysis && data.depth_analysis.depth_score === 0) {
+      depth.textContent = "0%";
+    } else {
+      depth.textContent = "-";
+    }
+    
     blockHash.textContent = data.block_hash ? data.block_hash.substring(0, 16) + '...' : "-";
     
     // 根据框架设置徽章颜色
@@ -197,6 +206,24 @@ window.hardReset = hardReset;
 window.diagnoseData = diagnoseData;
 window.getCurrentData = () => currentValidChain;
 
+// 添加导航链接平滑滚动
+document.addEventListener('DOMContentLoaded', function() {
+  const navLinks = document.querySelectorAll('.nav-link');
+  navLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const targetId = this.getAttribute('href');
+      const targetElement = document.querySelector(targetId);
+      if (targetElement) {
+        targetElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  });
+});
+
 refreshBtn.addEventListener("click", loadLogs);
 window.addEventListener("load", loadLogs);
 
@@ -206,7 +233,7 @@ function escapeHtml(s) {
   }[c]));
 }
 
-console.log('Oracle Ethics M1 Frontend - 强力修复版已加载');
+console.log('Oracle Ethics M1 Frontend - 增强版已加载');
 console.log('可用工具:');
 console.log('- diagnoseData(): 诊断数据问题');
 console.log('- hardReset(): 强力重置系统');
