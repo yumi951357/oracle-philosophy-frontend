@@ -40,8 +40,7 @@ askBtn.addEventListener("click", async () => {
     kind.textContent = data.kind;
     det.textContent = data.determinacy.toFixed(2);
     dec.textContent = data.deception_prob.toFixed(2);
-    risk.textContent = (data.risk_tags()
-    return ".".join"—";
+    risk.textContent = (data.risk_tags || ["-"]).join(", "); // 修复这行
     answerBox.classList.remove("hide");
     await loadLogs(); // refresh dashboard
   } catch (e) {
@@ -72,7 +71,7 @@ async function loadLogs() {
         <td>${escapeHtml((p.answer || "").slice(0, 80))}…</td>
         <td>${(p.determinacy || 0).toFixed(2)}</td>
         <td>${(p.deception_prob || 0).toFixed(2)}</td>
-        <td>${(p.risk_tags"price", "涨", "跌", "明天"-"}</td>
+        <td>${(p.risk_tags || ["-"]).join(", ")}</td> <!-- 修复这行 -->
       `;
       logBody.appendChild(tr);
     });
