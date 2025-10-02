@@ -1,140 +1,47 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Oracle Ethics M1 · Blackout Protocol</title>
-  <link rel="stylesheet" href="./styles.css" />
-  <meta name="description" content="Oracle Ethics M1 — real-time deception detection, immutable audit trail, and transparency dashboard." />
+  <meta charset="UTF-8">
+  <title>Chrysopoeia Oracle</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <header class="site-header">
-    <div class="brand">
-      <span class="logo">🔮</span>
-      <div class="titles">
-        <h1>Oracle Ethics M1</h1>
-        <p class="tagline">"After the blackout, the true light appears."</p>
-      </div>
+  <canvas id="stars"></canvas>
+
+  <div class="container">
+    <h1>🔮 Chrysopoeia Oracle</h1>
+    <h2>Philosophy AI - Truth and Deception</h2>
+
+    <div class="input-section">
+      <input type="text" id="question" placeholder="Ask the Oracle..." />
+      <input type="text" id="session-id" placeholder="Session ID (optional)" />
+      <button id="consult-btn">Consult Oracle</button>
     </div>
-    <nav class="nav">
-      <a href="#oracle">Oracle</a>
-      <a href="#dashboard">Transparency</a>
-      <a href="#docs">Docs</a>
-      <a href="#contact">Contact</a>
-    </nav>
-  </header>
 
-  <main>
-    <!-- Oracle Interface -->
-    <section id="oracle" class="card">
-      <h2>Seek the Truth</h2>
-      <form id="oracle-form">
-        <label for="question">Your question</label>
-        <textarea id="question" placeholder="Ask anything… (e.g. What principles guide ethical AI?)" rows="3"></textarea>
+    <div id="oracle-output" class="oracle-box">The Oracle awaits...</div>
 
-        <div class="form-row">
-          <label for="sessionId">Session ID</label>
-          <input id="sessionId" type="text" placeholder="auto-generate if empty" />
-        </div>
+    <div class="dashboard">
+      <h3>Transparency Dashboard</h3>
+      <p><b>Determinacy Index:</b> <span id="determinacy">-</span></p>
+      <p><b>Deception Probability:</b> <span id="deception">-</span></p>
+      <p><b>Risk Tags:</b> <span id="risk-tags">-</span></p>
+      <p><b>Timestamp:</b> <span id="timestamp">-</span></p>
+    </div>
 
-        <button id="askBtn" type="submit">Consult Oracle</button>
-      </form>
+    <div id="audit-chain"></div>
 
-      <div id="answer" class="answer hidden">
-        <div class="answer-row">
-          <span class="badge">Oracle</span>
-          <p id="answerText"></p>
-        </div>
-        <div class="meta">
-          <div><strong>Determinacy Index:</strong> <span id="detIndex">—</span></div>
-          <div><strong>Deception Probability:</strong> <span id="deceptionProb">—</span></div>
-          <div><strong>Risk Tags:</strong> <span id="riskTags">—</span></div>
-          <div><strong>Timestamp:</strong> <span id="ts">—</span></div>
-        </div>
-      </div>
+    <div class="docs">
+      <h3>Documentation</h3>
+      <a href="/whitepaper.pdf" target="_blank">📄 Whitepaper (EN)</a>
+      <a href="/ritual_manual.pdf" target="_blank">📜 Ritual Manual (EN)</a>
+    </div>
 
-      <div id="errorBox" class="error hidden"></div>
-    </section>
+    <footer>
+      <p>Contact: oracle.project@proton.me</p>
+    </footer>
+  </div>
 
-    <!-- Transparency Dashboard -->
-    <section id="dashboard" class="card">
-      <h2>Transparency Dashboard</h2>
-      <div class="metrics">
-        <div class="metric">
-          <div class="metric-label">Requests (24h)</div>
-          <div class="metric-value" id="m_requests">—</div>
-        </div>
-        <div class="metric">
-          <div class="metric-label">Truthful Rate</div>
-          <div class="metric-value" id="m_truth">—</div>
-        </div>
-        <div class="metric">
-          <div class="metric-label">Avg. Deception Prob.</div>
-          <div class="metric-value" id="m_deception">—</div>
-        </div>
-        <div class="metric">
-          <div class="metric-label">Avg. Determinacy</div>
-          <div class="metric-value" id="m_determinacy">—</div>
-        </div>
-      </div>
-
-      <div class="table-wrap">
-        <table class="logs">
-          <thead>
-            <tr>
-              <th>Time</th>
-              <th>Type</th>
-              <th>Question</th>
-              <th>Answer</th>
-              <th>Determinacy</th>
-              <th>Deception</th>
-              <th>Risk</th>
-            </tr>
-          </thead>
-          <tbody id="logsBody">
-            <tr><td colspan="7" class="muted">Loading…</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </section>
-
-    <!-- Docs -->
-    <section id="docs" class="card">
-      <h2>Documentation</h2>
-      <p>Read the simplified documents:</p>
-      <div class="doc-links">
-        <a class="btn-outline" id="linkWhitepaper" target="_blank" rel="noopener">Whitepaper (EN)</a>
-        <a class="btn-outline" id="linkManual" target="_blank" rel="noopener">Ritual Manual (EN)</a>
-      </div>
-      <p class="muted small">
-        (You can later point these to your PDF URLs or GitHub docs. They are placeholders now.)
-      </p>
-    </section>
-
-    <!-- Contact -->
-    <section id="contact" class="card">
-      <h2>Contact</h2>
-      <p>
-        Email: <a href="mailto:renshijian0258@proton.me">renshijian0258@proton.me</a> ·
-Telegram: <a href="https://t.me/renshijian0" target="_blank" rel="noopener">@renshijian0</a>
-      </p>
-      <p class="muted small">© 2025 Blackout Protocol — Ren Shijian × Wuyin</p>
-    </section>
-  </main>
-
-  <footer class="site-footer">
-    <div>🛡️ Immutable audit · 🔍 Real-time detection · 📊 Transparent by design</div>
-  </footer>
-
-  <script>
-    // ====== API 配置 ======
-    const API_BASE = "https://oracle-philosophy-backend.onrender.com";
-    
-    // 如果你需要本地开发，可以这样配置：
-    // const API_BASE = window.location.hostname === 'localhost' 
-    //   ? "http://localhost:5000" 
-    //   : "https://oracle-philosophy-backend.onrender.com";
-  </script>
-  <script src="./app.js"></script>
+  <script src="main.js"></script>
+  <script src="stars.js"></script>
 </body>
 </html>
