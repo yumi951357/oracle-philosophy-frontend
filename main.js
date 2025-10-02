@@ -13,6 +13,13 @@ const kind = $("kind");
 const det = $("det");
 const dec = $("dec");
 const risk = $("risk");
+const framework = $("framework");
+const philosopher = $("philosopher");
+const depth = $("depth");
+const blockHash = $("blockHash");
+const frameworkText = $("frameworkText");
+const philosopherText = $("philosopherText");
+const frameworkBadge = $("frameworkBadge");
 
 const reqCount = $("reqCount");
 const truthRate = $("truthRate");
@@ -36,11 +43,27 @@ askBtn.addEventListener("click", async () => {
     const data = await res.json();
     if (data.error) throw new Error(data.error);
 
+    // 更新所有显示字段
     answerText.textContent = data.answer;
-    kind.textContent = data.kind;
+    kind.textContent = data.kind || "wisdom";
     det.textContent = data.determinacy.toFixed(2);
     dec.textContent = data.deception_prob.toFixed(2);
-    risk.textContent = (data.risk_tags || ["-"]).join(", "); // 修复这行
+    risk.textContent = (data.risk_tags || ["-"]).join(", ");
+    
+    // 新增哲学字段
+    framework.textContent = data.philosophical_framework || "-";
+    philosopher.textContent = data.referenced_philosopher || "-";
+    frameworkText.textContent = data.philosophical_framework || "-";
+    philosopherText.textContent = data.referenced_philosopher || "-";
+    depth.textContent = data.depth_analysis ? (data.depth_analysis.depth_score * 100).toFixed(0) + '%' : "-";
+    blockHash.textContent = data.block_hash ? data.block_hash.substring(0, 16) + '...' : "-";
+    
+    // 根据框架设置徽章颜色
+    if (data.philosophical_framework) {
+      const frameworkClass = data.philosophical_framework.toLowerCase();
+      frameworkBadge.className = `framework-badge ${frameworkClass}`;
+    }
+    
     answerBox.classList.remove("hide");
     await loadLogs(); // refresh dashboard
   } catch (e) {
@@ -60,18 +83,18 @@ async function loadLogs() {
     logBody.innerHTML = "";
     chain.slice().reverse().forEach(item => {
       const p = item.payload || {};
-      if (p.kind === "truth") truths++;
+      if (p.kind === "truth" || p.kind === "wisdom") truths++;
       sumDec += (p.deception_prob || 0);
       sumDet += (p.determinacy || 0);
       const tr = document.createElement("tr");
       tr.innerHTML = `
         <td>${new Date(item.ts).toLocaleTimeString()}</td>
-        <td>${p.kind || "-"}</td>
+        <td>${p.framework || p.kind || "-"}</td>
+        <td>${p.philosopher || "-"}</td>
         <td>${escapeHtml(p.question || "")}</td>
-        <td>${escapeHtml((p.answer || "").slice(0, 80))}…</td>
+        <td>${escapeHtml((p.answer || "").slice(0, 60))}…</td>
         <td>${(p.determinacy || 0).toFixed(2)}</td>
-        <td>${(p.deception_prob || 0).toFixed(2)}</td>
-        <td>${(p.risk_tags || ["-"]).join(", ")}</td> <!-- 修复这行 -->
+        <td>${(p.risk_tags || ["-"]).join(", ")}</td>
       `;
       logBody.appendChild(tr);
     });

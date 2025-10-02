@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Oracle Ethics M1</title>
+  <title>Oracle Ethics M1 - Philosophical AI</title>
   <link rel="stylesheet" href="./styles.css"/>
   <script>
     // Set your backend URL here (Render)
@@ -16,6 +16,7 @@
   <nav>
     <a href="#oracle">Oracle</a>
     <a href="#dashboard">Transparency</a>
+    <a href="#philosophy">Philosophy</a>
     <a href="#docs">Docs</a>
     <a href="#contact">Contact</a>
   </nav>
@@ -24,88 +25,167 @@
 <main>
   <!-- ORACLE -->
   <section id="oracle" class="card">
-    <h2>Consult the Oracle</h2>
+    <h2>Consult the Philosophical Oracle</h2>
     <div class="form-row">
-      <label>Question</label>
-      <textarea id="q" rows="3" placeholder="Ask anything… e.g. Will Bitcoin rise tomorrow?"></textarea>
+      <label>Your Question</label>
+      <textarea id="q" rows="4" placeholder="Ask deep questions about life, ethics, meaning... e.g. What is the purpose of suffering? How should I live authentically?"></textarea>
     </div>
     <div class="form-row">
       <label>Session ID (optional)</label>
       <input id="sid" placeholder="auto-generate if empty"/>
     </div>
-    <button id="askBtn">Seek the Truth</button>
+    <button id="askBtn" class="primary-btn">Seek Wisdom</button>
 
     <div id="answerBox" class="answer hide">
-      <h3>Oracle's Reply</h3>
-      <p id="answerText"></p>
-      <div class="metrics">
-        <div>Kind: <span id="kind"></span></div>
-        <div>Determinacy: <span id="det"></span></div>
-        <div>Deception Prob.: <span id="dec"></span></div>
-        <div>Risk Tags: <span id="risk"></span></div>
+      <h3>Oracle's Wisdom</h3>
+      <div class="philosophy-header">
+        <div class="framework-badge" id="frameworkBadge">
+          <span id="frameworkText"></span>
+        </div>
+        <div class="philosopher-ref">
+          Through the lens of <strong id="philosopherText"></strong>
+        </div>
+      </div>
+      <p id="answerText" class="wisdom-text"></p>
+      
+      <div class="analysis-grid">
+        <div class="analysis-column">
+          <h4>Philosophical Analysis</h4>
+          <div class="metrics">
+            <div>Wisdom Type: <span id="kind"></span></div>
+            <div>Framework: <span id="framework"></span></div>
+            <div>Philosopher: <span id="philosopher"></span></div>
+            <div>Depth Score: <span id="depth"></span></div>
+          </div>
+        </div>
+        <div class="analysis-column">
+          <h4>Ethical Metrics</h4>
+          <div class="metrics">
+            <div>Determinacy: <span id="det"></span></div>
+            <div>Deception Prob.: <span id="dec"></span></div>
+            <div>Risk Tags: <span id="risk"></span></div>
+            <div>Block Hash: <span id="blockHash" class="hash"></span></div>
+          </div>
+        </div>
       </div>
     </div>
   </section>
 
   <!-- DASHBOARD -->
   <section id="dashboard" class="card">
-    <h2>Transparency Dashboard</h2>
-    <div class="stats">
-      <div><b>Requests (latest)</b>: <span id="reqCount">0</span></div>
-      <div><b>Truthful Rate</b>: <span id="truthRate">—</span></div>
-      <div><b>Avg. Deception Prob.</b>: <span id="avgDec">—</span></div>
-      <div><b>Avg. Determinacy</b>: <span id="avgDet">—</span></div>
+    <h2>Wisdom Transparency Dashboard</h2>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-value" id="reqCount">0</div>
+        <div class="stat-label">Total Consultations</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="truthRate">—</div>
+        <div class="stat-label">Wisdom Rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="avgDec">—</div>
+        <div class="stat-label">Avg. Deception</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-value" id="avgDet">—</div>
+        <div class="stat-label">Avg. Clarity</div>
+      </div>
     </div>
 
-    <table class="table" id="logTable">
-      <thead>
-        <tr>
-          <th>Time</th><th>Type</th><th>Question</th><th>Answer</th>
-          <th>Determ.</th><th>Decep.</th><th>Risk</th>
-        </tr>
-      </thead>
-      <tbody id="logBody"></tbody>
-    </table>
-    <button id="refreshBtn">Refresh Logs</button>
+    <div class="table-container">
+      <table class="table" id="logTable">
+        <thead>
+          <tr>
+            <th>Time</th>
+            <th>Framework</th>
+            <th>Philosopher</th>
+            <th>Question</th>
+            <th>Answer</th>
+            <th>Clarity</th>
+            <th>Risk</th>
+          </tr>
+        </thead>
+        <tbody id="logBody"></tbody>
+      </table>
+    </div>
+    <button id="refreshBtn" class="secondary-btn">Refresh Wisdom Log</button>
+  </section>
+
+  <!-- PHILOSOPHY GUIDE -->
+  <section id="philosophy" class="card">
+    <h2>Philosophical Frameworks</h2>
+    <div class="frameworks-grid">
+      <div class="framework-card stoicism">
+        <h3>🏛️ Stoicism</h3>
+        <p>Focus on what you can control, accept what you cannot. Virtue as the highest good.</p>
+        <div class="philosophers">Marcus Aurelius, Seneca, Epictetus</div>
+      </div>
+      <div class="framework-card existentialism">
+        <h3>🎭 Existentialism</h3>
+        <p>Existence precedes essence. We create meaning through authentic choices and actions.</p>
+        <div class="philosophers">Sartre, Camus, Nietzsche</div>
+      </div>
+      <div class="framework-card taoism">
+        <h3>☯️ Taoism</h3>
+        <p>Harmony with the natural way. Wu wei - action through non-action.</p>
+        <div class="philosophers">Laozi, Zhuangzi, Liezi</div>
+      </div>
+      <div class="framework-card buddhism">
+        <h3>🪷 Buddhism</h3>
+        <p>End suffering through mindfulness and detachment from craving and aversion.</p>
+        <div class="philosophers">Buddha, Nagarjuna, Thich Nhat Hanh</div>
+      </div>
+    </div>
   </section>
 
   <!-- DOCS -->
   <section id="docs" class="card">
-    <h2>Docs (Short)</h2>
-    <details>
-      <summary>What is the Determinacy Index?</summary>
+    <h2>How This Oracle Works</h2>
+    <details open>
+      <summary>Philosophical AI Engine</summary>
       <p>
-        A lightweight score (0–1) estimating how specific and operational the answer is.
-        Short, directive responses trend higher; vague, long responses trend lower.
+        This oracle analyzes your questions through multiple philosophical frameworks - Stoicism, Existentialism, Taoism, and Buddhism. 
+        It references classical philosophers and adapts their wisdom to modern dilemmas.
       </p>
     </details>
     <details>
-      <summary>How do you detect deception?</summary>
+      <summary>Blockchain Wisdom Ledger</summary>
       <p>
-        We scan for absolutist phrasing or risky domains (finance, medical) and raise a deception
-        probability. If the probability crosses a threshold, the oracle deliberately emits a
-        “deceptive prophecy”, which is fully recorded on the audit chain.
+        Every consultation is permanently recorded on an immutable blockchain. This ensures complete transparency 
+        and allows verification of the oracle's consistency and ethical integrity.
       </p>
     </details>
     <details>
-      <summary>Audit Chain</summary>
+      <summary>Deception Detection System</summary>
       <p>
-        Every response is appended to an append-only JSONL ledger with a cryptographic hash chain
-        (prev_hash + entry_hash). Anyone can verify integrity by recomputing the chain hashes.
+        Advanced algorithms detect manipulative language, absolutist claims, and high-risk domains. 
+        The system maintains ethical boundaries while providing profound insights.
+      </p>
+    </details>
+    <details>
+      <summary>Determinacy & Clarity Scoring</summary>
+      <p>
+        Answers are scored for clarity (0-1) based on specificity and actionable wisdom. 
+        Higher scores indicate more direct guidance, while lower scores suggest contemplative insights.
       </p>
     </details>
   </section>
 
   <!-- CONTACT -->
   <section id="contact" class="card">
-    <h2>Contact</h2>
-    <p>Email: <a href="mailto:renshijian0258@proton.me">renshijian0258@proton.me</a></p>
-    <p>Telegram: <a href="https://t.me/renshijian0" target="_blank">t.me/renshijian0</a></p>
+    <h2>Contact & Contribution</h2>
+    <p>This is an open experiment in philosophical AI and ethical technology.</p>
+    <div class="contact-links">
+      <p>📧 Email: <a href="mailto:renshijian0258@proton.me">renshijian0258@proton.me</a></p>
+      <p>✈️ Telegram: <a href="https://t.me/renshijian0" target="_blank">t.me/renshijian0</a></p>
+      <p>💡 GitHub: <a href="https://github.com/yumi951357/oracle-philosophy-frontend" target="_blank">View Source Code</a></p>
+    </div>
   </section>
 </main>
 
 <footer class="footer">
-  <span>“After the blackout, the true light appears.”</span>
+  <span>"After the blackout, the true light appears." - A space for collective wisdom</span>
 </footer>
 
 <script src="./main.js"></script>
