@@ -27,6 +27,9 @@ const avgDec = $("avgDec");
 const avgDet = $("avgDet");
 const logBody = $("logBody");
 
+// 存储当前有效记录，避免重复渲染
+let currentValidChain = [];
+
 askBtn.addEventListener("click", async () => {
   const question = (q.value || "").trim();
   const sessionId = (sid.value || "").trim();
@@ -73,31 +76,50 @@ askBtn.addEventListener("click", async () => {
 
 async function loadLogs() {
   try {
-    // 添加时间戳避免缓存
-    const timestamp = new Date().getTime();
-    const res = await fetch(`${B()}/api/audit/chain?limit=100&t=${timestamp}`);
+    // 添加随机参数完全避免缓存
+    const randomParam = Math.random().toString(36).substring(7);
+    const res = await fetch(`${B()}/api/audit/chain?limit=100&nocache=${randomParam}`);
     const data = await res.json();
     const chain = data.chain || [];
     
-    // 过滤掉空问题、无效记录和测试数据
+    console.log('原始API响应:', chain);
+
+    // 强力过滤：只保留真正有效的记录
     const validChain = chain.filter(item => {
+      if (!item || typeof item !== 'object') return false;
+      
       const p = item.payload || {};
-      const question = p.question || "";
-      const answer = p.answer || "";
+      const question = (p.question || "").trim();
+      const answer = (p.answer || "").trim();
       const timestamp = item.ts || "";
       
-      // 过滤条件：问题非空、回答非空、不是明显的测试数据
-      return question.trim() && 
-             answer.trim() && 
-             question !== "null" && 
-             answer !== "null" &&
-             !question.includes("undefined") &&
-             !answer.includes("undefined") &&
-             // 过滤掉时间戳异常的空记录（如 18:00:00 的幽灵记录）
-             (timestamp && !timestamp.includes('18:00:00'));
+      // 严格过滤条件
+      const isValid = 
+        question.length > 0 &&                    // 问题不能为空
+        answer.length > 0 &&                      // 回答不能为空
+        question !== "null" && 
+        answer !== "null" &&
+        !question.includes("undefined") &&
+        !answer.includes("undefined") &&
+        question !== "test" &&
+        answer !== "test" &&
+        timestamp.length > 0 &&                   // 时间戳不能为空
+        !timestamp.includes('18:00:00') &&        // 排除幽灵时间戳
+        !timestamp.includes('00:00:00') &&        // 排除其他可疑时间戳
+        p.determinacy !== undefined &&            // 必须有确定性分数
+        p.determinacy !== null;
+      
+      if (!isValid) {
+        console.log('过滤掉的无效记录:', item);
+      }
+      
+      return isValid;
     });
     
-    console.log(`原始记录: ${chain.length}, 有效记录: ${validChain.length}`);
+    console.log(`过滤结果: 原始 ${chain.length} 条 → 有效 ${validChain.length} 条`);
+    
+    // 更新全局记录
+    currentValidChain = validChain;
     
     reqCount.textContent = validChain.length.toString();
 
@@ -131,29 +153,49 @@ async function loadLogs() {
     
   } catch (e) {
     console.warn("Load logs failed:", e);
-    // 显示错误信息
-    logBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ff6b6b;">加载日志失败: ${e.message}</td></tr>`;
+    logBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ff6b6b;">加载失败: ${e.message}</td></tr>`;
   }
 }
 
-// 添加强制清理功能（可选）
-async function forceCleanup() {
-  if (confirm('确定要清理所有无效记录吗？这将删除空问题和测试数据。')) {
+// 强力清理函数 - 在控制台执行这个来重置
+async function hardReset() {
+  if (confirm('⚠️ 强力清理！这将删除所有记录并重置系统。确定继续吗？')) {
     try {
-      // 这里可以调用后端的清理API（如果实现了的话）
-      // const res = await fetch(`${B()}/api/admin/cleanup`, { method: 'POST' });
+      // 清除本地存储
+      localStorage.clear();
+      sessionStorage.clear();
       
-      // 暂时使用前端清理
+      // 重新加载
+      currentValidChain = [];
       await loadLogs();
-      alert('清理完成！');
+      
+      // 强制刷新页面
+      setTimeout(() => {
+        window.location.reload(true);
+      }, 1000);
+      
+      alert('系统已重置！');
     } catch (e) {
-      alert('清理失败: ' + e.message);
+      alert('重置失败: ' + e.message);
     }
   }
 }
 
-// 添加手动清理按钮（可选，可以在控制台调用）
-window.cleanupData = forceCleanup;
+// 诊断函数 - 查看原始数据
+async function diagnoseData() {
+  const res = await fetch(`${B()}/api/audit/chain?limit=100`);
+  const data = await res.json();
+  console.log('=== 数据诊断 ===');
+  console.log('原始记录数量:', data.chain.length);
+  data.chain.forEach((item, index) => {
+    console.log(`记录 ${index}:`, item);
+  });
+}
+
+// 暴露工具函数到全局
+window.hardReset = hardReset;
+window.diagnoseData = diagnoseData;
+window.getCurrentData = () => currentValidChain;
 
 refreshBtn.addEventListener("click", loadLogs);
 window.addEventListener("load", loadLogs);
@@ -164,7 +206,8 @@ function escapeHtml(s) {
   }[c]));
 }
 
-// 添加调试信息
-console.log('Oracle Ethics M1 Frontend loaded');
-console.log('Backend URL:', B());
-console.log('Use cleanupData() in console to force cleanup');
+console.log('Oracle Ethics M1 Frontend - 强力修复版已加载');
+console.log('可用工具:');
+console.log('- diagnoseData(): 诊断数据问题');
+console.log('- hardReset(): 强力重置系统');
+console.log('- getCurrentData(): 获取当前有效数据');
