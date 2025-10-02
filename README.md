@@ -1,3 +1,10 @@
-# Oracle Ethics System M1
+# Oracle Ethics M1 — Frontend
 
-Run backend with Flask, frontend with Vercel.
+Static HTML/JS/CSS. No build needed.
+
+## Configure
+Edit    chain = []
+```html
+<script>
+  window.BACKEND_URL = "https://YOUR-RENDER-BACKEND.onrender.com";
+</script>
