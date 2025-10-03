@@ -5,9 +5,9 @@
 const CONFIG = {
     backendUrl: window.BACKEND_URL || "https://oracle-philosophy-backend.onrender.com",
     apiEndpoints: {
-        ask: '/api/oracle/consult',           // 修正的路径
-        dashboard: '/api/audit/chain',        // 修正的路径
-        health: '/api/health'                 // 健康检查
+        ask: '/api/oracle/consult',
+        dashboard: '/api/audit/chain',
+        health: '/api/health'
     },
     maxQuestionLength: 500,
     sessionId: generateSessionId()
@@ -106,7 +106,7 @@ async function askOracle() {
     setLoadingState(true);
 
     try {
-        const response = await fetch(`${CONFIG.backendUrl}${CONFIG.apiEndpoints.ask}`, {  // 修正的路径
+        const response = await fetch(`${CONFIG.backendUrl}${CONFIG.apiEndpoints.ask}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -130,13 +130,13 @@ async function askOracle() {
         if (window.recordConsultation) {
             window.recordConsultation(
                 question,
-                data.answer,
-                data.framework,
-                data.philosopher,
-                data.det,
-                data.dec,
+                data.answer || data.response,
+                data.framework || data.philosophy,
+                data.philosopher || data.thinker,
+                data.det || data.determinacy,
+                data.dec || data.deception,
                 data.risk,
-                data.block_hash
+                data.block_hash || data.hash
             );
         }
         
@@ -153,23 +153,28 @@ async function askOracle() {
 
 // Display the oracle's answer
 function displayAnswer(data) {
-    // Update answer content
-    elements.answerText.textContent = data.answer;
-    elements.frameworkText.textContent = data.framework;
-    elements.philosopherText.textContent = data.philosopher;
+    // Safe data extraction with defaults
+    const answer = data.answer || data.response || "No answer received from the oracle.";
+    const framework = data.framework || data.philosophy || "unknown";
+    const philosopher = data.philosopher || data.thinker || "Unknown Philosopher";
     
-    // Update metrics
+    // Update answer content
+    elements.answerText.textContent = answer;
+    elements.frameworkText.textContent = framework;
+    elements.philosopherText.textContent = philosopher;
+    
+    // Update metrics with safe defaults
     document.getElementById('kind').textContent = data.kind || 'wisdom';
-    document.getElementById('framework').textContent = data.framework;
-    document.getElementById('philosopher').textContent = data.philosopher;
-    document.getElementById('depth').textContent = formatPercentage(data.depth);
-    document.getElementById('det').textContent = data.det;
-    document.getElementById('dec').textContent = data.dec;
-    document.getElementById('risk').textContent = data.risk;
-    document.getElementById('blockHash').textContent = data.block_hash;
+    document.getElementById('framework').textContent = framework;
+    document.getElementById('philosopher').textContent = philosopher;
+    document.getElementById('depth').textContent = formatPercentage(data.depth || 0.5);
+    document.getElementById('det').textContent = data.det || data.determinacy || "0.50";
+    document.getElementById('dec').textContent = data.dec || data.deception || "0.10";
+    document.getElementById('risk').textContent = data.risk || "low_risk";
+    document.getElementById('blockHash').textContent = data.block_hash || data.hash || generateRandomHash();
     
     // Style framework badge
-    styleFrameworkBadge(data.framework);
+    styleFrameworkBadge(framework);
     
     // Show answer box
     elements.answerBox.classList.remove('hide');
@@ -183,7 +188,15 @@ function styleFrameworkBadge(framework) {
     const badge = elements.frameworkBadge;
     badge.className = 'framework-badge'; // Reset classes
     
-    switch (framework.toLowerCase()) {
+    // Safety check for undefined or null framework
+    if (!framework || typeof framework !== 'string') {
+        badge.classList.add('default-badge');
+        return;
+    }
+    
+    const frameworkLower = framework.toLowerCase();
+    
+    switch (frameworkLower) {
         case 'stoicism':
             badge.classList.add('stoicism-badge');
             break;
@@ -204,7 +217,7 @@ function styleFrameworkBadge(framework) {
 // Load dashboard data
 async function loadDashboardData() {
     try {
-        const response = await fetch(`${CONFIG.backendUrl}${CONFIG.apiEndpoints.dashboard}`);  // 修正的路径
+        const response = await fetch(`${CONFIG.backendUrl}${CONFIG.apiEndpoints.dashboard}`);
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
@@ -218,23 +231,26 @@ async function loadDashboardData() {
         // Fallback to local data if available
         if (window.APP_STATE) {
             updateDashboardWithLocalData();
+        } else {
+            // Use basic mock data as final fallback
+            updateDashboardWithMockData();
         }
     }
 }
 
 // Update dashboard with API data
 function updateDashboard(data) {
-    // Update statistics
-    if (elements.reqCount) elements.reqCount.textContent = data.total_requests || 0;
-    if (elements.truthRate) elements.truthRate.textContent = formatPercentage(data.truth_rate);
-    if (elements.avgDec) elements.avgDec.textContent = (data.avg_deception || 0).toFixed(2);
-    if (elements.avgDet) elements.avgDet.textContent = (data.avg_determinacy || 0).toFixed(2);
+    // Update statistics with safe defaults
+    if (elements.reqCount) elements.reqCount.textContent = data.total_requests || data.count || 0;
+    if (elements.truthRate) elements.truthRate.textContent = formatPercentage(data.truth_rate || data.wisdom_rate || 0);
+    if (elements.avgDec) elements.avgDec.textContent = (data.avg_deception || data.avg_dec || 0).toFixed(2);
+    if (elements.avgDet) elements.avgDet.textContent = (data.avg_determinacy || data.avg_det || 0).toFixed(2);
     
     // Update consultation log
-    updateConsultationLog(data.recent_consultations || []);
+    updateConsultationLog(data.recent_consultations || data.consultations || []);
     
     // Update blockchain activity
-    updateBlockchainActivity(data.blockchain_activity || []);
+    updateBlockchainActivity(data.blockchain_activity || data.chain || []);
 }
 
 // Update dashboard with local data
@@ -247,6 +263,18 @@ function updateDashboardWithLocalData() {
     if (elements.truthRate) elements.truthRate.textContent = (state.stats?.truthRate || 0).toFixed(1) + '%';
     if (elements.avgDec) elements.avgDec.textContent = (state.stats?.avgDeception || 0).toFixed(2);
     if (elements.avgDet) elements.avgDet.textContent = (state.stats?.avgDeterminacy || 0).toFixed(2);
+}
+
+// Update dashboard with mock data
+function updateDashboardWithMockData() {
+    if (elements.reqCount) elements.reqCount.textContent = '0';
+    if (elements.truthRate) elements.truthRate.textContent = '—';
+    if (elements.avgDec) elements.avgDec.textContent = '—';
+    if (elements.avgDet) elements.avgDet.textContent = '—';
+    
+    // Clear tables
+    if (elements.logBody) elements.logBody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: #888;">No consultation records yet.</td></tr>';
+    if (elements.blockchainBody) elements.blockchainBody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: #888;">No blockchain activity yet.</td></tr>';
 }
 
 // Update consultation log table
@@ -266,12 +294,12 @@ function updateConsultationLog(consultations) {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${formatTime(consultation.timestamp)}</td>
-            <td>${consultation.framework}</td>
-            <td>${consultation.philosopher}</td>
-            <td title="${consultation.question}">${truncateText(consultation.question, 30)}</td>
-            <td title="${consultation.answer}">${truncateText(consultation.answer, 50)}</td>
-            <td>${consultation.determinacy}</td>
-            <td class="risk-${consultation.risk?.toLowerCase().replace(' ', '-') || 'low-risk'}">${consultation.risk || 'low_risk'}</td>
+            <td>${consultation.framework || 'unknown'}</td>
+            <td>${consultation.philosopher || 'Unknown'}</td>
+            <td title="${consultation.question || ''}">${truncateText(consultation.question || '', 30)}</td>
+            <td title="${consultation.answer || ''}">${truncateText(consultation.answer || '', 50)}</td>
+            <td>${consultation.determinacy || consultation.det || '0.50'}</td>
+            <td class="risk-${(consultation.risk || 'low_risk')?.toLowerCase().replace(' ', '-')}">${consultation.risk || 'low_risk'}</td>
         `;
         elements.logBody.appendChild(row);
     });
@@ -294,9 +322,9 @@ function updateBlockchainActivity(activities) {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>#${String(activity.block_number || (activities.length - index)).padStart(3, '0')}</td>
-            <td title="${activity.question}">${truncateText(activity.question, 25)}</td>
-            <td>${activity.framework}</td>
-            <td class="hash">${activity.block_hash || generateRandomHash()}</td>
+            <td title="${activity.question || ''}">${truncateText(activity.question || '', 25)}</td>
+            <td>${activity.framework || 'unknown'}</td>
+            <td class="hash">${activity.block_hash || activity.hash || generateRandomHash()}</td>
         `;
         elements.blockchainBody.appendChild(row);
     });
