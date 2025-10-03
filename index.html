@@ -10,7 +10,7 @@
   <script>
     // Backend configuration and performance monitoring
     window.BACKEND_URL = "https://oracle-philosophy-backend.onrender.com";
-    window.APP_VERSION = "2.1.0"; // 更新版本号
+    window.APP_VERSION = "2.1.0"; // Updated version number
     
     // Performance monitoring
     window.addEventListener('load', function() {
@@ -19,6 +19,19 @@
         console.log(`Oracle M1 loaded in ${loadTime}ms`);
       }, 0);
     });
+
+    // Utility function for notifications
+    function showComingSoon() {
+      const notification = document.createElement('div');
+      notification.className = 'notification info';
+      notification.textContent = 'API Documentation coming soon!';
+      document.body.appendChild(notification);
+      
+      setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+      }, 3000);
+    }
   </script>
   <style>
     /* Enhanced notification system */
@@ -338,7 +351,7 @@
       </div>
     </div>
 
-    <!-- 修复：添加分页信息容器 -->
+    <!-- Fixed: Added pagination info container -->
     <div id="paginationInfo" class="pagination-info" style="text-align: center; margin: 16px 0; color: var(--muted);"></div>
 
     <div class="table-container">
@@ -360,7 +373,7 @@
       </table>
     </div>
 
-    <!-- 修复：单一的分页控制容器 -->
+    <!-- Fixed: Single pagination control container -->
     <div id="paginationContainer" class="pagination-container"></div>
 
     <button id="refreshBtn" class="secondary-btn">🔄 Refresh Wisdom Log</button>
