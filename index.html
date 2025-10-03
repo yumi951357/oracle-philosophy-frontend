@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#0a0b10"/>
   <meta name="description" content="Oracle Ethics M1 - Philosophical AI with advanced deception detection and blockchain transparency"/>
   <title>Oracle Ethics M1 - Philosophical AI</title>
-  <link rel="stylesheet" href="./styles.css"/>
+  <link rel="stylesheet" href="styles.css"/>
   <script>
     // Backend configuration and performance monitoring
     window.BACKEND_URL = "https://oracle-philosophy-backend.onrender.com";
@@ -578,71 +578,6 @@
   <span>"After the blackout, the true light appears." - A space for collective wisdom</span>
 </footer>
 
-<script src="./main.js"></script>
-<script>
-// Enhanced notification system
-function showNotification(message, type = 'info') {
-  const notification = document.createElement('div');
-  notification.className = `notification ${type}`;
-  notification.textContent = message;
-  document.body.appendChild(notification);
-  
-  setTimeout(() => {
-    notification.style.animation = 'slideOut 0.3s ease';
-    setTimeout(() => {
-      notification.remove();
-    }, 300);
-  }, 3000);
-}
-
-function showComingSoon() {
-  showNotification('API documentation coming soon!', 'info');
-}
-
-// Enhanced mobile optimization
-function optimizeMobileExperience() {
-  if (window.innerWidth <= 768) {
-    // Add touch-friendly classes
-    document.body.classList.add('mobile-optimized');
-    
-    // Prevent zoom on input focus
-    const inputs = document.querySelectorAll('input, textarea, select');
-    inputs.forEach(input => {
-      input.addEventListener('focus', () => {
-        document.body.style.zoom = "100%";
-      });
-    });
-  }
-}
-
-// Initialize mobile optimization
-document.addEventListener('DOMContentLoaded', function() {
-  optimizeMobileExperience();
-  
-  // Re-optimize on resize
-  window.addEventListener('resize', optimizeMobileExperience);
-  
-  // Enhanced smooth scrolling for navigation
-  const navLinks = document.querySelectorAll('.nav-link, .toc-link');
-  navLinks.forEach(link => {
-    link.addEventListener('click', function(e) {
-      e.preventDefault();
-      const targetId = this.getAttribute('href');
-      const targetElement = document.querySelector(targetId);
-      if (targetElement) {
-        targetElement.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        });
-        
-        // Update URL without page jump
-        history.pushState(null, null, targetId);
-      }
-    });
-  });
-  
-  console.log('Oracle Ethics M1 Frontend Enhanced Edition Loaded');
-});
-</script>
+<script src="main.js"></script>
 </body>
 </html>
