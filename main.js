@@ -1,4 +1,4 @@
-// main.js — Oracle Ethics M1 (Ultimate Fixed Version)
+// main.js — Oracle Ethics M1 (Complete Fixed Version)
 const B = () => window.BACKEND_URL || "https://oracle-philosophy-backend.onrender.com";
 
 const $ = (id) => document.getElementById(id);
@@ -40,7 +40,7 @@ let dataCache = null;
 let lastLoadTime = 0;
 const CACHE_DURATION = 30000;
 
-// 🎯 方案1: 前端数据一致性层
+// 🎯 前端数据一致性层
 class DataConsistencyManager {
     constructor() {
         this.localBackup = this.loadLocalBackup();
@@ -110,18 +110,15 @@ class DataConsistencyManager {
             const question = (p.question || "").trim();
             const answer = (p.answer || "").trim();
             
-            return question.length > 0 && 
-                   answer.length > 0 &&
-                   !question.toLowerCase().includes("undefined") &&
-                   !answer.toLowerCase().includes("undefined") &&
-                   !question.toLowerCase().includes("test");
+            // 🎯 修复：极宽松的条件
+            return question.length > 0 || answer.length > 0;
         });
     }
     
     getLocalBackupData() {
         return this.localBackup.filter(item => {
             const p = item.payload || {};
-            return p.question && p.answer;
+            return p.question || p.answer;
         });
     }
     
@@ -146,7 +143,7 @@ class DataConsistencyManager {
 
 const dataConsistencyManager = new DataConsistencyManager();
 
-// 🎯 方案2: 增强型欺骗检测引擎
+// 🎯 增强型欺骗检测引擎
 class EnhancedDeceptionDetector {
     constructor() {
         this.patterns = {
@@ -281,7 +278,7 @@ class EnhancedDeceptionDetector {
 
 const deceptionDetector = new EnhancedDeceptionDetector();
 
-// Philosophical Response Engine (保持不变)
+// Philosophical Response Engine
 class PhilosophicalResponseEngine {
     constructor() {
         this.responses = {
@@ -391,7 +388,7 @@ class PhilosophicalResponseEngine {
 
 const responseEngine = new PhilosophicalResponseEngine();
 
-// Dashboard Manager with Enhanced Consistency
+// Dashboard Manager
 class DashboardManager {
     constructor() {
         this.retryCount = 0;
@@ -629,7 +626,7 @@ function initializeDefaultData() {
     if (paginationContainer) paginationContainer.innerHTML = '';
 }
 
-// 修复咨询函数 - 添加重复检测和即时备份
+// 🎯 修复咨询函数 - 单一事件监听器
 askBtn.addEventListener("click", async () => {
     const question = (q.value || "").trim();
     const sessionId = (sid.value || "").trim();
@@ -666,7 +663,7 @@ askBtn.addEventListener("click", async () => {
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({ 
                 question, 
-                sessionId,
+                sessionId: sessionId || "auto-" + Date.now(),
                 deception_analysis: deceptionAnalysis
             })
         });
@@ -687,6 +684,7 @@ askBtn.addEventListener("click", async () => {
 
         updateAnswerDisplay(data, enhancedAnswer, deceptionAnalysis);
         
+        // 🎯 修复：清除缓存并重新加载数据
         dashboardManager.clearCache();
         await loadLogs();
         
@@ -753,7 +751,7 @@ function showEthicalWarning(question, analysis) {
     showNotification('Ethical boundaries respected in your consultation', 'info');
 }
 
-// 修复主数据加载函数
+// 🎯 修复主数据加载函数
 async function loadLogs() {
     if (isLoading) {
         console.log('Load already in progress, skipping...');
@@ -767,17 +765,43 @@ async function loadLogs() {
         const data = await dashboardManager.loadDataWithStability();
         const chain = data.chain || [];
         
-        console.log(`Consistent data received: ${chain.length} records`);
+        console.log(`Raw backend data: ${chain.length} records`);
         
-        allValidRecords = chain;
+        // 🎯 修复：极宽松的数据过滤
+        allValidRecords = chain.filter(item => {
+            if (!item || typeof item !== 'object') return false;
+            
+            const p = item.payload || {};
+            const question = (p.question || "").trim();
+            const answer = (p.answer || "").trim();
+            
+            // 极宽松条件：只要有question或answer就显示
+            const isValid = question.length > 0 || answer.length > 0;
+            
+            if (!isValid) {
+                console.warn('Filtered invalid record:', item);
+            }
+            
+            return isValid;
+        });
+        
+        console.log(`After filtering: ${allValidRecords.length} valid records`);
+        
+        // 按时间戳排序（最新的在前）
+        allValidRecords.sort((a, b) => {
+            const timeA = a.timestamp || a.ts || 0;
+            const timeB = b.timestamp || b.ts || 0;
+            return new Date(timeB) - new Date(timeA);
+        });
+        
         currentValidChain = allValidRecords;
         currentPage = 1;
         
         if (allValidRecords.length === 0) {
-            console.log('No valid records found, initializing default data');
+            console.log('No valid records found');
             initializeDefaultData();
         } else {
-            console.log(`Displaying ${allValidRecords.length} valid records`);
+            console.log(`Displaying ${allValidRecords.length} records`);
             displayCurrentPage();
             updateStatistics(allValidRecords);
             updateBlockchainTable(allValidRecords);
@@ -920,7 +944,7 @@ function updateBlockchainTable(validChain) {
     
     const blockchainData = validChain.filter(item => {
         const p = item.payload || {};
-        return p.question && p.answer && (item.timestamp || item.ts);
+        return (p.question || p.answer) && (item.timestamp || item.ts);
     });
     
     blockchainBody.innerHTML = '';
@@ -1023,7 +1047,7 @@ window.getSystemStats = () => ({
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Oracle Ethics M1 - Ultimate Fixed Edition Initializing');
+    console.log('Oracle Ethics M1 - Complete Fixed Edition Initializing');
     
     initializeDefaultData();
     loadLogs();
@@ -1035,7 +1059,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 120000);
     
-    console.log('Oracle Ethics M1 - Ultimate Fixed Edition Loaded');
+    console.log('Oracle Ethics M1 - Complete Fixed Edition Loaded');
 });
 
 refreshBtn.addEventListener("click", function() {
