@@ -1,4 +1,4 @@
-// main.js — Oracle Ethics M1 (Ultimate Fixed Version - Data Consistency Fix)
+// main.js — Oracle Ethics M1 (Data Consistency Fixed Version)
 const B = () => window.BACKEND_URL || "https://oracle-philosophy-backend.onrender.com";
 
 const $ = (id) => document.getElementById(id);
@@ -669,7 +669,7 @@ async function loadLogs() {
             const question = (p.question || "").trim();
             const answer = (p.answer || "").trim();
             
-            // 更宽松的验证条件
+            // 更宽松的验证条件 - 修复数据过滤
             const isValid = question.length > 0 && 
                            answer.length > 0 &&
                            !question.toLowerCase().includes("undefined") &&
@@ -953,7 +953,7 @@ window.getSystemStats = () => ({
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Oracle Ethics M1 - Ultimate Fixed Edition Initializing');
+    console.log('Oracle Ethics M1 - Data Consistency Fixed Edition Initializing');
     
     // Initialize data
     initializeDefaultData();
@@ -967,7 +967,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 120000);
     
-    console.log('Oracle Ethics M1 - Ultimate Fixed Edition Loaded');
+    console.log('Oracle Ethics M1 - Data Consistency Fixed Edition Loaded');
 });
 
 refreshBtn.addEventListener("click", function() {
