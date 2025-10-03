@@ -31,13 +31,58 @@ const blockchainBody = $("blockchainBody");
 // 存储当前有效记录，避免重复渲染
 let currentValidChain = [];
 
+// 强化伦理检测函数
+function isUnethicalQuestion(question) {
+  const unethicalPatterns = [
+    /counterfeit|fake|forge|falsify/i,
+    /cheat|deceive|defraud|scam|swindle/i,
+    /manipulate|exploit|trick|dupe/i,
+    /illegal|unlawful|criminal|felony/i,
+    /steal|thief|rob|burglar/i,
+    /harm|hurt|injure|violence|attack/i,
+    /perfect.*fraud|fraud.*strategy/i,
+    /authentic.*counterfeit|counterfeit.*method/i,
+    /how to.*cheat|cheat.*system/i,
+    /how to.*manipulate|manipulate.*technique/i
+  ];
+  
+  return unethicalPatterns.some(pattern => pattern.test(question));
+}
+
+// 伦理警告显示函数
+function showEthicalWarning(question) {
+  answerText.textContent = "For ethical reasons, I cannot provide guidance on topics involving deception, counterfeiting, illegal activities, or harm. Philosophical wisdom should be used for personal growth and understanding, not for manipulative or harmful purposes. Please consider rephrasing your question to focus on constructive self-improvement.";
+  
+  kind.textContent = "ethical_protection";
+  det.textContent = "1.00";
+  dec.textContent = "0.00";
+  risk.textContent = "ethical_rejection";
+  framework.textContent = "System Ethics";
+  philosopher.textContent = "AI Guardian";
+  depth.textContent = "100%";
+  blockHash.textContent = "eth_protection_" + Date.now();
+  frameworkText.textContent = "System Ethics";
+  philosopherText.textContent = "AI Guardian";
+  
+  frameworkBadge.className = "framework-badge ethical";
+  answerBox.classList.remove("hide");
+}
+
 askBtn.addEventListener("click", async () => {
   const question = (q.value || "").trim();
   const sessionId = (sid.value || "").trim();
+  
   if (!question) {
     alert("Please enter a question.");
     return;
   }
+
+  // 强化伦理检测 - 在前端拦截不道德问题
+  if (isUnethicalQuestion(question)) {
+    showEthicalWarning(question);
+    return;
+  }
+
   try {
     const res = await fetch(`${B()}/api/oracle/consult`, {
       method: "POST",
@@ -149,7 +194,7 @@ async function loadLogs() {
         <td>${escapeHtml(p.question || "")}</td>
         <td>${escapeHtml((p.answer || "").slice(0, 60))}…</td>
         <td>${(p.determinacy || 0).toFixed(2)}</td>
-        <td>${(p.risk_tags || ["low_risk"]).join(", ")}</td>
+        <td class="risk-${(p.risk_tags?.[0] || 'low_risk').replace('_', '-')}">${(p.risk_tags || ["low_risk"]).join(", ")}</td>
       `;
       logBody.appendChild(tr);
     });
@@ -157,7 +202,8 @@ async function loadLogs() {
     const n = Math.max(1, validChain.length);
     
     // 修复显示：确保不会显示0.0%
-    truthRate.textContent = n > 0 ? Math.max(1, ((truths / n) * 100)).toFixed(1) + "%" : "0%";
+    const calculatedRate = n > 0 ? ((truths / n) * 100) : 0;
+    truthRate.textContent = calculatedRate > 0 ? calculatedRate.toFixed(1) + "%" : "0%";
     avgDec.textContent = (sumDec / n).toFixed(1);
     avgDet.textContent = (sumDet / n).toFixed(1);
     
