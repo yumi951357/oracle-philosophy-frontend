@@ -1,0 +1,8 @@
+# 在前端根目录创建 .gitignore
+echo ".env.local
+.env.*.local
+node_modules/
+dist/
+.DS_Store
+*.log
+.vercel" > .gitignore

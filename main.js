@@ -1,4 +1,4 @@
-// main.js — Oracle Ethics M1 (Ultimate Fixed Version)
+// main.js — Oracle Ethics M1 (Ultimate Fixed Version - Data Consistency Fix)
 const B = () => window.BACKEND_URL || "https://oracle-philosophy-backend.onrender.com";
 
 const $ = (id) => document.getElementById(id);
@@ -27,8 +27,10 @@ const avgDec = $("avgDec");
 const avgDet = $("avgDet");
 const logBody = $("logBody");
 const blockchainBody = $("blockchainBody");
+const paginationContainer = $("paginationContainer");
+const paginationInfo = $("paginationInfo");
 
-// Global state management
+// Global state management - 修复数据一致性
 let currentValidChain = [];
 let currentPage = 1;
 const recordsPerPage = 10;
@@ -268,7 +270,7 @@ class PhilosophicalResponseEngine {
 
 const responseEngine = new PhilosophicalResponseEngine();
 
-// 🛠️ Fix 3: Dashboard Stability Manager
+// 🛠️ Fix 3: Dashboard Stability Manager - 修复数据一致性
 class DashboardManager {
     constructor() {
         this.retryCount = 0;
@@ -309,13 +311,15 @@ class DashboardManager {
         for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
             try {
                 const randomParam = Math.random().toString(36).substring(7);
-                const response = await fetch(`${B()}/api/audit/chain?limit=200&nocache=${randomParam}`);
+                const response = await fetch(`${B()}/api/audit/chain?limit=500&nocache=${randomParam}`); // 增加限制到500条
                 
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 
                 const data = await response.json();
+                console.log(`Fetched ${data.chain?.length || 0} records from backend`);
                 return data;
             } catch (error) {
+                console.warn(`Attempt ${attempt} failed:`, error);
                 if (attempt === this.maxRetries) throw error;
                 await this.delay(1000 * attempt);
             }
@@ -333,19 +337,23 @@ class DashboardManager {
 
 const dashboardManager = new DashboardManager();
 
-// 🛠️ Fix 4: Professional Blockchain Logger
+// 🛠️ Fix 4: Professional Blockchain Logger - 修复数据显示
 class BlockchainLogger {
     constructor() {
         this.formats = {
             timestamp: (ts) => {
                 if (!ts) return '-';
-                const date = new Date(ts);
-                return date.toLocaleTimeString('en-US', { 
-                    hour12: false,
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    second: '2-digit'
-                });
+                try {
+                    const date = new Date(ts);
+                    return date.toLocaleTimeString('en-US', { 
+                        hour12: false,
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    });
+                } catch (e) {
+                    return '-';
+                }
             },
             framework: (fw) => {
                 const frameworkMap = {
@@ -353,12 +361,15 @@ class BlockchainLogger {
                     'existentialism': '🎭 Exist',
                     'taoism': '☯️ Tao',
                     'buddhism': '🪷 Buddh',
-                    'ethical_guardian': '🛡️ Ethic'
+                    'ethical_guardian': '🛡️ Ethic',
+                    'stoic': '🏛️ Stoic',
+                    'existentialist': '🎭 Exist'
                 };
                 return frameworkMap[fw] || fw || '-';
             },
             hash: (hash) => {
-                if (!hash) return 'pending...';
+                if (!hash || hash === 'pending...') return 'pending...';
+                if (hash.length < 14) return hash;
                 return `${hash.substring(0, 8)}...${hash.substring(hash.length - 6)}`;
             },
             risk: (riskLevel) => {
@@ -374,33 +385,35 @@ class BlockchainLogger {
         };
     }
 
-    formatLogEntry(item) {
+    formatLogEntry(item, index, total) {
         const p = item.payload || {};
         const detection = deceptionDetector.detect(p.question || "");
         
         return {
-            time: this.formats.timestamp(item.ts),
+            time: this.formats.timestamp(item.timestamp || item.ts),
             framework: this.formats.framework(p.framework || p.philosophical_framework),
             philosopher: p.philosopher || p.referenced_philosopher || 'Ancient Sage',
             question: p.question ? this.truncateText(p.question, 35) : '-',
             answer: p.answer ? this.truncateText(p.answer, 50) : '-',
-            clarity: (p.determinacy || 0).toFixed(2),
-            risk: this.formats.risk(detection.level)
+            clarity: (p.determinacy || p.clarity || 0).toFixed(2),
+            risk: this.formats.risk(detection.level),
+            originalData: item // 保存原始数据用于调试
         };
     }
 
     formatBlockchainEntry(item, index, total) {
         const p = item.payload || {};
+        const blockNumber = total - index;
         return {
-            block: `#${String(total - index).padStart(3, '0')}`,
+            block: `#${String(blockNumber).padStart(3, '0')}`,
             question: p.question ? this.truncateText(p.question, 25) : '-',
             framework: this.formats.framework(p.framework || p.philosophical_framework),
-            hash: this.formats.hash(item.block_hash)
+            hash: this.formats.hash(item.block_hash || item.hash)
         };
     }
 
     truncateText(text, maxLength) {
-        if (!text) return '';
+        if (!text || typeof text !== 'string') return '';
         if (text.length <= maxLength) return text;
         return text.substring(0, maxLength - 3) + '...';
     }
@@ -408,13 +421,13 @@ class BlockchainLogger {
 
 const blockchainLogger = new BlockchainLogger();
 
-// Core functionality functions
+// 🛠️ Fix 5: 修复数据计数和显示逻辑
 function calculateWisdomRate(consultations) {
     if (!consultations || consultations.length === 0) return 0;
     
     const wiseConsultations = consultations.filter(consult => {
         const p = consult.payload || {};
-        const clarity = p.determinacy || 0;
+        const clarity = p.determinacy || p.clarity || 0;
         const deception = p.deception_prob || 0;
         const answer = (p.answer || "").toLowerCase();
         
@@ -422,11 +435,12 @@ function calculateWisdomRate(consultations) {
                deception < 0.5 &&
                answer.length > 20 &&
                !answer.includes('undefined') &&
-               !answer.includes('error');
+               !answer.includes('error') &&
+               !answer.includes('failed');
     });
     
     const rate = Math.round((wiseConsultations.length / consultations.length) * 100);
-    console.log(`Wisdom Rate: ${wiseConsultations.length}/${consultations.length} = ${rate}%`);
+    console.log(`Wisdom Rate Calculation: ${wiseConsultations.length}/${consultations.length} = ${rate}%`);
     return rate;
 }
 
@@ -441,6 +455,7 @@ function setLoadingState(loading) {
         if (!document.getElementById('loadingIndicator')) {
             const loader = document.createElement('div');
             loader.id = 'loadingIndicator';
+            loader.className = 'data-loading';
             loader.innerHTML = `
                 <div style="text-align: center; padding: 30px; color: var(--muted);">
                     <div style="font-size: 1.2em; margin-bottom: 10px;">🔄 Loading Wisdom</div>
@@ -513,9 +528,13 @@ function initializeDefaultData() {
             </tr>
         `;
     }
+
+    // 清空分页信息
+    if (paginationInfo) paginationInfo.textContent = '';
+    if (paginationContainer) paginationContainer.innerHTML = '';
 }
 
-// Main consultation function
+// 🛠️ Fix 6: 修复咨询函数 - 改进数据同步
 askBtn.addEventListener("click", async () => {
     const question = (q.value || "").trim();
     const sessionId = (sid.value || "").trim();
@@ -540,7 +559,7 @@ askBtn.addEventListener("click", async () => {
             body: JSON.stringify({ 
                 question, 
                 sessionId,
-                deception_analysis: deceptionAnalysis // Send analysis results
+                deception_analysis: deceptionAnalysis
             })
         });
         
@@ -558,7 +577,11 @@ askBtn.addEventListener("click", async () => {
 
         // Update display
         updateAnswerDisplay(data, enhancedAnswer, deceptionAnalysis);
+        
+        // 清除缓存并重新加载数据
+        dashboardManager.clearCache();
         await loadLogs();
+        
         showNotification('Wisdom received from the philosophical oracle', 'success');
         
     } catch (e) {
@@ -572,8 +595,8 @@ askBtn.addEventListener("click", async () => {
 function updateAnswerDisplay(data, answer, deceptionAnalysis) {
     answerText.textContent = answer;
     kind.textContent = data.kind || "wisdom";
-    det.textContent = data.determinacy.toFixed(2);
-    dec.textContent = data.deception_prob.toFixed(2);
+    det.textContent = (data.determinacy || 0).toFixed(2);
+    dec.textContent = (data.deception_prob || 0).toFixed(2);
     risk.textContent = deceptionAnalysis.level.replace(/_/g, ' ');
     framework.textContent = data.philosophical_framework || "-";
     philosopher.textContent = data.referenced_philosopher || "-";
@@ -622,36 +645,62 @@ function showEthicalWarning(question, analysis) {
     showNotification('Ethical boundaries respected in your consultation', 'info');
 }
 
-// Main data loading function
+// 🛠️ Fix 7: 修复主数据加载函数 - 改进数据一致性
 async function loadLogs() {
-    if (isLoading) return;
+    if (isLoading) {
+        console.log('Load already in progress, skipping...');
+        return;
+    }
     
     try {
         setLoadingState(true);
+        console.log('Loading consultation data...');
+        
         const data = await dashboardManager.loadDataWithStability();
         const chain = data.chain || [];
         
-        // Process valid records
+        console.log(`Raw data received: ${chain.length} records`);
+        
+        // Process valid records - 修复数据过滤逻辑
         allValidRecords = chain.filter(item => {
             if (!item || typeof item !== 'object') return false;
+            
             const p = item.payload || {};
             const question = (p.question || "").trim();
             const answer = (p.answer || "").trim();
             
-            return question.length > 0 && 
-                   answer.length > 0 &&
-                   !question.includes("undefined") &&
-                   !answer.includes("undefined") &&
-                   p.determinacy !== undefined;
+            // 更宽松的验证条件
+            const isValid = question.length > 0 && 
+                           answer.length > 0 &&
+                           !question.toLowerCase().includes("undefined") &&
+                           !answer.toLowerCase().includes("undefined") &&
+                           !question.toLowerCase().includes("error") &&
+                           !answer.toLowerCase().includes("error");
+            
+            if (!isValid) {
+                console.log('Filtered invalid record:', { question, answer });
+            }
+            
+            return isValid;
         });
         
-        console.log(`Valid records: ${allValidRecords.length}`);
+        console.log(`Valid records after filtering: ${allValidRecords.length}`);
+        
+        // 按时间戳排序（最新的在前）
+        allValidRecords.sort((a, b) => {
+            const timeA = a.timestamp || a.ts || 0;
+            const timeB = b.timestamp || b.ts || 0;
+            return new Date(timeB) - new Date(timeA);
+        });
+        
         currentValidChain = allValidRecords;
         currentPage = 1;
         
         if (allValidRecords.length === 0) {
+            console.log('No valid records found, initializing default data');
             initializeDefaultData();
         } else {
+            console.log(`Displaying ${allValidRecords.length} valid records`);
             displayCurrentPage();
             updateStatistics(allValidRecords);
             updateBlockchainTable(allValidRecords);
@@ -665,7 +714,7 @@ async function loadLogs() {
     }
 }
 
-// Display current page records
+// 🛠️ Fix 8: 修复分页显示 - 消除重复渲染
 function displayCurrentPage() {
     if (!logBody) return;
     
@@ -674,6 +723,8 @@ function displayCurrentPage() {
     const startIndex = (currentPage - 1) * recordsPerPage;
     const endIndex = Math.min(startIndex + recordsPerPage, allValidRecords.length);
     const pageRecords = allValidRecords.slice(startIndex, endIndex);
+    
+    console.log(`Displaying page ${currentPage}: records ${startIndex} to ${endIndex}`);
     
     if (pageRecords.length === 0) {
         logBody.innerHTML = `
@@ -687,13 +738,14 @@ function displayCurrentPage() {
         return;
     }
     
-    pageRecords.forEach(item => {
-        const formatted = blockchainLogger.formatLogEntry(item);
+    pageRecords.forEach((item, index) => {
+        const globalIndex = startIndex + index;
+        const formatted = blockchainLogger.formatLogEntry(item, globalIndex, allValidRecords.length);
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${formatted.time}</td>
-            <td>${formatted.framework}</td>
-            <td>${formatted.philosopher}</td>
+            <td>${escapeHtml(formatted.time)}</td>
+            <td>${escapeHtml(formatted.framework)}</td>
+            <td>${escapeHtml(formatted.philosopher)}</td>
             <td title="${escapeHtml(item.payload?.question || "")}">${escapeHtml(formatted.question)}</td>
             <td title="${escapeHtml(item.payload?.answer || "")}">${escapeHtml(formatted.answer)}</td>
             <td>${formatted.clarity}</td>
@@ -702,96 +754,102 @@ function displayCurrentPage() {
         logBody.appendChild(tr);
     });
     
-    addPaginationControls();
+    updatePaginationControls();
 }
 
-// Pagination controls
-function addPaginationControls() {
-    const existingPagination = document.getElementById('paginationControls');
-    if (existingPagination) existingPagination.remove();
+// 🛠️ Fix 9: 修复分页控制 - 单一容器
+function updatePaginationControls() {
+    // 清空现有分页控制
+    if (paginationContainer) paginationContainer.innerHTML = '';
+    if (paginationInfo) paginationInfo.textContent = '';
     
     const totalPages = Math.ceil(allValidRecords.length / recordsPerPage);
+    const totalRecords = allValidRecords.length;
+    
+    // 更新分页信息
+    if (paginationInfo) {
+        paginationInfo.textContent = `Page ${currentPage} of ${totalPages} (${totalRecords} total records)`;
+    }
     
     if (totalPages <= 1) {
-        const pageInfo = document.createElement('div');
-        pageInfo.style.cssText = 'text-align: center; color: var(--muted); margin: 20px 0; font-size: 14px;';
-        pageInfo.textContent = `Page 1 of 1 (${allValidRecords.length} records)`;
+        return; // 只有一页时不显示分页控制
+    }
+    
+    // 创建分页按钮
+    if (paginationContainer) {
+        if (currentPage > 1) {
+            const prevBtn = document.createElement('button');
+            prevBtn.innerHTML = '← Previous';
+            prevBtn.className = 'secondary-btn';
+            prevBtn.onclick = () => {
+                currentPage--;
+                displayCurrentPage();
+            };
+            paginationContainer.appendChild(prevBtn);
+        }
         
-        const dashboardSection = document.getElementById('dashboard');
-        const tableContainer = dashboardSection.querySelector('.table-container');
-        tableContainer.parentNode.insertBefore(pageInfo, tableContainer.nextSibling);
+        // 页面指示器
+        const pageInfo = document.createElement('span');
+        pageInfo.className = 'pagination-info';
+        pageInfo.textContent = ` ${currentPage} / ${totalPages} `;
+        paginationContainer.appendChild(pageInfo);
+        
+        if (currentPage < totalPages) {
+            const nextBtn = document.createElement('button');
+            nextBtn.innerHTML = 'Next →';
+            nextBtn.className = 'secondary-btn';
+            nextBtn.onclick = () => {
+                currentPage++;
+                displayCurrentPage();
+            };
+            paginationContainer.appendChild(nextBtn);
+        }
+    }
+}
+
+// 🛠️ Fix 10: 修复统计更新
+function updateStatistics(validChain) {
+    if (!validChain || validChain.length === 0) {
+        reqCount.textContent = "0";
+        truthRate.textContent = "0%";
+        avgDec.textContent = "0.0";
+        avgDet.textContent = "0.0";
         return;
     }
     
-    const paginationDiv = document.createElement('div');
-    paginationDiv.id = 'paginationControls';
-    paginationDiv.style.cssText = `
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        margin: 24px 0;
-        gap: 12px;
-        flex-wrap: wrap;
-    `;
-    
-    if (currentPage > 1) {
-        const prevBtn = document.createElement('button');
-        prevBtn.innerHTML = '← Previous';
-        prevBtn.className = 'secondary-btn';
-        prevBtn.onclick = () => {
-            currentPage--;
-            displayCurrentPage();
-        };
-        paginationDiv.appendChild(prevBtn);
-    }
-    
-    const pageInfo = document.createElement('span');
-    pageInfo.textContent = `Page ${currentPage} of ${totalPages} (${allValidRecords.length} records)`;
-    pageInfo.style.cssText = 'color: var(--muted); font-size: 14px; padding: 0 16px;';
-    paginationDiv.appendChild(pageInfo);
-    
-    if (currentPage < totalPages) {
-        const nextBtn = document.createElement('button');
-        nextBtn.innerHTML = 'Next →';
-        nextBtn.className = 'secondary-btn';
-        nextBtn.onclick = () => {
-            currentPage++;
-            displayCurrentPage();
-        };
-        paginationDiv.appendChild(nextBtn);
-    }
-    
-    const dashboardSection = document.getElementById('dashboard');
-    const tableContainer = dashboardSection.querySelector('.table-container');
-    tableContainer.parentNode.insertBefore(paginationDiv, tableContainer.nextSibling);
-}
-
-// Update statistics
-function updateStatistics(validChain) {
     let sumDec = 0, sumDet = 0;
+    let validStatsCount = 0;
     
     validChain.forEach(item => {
         const p = item.payload || {};
-        sumDec += (p.deception_prob || 0);
-        sumDet += (p.determinacy || 0);
+        const deception = p.deception_prob || 0;
+        const determinacy = p.determinacy || p.clarity || 0;
+        
+        if (deception >= 0 && determinacy >= 0) {
+            sumDec += deception;
+            sumDet += determinacy;
+            validStatsCount++;
+        }
     });
 
-    const n = Math.max(1, validChain.length);
+    const n = Math.max(1, validStatsCount);
     
     reqCount.textContent = validChain.length.toString();
     const wisdomRate = calculateWisdomRate(validChain);
-    truthRate.textContent = wisdomRate > 0 ? wisdomRate + "%" : "0%";
+    truthRate.textContent = wisdomRate + "%";
     avgDec.textContent = (sumDec / n).toFixed(1);
     avgDet.textContent = (sumDet / n).toFixed(1);
+    
+    console.log(`Statistics updated: ${validChain.length} records, wisdom rate: ${wisdomRate}%`);
 }
 
-// Update blockchain table
+// 🛠️ Fix 11: 修复区块链表格
 function updateBlockchainTable(validChain) {
     if (!blockchainBody) return;
     
     const blockchainData = validChain.filter(item => {
         const p = item.payload || {};
-        return p.question && p.answer && item.ts;
+        return p.question && p.answer && (item.timestamp || item.ts);
     });
     
     blockchainBody.innerHTML = '';
@@ -808,8 +866,8 @@ function updateBlockchainTable(validChain) {
         return;
     }
     
-    // Show latest records
-    const recentEntries = blockchainData.slice(-6).reverse();
+    // Show latest records (最多显示6条)
+    const recentEntries = blockchainData.slice(0, 6);
     recentEntries.forEach((entry, index) => {
         const formatted = blockchainLogger.formatBlockchainEntry(entry, index, blockchainData.length);
         const row = document.createElement('tr');
@@ -856,7 +914,8 @@ async function diagnoseSystem() {
             totalRecords: data.chain.length,
             validRecords: validRecords.length,
             wisdomRate: calculateWisdomRate(validRecords),
-            cacheStatus: dashboardManager.cache.size > 0 ? 'Active' : 'Empty'
+            cacheStatus: dashboardManager.cache.size > 0 ? 'Active' : 'Empty',
+            currentDisplay: allValidRecords.length
         };
         
         console.log('System Diagnosis:', stats);
@@ -888,11 +947,14 @@ window.hardReset = hardReset;
 window.getSystemStats = () => ({
     records: allValidRecords.length,
     wisdomRate: calculateWisdomRate(allValidRecords),
-    page: currentPage
+    page: currentPage,
+    totalPages: Math.ceil(allValidRecords.length / recordsPerPage)
 });
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('Oracle Ethics M1 - Ultimate Fixed Edition Initializing');
+    
     // Initialize data
     initializeDefaultData();
     loadLogs();
@@ -900,11 +962,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Periodic data refresh (every 2 minutes)
     setInterval(() => {
         if (document.visibilityState === 'visible') {
+            console.log('Periodic data refresh triggered');
             loadLogs();
         }
     }, 120000);
     
-    console.log('Oracle Ethics M1 - Ultimate Edition Loaded');
+    console.log('Oracle Ethics M1 - Ultimate Fixed Edition Loaded');
 });
 
-refreshBtn.addEventListener("click", loadLogs);
+refreshBtn.addEventListener("click", function() {
+    console.log('Manual refresh triggered');
+    dashboardManager.clearCache();
+    loadLogs();
+});

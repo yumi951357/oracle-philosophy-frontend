@@ -6,11 +6,11 @@
   <meta name="theme-color" content="#0a0b10"/>
   <meta name="description" content="Oracle Ethics M1 - Philosophical AI with advanced deception detection and blockchain transparency"/>
   <title>Oracle Ethics M1 - Philosophical AI</title>
-  <link rel="stylesheet" href="./style.css"/>
+  <link rel="stylesheet" href="./styles.css"/>
   <script>
     // Backend configuration and performance monitoring
     window.BACKEND_URL = "https://oracle-philosophy-backend.onrender.com";
-    window.APP_VERSION = "2.0.0";
+    window.APP_VERSION = "2.1.0"; // 更新版本号
     
     // Performance monitoring
     window.addEventListener('load', function() {
@@ -167,6 +167,22 @@
       color: #8a2be2;
     }
 
+    /* Pagination styles */
+    .pagination-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin: 24px 0;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .pagination-info {
+      color: var(--muted);
+      font-size: 14px;
+      padding: 0 16px;
+    }
+
     /* Mobile optimization */
     @media (max-width: 768px) {
       .download-buttons {
@@ -189,6 +205,11 @@
         left: 10px;
         max-width: none;
       }
+
+      .pagination-container {
+        flex-direction: column;
+        gap: 8px;
+      }
     }
 
     /* Loading states */
@@ -209,6 +230,25 @@
         min-width: 44px;
         touch-action: manipulation;
       }
+    }
+
+    /* Data loading indicator */
+    .data-loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--muted);
+    }
+
+    .data-loading::after {
+      content: '...';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+      0%, 20% { color: rgba(0,0,0,0); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+      40% { color: var(--muted); text-shadow: .25em 0 0 rgba(0,0,0,0), .5em 0 0 rgba(0,0,0,0); }
+      60% { text-shadow: .25em 0 0 var(--muted), .5em 0 0 rgba(0,0,0,0); }
+      80%, 100% { text-shadow: .25em 0 0 var(--muted), .5em 0 0 var(--muted); }
     }
   </style>
 </head>
@@ -298,6 +338,9 @@
       </div>
     </div>
 
+    <!-- 修复：添加分页信息容器 -->
+    <div id="paginationInfo" class="pagination-info" style="text-align: center; margin: 16px 0; color: var(--muted);"></div>
+
     <div class="table-container">
       <table class="table" id="logTable">
         <thead>
@@ -316,7 +359,11 @@
         </tbody>
       </table>
     </div>
-    <button id="refreshBtn" class="secondary-btn">Refresh Wisdom Log</button>
+
+    <!-- 修复：单一的分页控制容器 -->
+    <div id="paginationContainer" class="pagination-container"></div>
+
+    <button id="refreshBtn" class="secondary-btn">🔄 Refresh Wisdom Log</button>
   </section>
 
   <!-- PHILOSOPHY GUIDE -->
@@ -532,6 +579,7 @@
 </footer>
 
 <script src="./main.js"></script>
+<script>
 // Enhanced notification system
 function showNotification(message, type = 'info') {
   const notification = document.createElement('div');
