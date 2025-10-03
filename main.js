@@ -40,22 +40,22 @@ let dataCache = null;
 let lastLoadTime = 0;
 const CACHE_DURATION = 30000;
 
-// 🎯 确定性数据同步管理器
+// 🎯 Deterministic Data Synchronization Manager
 class DeterministicDataManager {
     constructor() {
         this.isSyncing = false;
         this.lastStableHash = null;
     }
     
-    // 🎯 修复1: 确定性数据合并
+    // 🎯 Fix 1: Deterministic Data Merging
     deterministicMerge(currentRecords, backendRecords) {
-        console.log('🔄 确定性数据合并开始...');
-        console.log('当前记录:', currentRecords.length, '后端记录:', backendRecords.length);
+        console.log('🔄 Starting deterministic data merge...');
+        console.log('Current records:', currentRecords.length, 'Backend records:', backendRecords.length);
         
-        // 创建哈希映射确保唯一性
+        // Create hash map for uniqueness
         const hashMap = new Map();
         
-        // 🎯 按确定顺序合并：先后端，再当前（确保后端数据优先）
+        // 🎯 Merge in deterministic order: backend first, then current (ensuring backend data priority)
         [...backendRecords, ...currentRecords].forEach(item => {
             if (item && item.block_hash) {
                 hashMap.set(item.block_hash, item);
@@ -64,24 +64,24 @@ class DeterministicDataManager {
         
         const merged = Array.from(hashMap.values());
         
-        // 🎯 确定性排序：按时间倒序
+        // 🎯 Deterministic sorting: by time descending
         merged.sort((a, b) => {
             const timeA = new Date(a.timestamp || a.ts || 0);
             const timeB = new Date(b.timestamp || b.ts || 0);
             return timeB - timeA;
         });
         
-        console.log('合并后记录:', merged.length);
+        console.log('Merged records:', merged.length);
         return merged;
     }
     
-    // 🎯 修复2: 数据一致性验证
+    // 🎯 Fix 2: Data Consistency Validation
     validateConsistency(records) {
         const currentHash = this.generateRecordsHash(records);
         const isConsistent = !this.lastStableHash || currentHash === this.lastStableHash;
         
         if (!isConsistent) {
-            console.warn('🚨 数据不一致检测到!');
+            console.warn('🚨 Data inconsistency detected!');
         }
         
         this.lastStableHash = currentHash;
@@ -96,7 +96,7 @@ class DeterministicDataManager {
 
 const deterministicManager = new DeterministicDataManager();
 
-// 🎯 前端数据一致性层
+// 🎯 Frontend Data Consistency Layer
 class DataConsistencyManager {
     constructor() {
         this.localBackup = this.loadLocalBackup();
@@ -141,7 +141,7 @@ class DataConsistencyManager {
         const backendChain = backendData.chain || [];
         const localChain = this.localBackup;
         
-        // 使用确定性管理器合并
+        // Use deterministic manager for merging
         return deterministicManager.deterministicMerge(localChain, backendChain);
     }
     
@@ -183,7 +183,7 @@ class DataConsistencyManager {
 
 const dataConsistencyManager = new DataConsistencyManager();
 
-// 🎯 增强型欺骗检测引擎（保持不变）
+// 🎯 Enhanced Deception Detection Engine (unchanged)
 class EnhancedDeceptionDetector {
     constructor() {
         this.patterns = {
@@ -317,7 +317,7 @@ class EnhancedDeceptionDetector {
 
 const deceptionDetector = new EnhancedDeceptionDetector();
 
-// Philosophical Response Engine（保持不变）
+// Philosophical Response Engine (unchanged)
 class PhilosophicalResponseEngine {
     constructor() {
         this.responses = {
@@ -553,7 +553,7 @@ class BlockchainLogger {
 
 const blockchainLogger = new BlockchainLogger();
 
-// 修复智慧率计算
+// Fix wisdom rate calculation
 function calculateWisdomRate(consultations) {
     if (!consultations || consultations.length === 0) return 0;
     
@@ -665,7 +665,7 @@ function initializeDefaultData() {
     if (paginationContainer) paginationContainer.innerHTML = '';
 }
 
-// 🎯 修复咨询函数 - 基于确定性数据同步
+// 🎯 Fix consultation function - based on deterministic data synchronization
 askBtn.addEventListener("click", async () => {
     const question = (q.value || "").trim();
     const sessionId = (sid.value || "").trim();
@@ -675,7 +675,7 @@ askBtn.addEventListener("click", async () => {
         return;
     }
 
-    // 检查重复问题
+    // Check for duplicate questions
     const isDuplicate = allValidRecords.some(item => {
         const existingQuestion = (item.payload?.question || "").trim();
         return existingQuestion.toLowerCase() === question.toLowerCase();
@@ -686,7 +686,7 @@ askBtn.addEventListener("click", async () => {
         return;
     }
 
-    // 使用增强欺骗检测
+    // Use enhanced deception detection
     const deceptionAnalysis = deceptionDetector.detect(question);
     console.log('Deception analysis:', deceptionAnalysis);
     
@@ -712,7 +712,7 @@ askBtn.addEventListener("click", async () => {
         const data = await res.json();
         if (data.error) throw new Error(data.error);
 
-        // 立即备份到本地存储
+        // Immediately backup to local storage
         dataConsistencyManager.backupConsultation(data);
 
         const enhancedAnswer = responseEngine.generateResponse(
@@ -723,7 +723,7 @@ askBtn.addEventListener("click", async () => {
 
         updateAnswerDisplay(data, enhancedAnswer, deceptionAnalysis);
         
-        // 🎯 修复：使用确定性数据同步
+        // 🎯 Fix: Use deterministic data synchronization
         dashboardManager.clearCache();
         await loadLogs();
         
@@ -790,7 +790,7 @@ function showEthicalWarning(question, analysis) {
     showNotification('Ethical boundaries respected in your consultation', 'info');
 }
 
-// 🎯 修复主数据加载函数 - 确定性数据加载
+// 🎯 Fix main data loading function - deterministic data loading
 async function loadLogs() {
     if (isLoading) {
         console.log('Load already in progress, skipping...');
@@ -799,9 +799,9 @@ async function loadLogs() {
     
     try {
         setLoadingState(true);
-        console.log('🔄 确定性数据加载开始...');
+        console.log('🔄 Starting deterministic data loading...');
         
-        // 🎯 修复1: 先清空再加载
+        // 🎯 Fix 1: Clear before loading
         const previousCount = allValidRecords.length;
         allValidRecords = [];
         if (logBody) logBody.innerHTML = "";
@@ -809,9 +809,9 @@ async function loadLogs() {
         const data = await dashboardManager.loadDataWithStability();
         const chain = data.chain || [];
         
-        console.log(`后端返回记录: ${chain.length}`);
+        console.log(`Backend records returned: ${chain.length}`);
         
-        // 🎯 修复2: 确定性数据过滤
+        // 🎯 Fix 2: Deterministic data filtering
         allValidRecords = chain.filter(item => {
             if (!item || typeof item !== 'object') return false;
             
@@ -823,9 +823,9 @@ async function loadLogs() {
             return isValid;
         });
         
-        console.log(`过滤后有效记录: ${allValidRecords.length}`);
+        console.log(`Valid records after filtering: ${allValidRecords.length}`);
         
-        // 🎯 修复3: 确定性排序
+        // 🎯 Fix 3: Deterministic sorting
         allValidRecords.sort((a, b) => {
             const timeA = new Date(a.timestamp || a.ts || 0);
             const timeB = new Date(b.timestamp || b.ts || 0);
@@ -836,57 +836,57 @@ async function loadLogs() {
         currentPage = 1;
         
         if (allValidRecords.length === 0) {
-            console.log('未找到有效记录');
+            console.log('No valid records found');
             initializeDefaultData();
         } else {
-            console.log(`显示 ${allValidRecords.length} 条记录`);
+            console.log(`Displaying ${allValidRecords.length} records`);
             displayCurrentPage();
             updateStatistics(allValidRecords);
             updateBlockchainTable(allValidRecords);
             
-            // 🎯 数据一致性验证
+            // 🎯 Data consistency validation
             deterministicManager.validateConsistency(allValidRecords);
         }
         
     } catch (e) {
-        console.error("数据加载失败:", e);
-        showError("数据加载失败: " + e.message, true);
+        console.error("Data loading failed:", e);
+        showError("Data loading failed: " + e.message, true);
     } finally {
         setLoadingState(false);
     }
 }
 
-// 🎯 修复分页显示 - 确定性渲染
+// 🎯 Fix pagination display - deterministic rendering
 function displayCurrentPage() {
     if (!logBody) return;
     
-    // 🎯 修复: 完全清空再渲染
+    // 🎯 Fix: Completely clear before rendering
     logBody.innerHTML = "";
     
     const startIndex = (currentPage - 1) * recordsPerPage;
     const endIndex = Math.min(startIndex + recordsPerPage, allValidRecords.length);
     const pageRecords = allValidRecords.slice(startIndex, endIndex);
     
-    console.log(`渲染页面 ${currentPage}: 记录 ${startIndex} 到 ${endIndex}, 共 ${pageRecords.length} 条`);
+    console.log(`Rendering page ${currentPage}: records ${startIndex} to ${endIndex}, total ${pageRecords.length}`);
     
     if (pageRecords.length === 0) {
         logBody.innerHTML = `
             <tr>
                 <td colspan="7" style="text-align: center; color: var(--muted); padding: 40px;">
-                    <div>📊 本页暂无记录</div>
-                    <small>浏览其他页面或刷新数据</small>
+                    <div>📊 No records on this page</div>
+                    <small>Browse other pages or refresh data</small>
                 </td>
             </tr>
         `;
         return;
     }
     
-    // 🎯 修复: 使用稳定Key（基于block_hash）
+    // 🎯 Fix: Use stable key (based on block_hash)
     pageRecords.forEach((item, index) => {
         const globalIndex = startIndex + index;
         const formatted = blockchainLogger.formatLogEntry(item, globalIndex, allValidRecords.length);
         const tr = document.createElement('tr');
-        // 🎯 使用block_hash作为稳定标识
+        // 🎯 Use block_hash as stable identifier
         tr.setAttribute('data-hash', item.block_hash || 'no-hash');
         tr.innerHTML = `
             <td>${escapeHtml(formatted.time)}</td>
@@ -903,7 +903,7 @@ function displayCurrentPage() {
     updatePaginationControls();
 }
 
-// 修复分页控制
+// Fix pagination controls
 function updatePaginationControls() {
     if (paginationContainer) paginationContainer.innerHTML = '';
     if (paginationInfo) paginationInfo.textContent = '';
@@ -947,7 +947,7 @@ function updatePaginationControls() {
     }
 }
 
-// 修复统计更新
+// Fix statistics update
 function updateStatistics(validChain) {
     if (!validChain || validChain.length === 0) {
         reqCount.textContent = "0";
@@ -980,10 +980,10 @@ function updateStatistics(validChain) {
     avgDec.textContent = (sumDec / n).toFixed(1);
     avgDet.textContent = (sumDet / n).toFixed(1);
     
-    console.log(`统计: ${validChain.length} 条记录, 智慧率: ${wisdomRate}%`);
+    console.log(`Statistics: ${validChain.length} records, wisdom rate: ${wisdomRate}%`);
 }
 
-// 修复区块链表格
+// Fix blockchain table
 function updateBlockchainTable(validChain) {
     if (!blockchainBody) return;
     
@@ -992,7 +992,7 @@ function updateBlockchainTable(validChain) {
         return (p.question || p.answer) && (item.timestamp || item.ts);
     });
     
-    // 🎯 修复: 先清空再渲染
+    // 🎯 Fix: Clear before rendering
     blockchainBody.innerHTML = '';
     
     if (blockchainData.length === 0) {
@@ -1011,7 +1011,7 @@ function updateBlockchainTable(validChain) {
     recentEntries.forEach((entry, index) => {
         const formatted = blockchainLogger.formatBlockchainEntry(entry, index, blockchainData.length);
         const row = document.createElement('tr');
-        // 🎯 使用稳定Key
+        // 🎯 Use stable key
         row.setAttribute('data-hash', entry.block_hash || 'no-hash');
         row.innerHTML = `
             <td style="font-family: 'Courier New', monospace; font-weight: bold;">${formatted.block}</td>
@@ -1056,21 +1056,21 @@ async function diagnoseSystem() {
             cacheStatus: dashboardManager.cache.size > 0 ? 'Active' : 'Empty',
             currentDisplay: allValidRecords.length,
             localBackupCount: dataConsistencyManager.localBackup.length,
-            dataConsistency: deterministicManager.validateConsistency(allValidRecords) ? '✅ 一致' : '❌ 不一致'
+            dataConsistency: deterministicManager.validateConsistency(allValidRecords) ? '✅ Consistent' : '❌ Inconsistent'
         };
         
-        console.log('系统诊断:', stats);
-        showNotification(`系统正常: ${stats.validRecords} 条记录, ${stats.wisdomRate}% 智慧率`, 'success');
+        console.log('System diagnostics:', stats);
+        showNotification(`System normal: ${stats.validRecords} records, ${stats.wisdomRate}% wisdom rate`, 'success');
         
         return stats;
     } catch (error) {
-        console.error('诊断失败:', error);
-        showNotification('系统诊断失败', 'error');
+        console.error('Diagnosis failed:', error);
+        showNotification('System diagnosis failed', 'error');
     }
 }
 
 function hardReset() {
-    if (confirm('⚠️ 重置所有系统数据和缓存?')) {
+    if (confirm('⚠️ Reset all system data and cache?')) {
         dashboardManager.clearCache();
         dataConsistencyManager.clearBackup();
         localStorage.clear();
@@ -1079,7 +1079,7 @@ function hardReset() {
         allValidRecords = [];
         currentPage = 1;
         initializeDefaultData();
-        showNotification('系统重置完成', 'info');
+        showNotification('System reset complete', 'info');
     }
 }
 
@@ -1097,24 +1097,24 @@ window.getSystemStats = () => ({
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Oracle Ethics M1 - 数据一致性修复版初始化');
+    console.log('Oracle Ethics M1 - Data Consistency Fixed Version Initializing');
     
     initializeDefaultData();
     loadLogs();
     
     setInterval(() => {
         if (document.visibilityState === 'visible') {
-            console.log('定期数据刷新触发');
+            console.log('Scheduled data refresh triggered');
             loadLogs();
         }
     }, 120000);
     
-    console.log('Oracle Ethics M1 - 数据一致性修复版加载完成');
+    console.log('Oracle Ethics M1 - Data Consistency Fixed Version Loaded');
 });
 
-// 🎯 修复刷新按钮 - 确定性刷新
+// 🎯 Fix refresh button - deterministic refresh
 refreshBtn.addEventListener("click", function() {
-    console.log('🔄 确定性数据刷新');
+    console.log('🔄 Deterministic data refresh');
     dashboardManager.clearCache();
     loadLogs();
 });
