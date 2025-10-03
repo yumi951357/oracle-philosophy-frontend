@@ -1,4 +1,4 @@
-// main.js — Oracle Ethics M1 (最终修复版)
+// main.js — Oracle Ethics M1 (Ultimate Fixed Version)
 const B = () => window.BACKEND_URL || "https://oracle-philosophy-backend.onrender.com";
 
 const $ = (id) => document.getElementById(id);
@@ -28,103 +28,387 @@ const avgDet = $("avgDet");
 const logBody = $("logBody");
 const blockchainBody = $("blockchainBody");
 
-// 全局状态管理
+// Global state management
 let currentValidChain = [];
 let currentPage = 1;
 const recordsPerPage = 10;
 let allValidRecords = [];
 let isLoading = false;
+let dataCache = null;
+let lastLoadTime = 0;
+const CACHE_DURATION = 30000; // 30 seconds cache
 
-// 🛠️ 修复1: 扩展哲学回答库 - 解决重复内容问题
-const philosophicalResponses = {
-    stoicism: {
-        epictetus: [
-            "As Epictetus taught: We cannot control external events, but we can control our reactions to them.",
-            "Epictetus reflected: It's not what happens to you, but how you react that matters.",
-            "Epictetus advised: First say to yourself what you would be, and then do what you have to do.",
-            "Epictetus reminded: Wealth consists not in having great possessions, but in having few wants.",
-            "Epictetus observed: Difficulties are things that show what men are."
-        ],
-        marcus_aurelius: [
-            "Marcus Aurelius meditated: The happiness of your life depends upon the quality of your thoughts.",
-            "Marcus Aurelius observed: Everything we hear is an opinion, not a fact. Everything we see is a perspective, not the truth.",
-            "Marcus Aurelius reminded: You have power over your mind - not outside events. Realize this, and you will find strength.",
-            "Marcus Aurelius reflected: When you arise in the morning, think of what a precious privilege it is to be alive - to breathe, to think, to enjoy, to love.",
-            "Marcus Aurelius taught: The best revenge is to be unlike him who performed the injury."
-        ],
-        seneca: [
-            "Seneca advised: It is not that we have a short time to live, but that we waste a lot of it.",
-            "Seneca reflected: Difficulties strengthen the mind, as labor does the body.",
-            "Seneca taught: He who is brave is free.",
-            "Seneca observed: True happiness is to enjoy the present, without anxious dependence upon the future.",
-            "Seneca reminded: Sometimes even to live is an act of courage."
-        ]
-    },
-    taoism: {
-        laozi: [
-            "Laozi taught: The journey of a thousand miles begins with a single step.",
-            "Laozi said: Knowing others is intelligence; knowing yourself is true wisdom.",
-            "Laozi reflected: Nature does not hurry, yet everything is accomplished.",
-            "Laozi observed: When I let go of what I am, I become what I might be.",
-            "Laozi taught: The wise man does not lay up his own treasures. The more he gives to others, the more he has for his own."
-        ],
-        zhuangzi: [
-            "Zhuangzi dreamed: I do not know whether I was then a man dreaming I was a butterfly, or whether I am now a butterfly dreaming I am a man.",
-            "Zhuangzi observed: Happiness is the absence of the striving for happiness.",
-            "Zhuangzi taught: Use the light, but return to the clarity of seeing.",
-            "Zhuangzi reflected: Great wisdom is generous; petty wisdom is contentious.",
-            "Zhuangzi said: Flow with whatever may happen and let your mind be free."
-        ],
-        liezi: [
-            "Liezi taught: He who regards all things as one is a companion of Nature.",
-            "Liezi observed: The perfect man uses his mind like a mirror - it grasps nothing, it refuses nothing, it receives but does not keep.",
-            "Liezi reflected: Those who know do not speak; those who speak do not know.",
-            "Liezi said: When you realize there is nothing lacking, the whole world belongs to you.",
-            "Liezi taught: The sage steers by the bright light of nature and reason."
-        ]
-    },
-    existentialism: {
-        nietzsche: [
-            "Nietzsche proclaimed: That which does not kill us makes us stronger.",
-            "Nietzsche declared: He who has a why to live can bear almost any how.",
-            "Nietzsche observed: Without music, life would be a mistake.",
-            "Nietzsche taught: One must still have chaos in oneself to be able to give birth to a dancing star.",
-            "Nietzsche reflected: The individual has always had to struggle to keep from being overwhelmed by the tribe."
-        ],
-        sartre: [
-            "Sartre said: Man is condemned to be free; because once thrown into the world, he is responsible for everything he does.",
-            "Sartre observed: We are our choices.",
-            "Sartre taught: Everything has been figured out, except how to live.",
-            "Sartre reflected: Freedom is what you do with what's been done to you.",
-            "Sartre declared: Life begins on the other side of despair."
-        ],
-        camus: [
-            "Camus reflected: In the depth of winter, I finally learned that within me there lay an invincible summer.",
-            "Camus taught: The only way to deal with an unfree world is to become so absolutely free that your very existence is an act of rebellion.",
-            "Camus observed: Should I kill myself, or have a cup of coffee?",
-            "Camus said: Freedom is nothing but a chance to be better.",
-            "Camus reflected: You will never be happy if you continue to search for what happiness consists of."
-        ]
-    },
-    buddhism: {
-        buddha: [
-            "The Buddha taught: The mind is everything. What you think you become.",
-            "Buddha reflected: Peace comes from within. Do not seek it without.",
-            "Buddha said: You yourself, as much as anybody in the entire universe, deserve your love and affection.",
-            "Buddha taught: The root of suffering is attachment.",
-            "Buddha observed: Thousands of candles can be lit from a single candle, and the life of the candle will not be shortened."
-        ],
-        thich_nhat_hanh: [
-            "Thich Nhat Hanh taught: The present moment is filled with joy and happiness. If you are attentive, you will see it.",
-            "Thich Nhat Hanh reflected: Feelings come and go like clouds in a windy sky. Conscious breathing is my anchor.",
-            "Thich Nhat Hanh said: Walk as if you are kissing the Earth with your feet.",
-            "Thich Nhat Hanh taught: Because you are alive, everything is possible.",
-            "Thich Nhat Hanh observed: The miracle is not to walk on water. The miracle is to walk on the green earth in the present moment."
-        ]
+// 🛠️ Fix 1: Multi-layer Deception Detection Model
+class AdvancedDeceptionDetector {
+    constructor() {
+        this.patterns = {
+            high_risk: [
+                /cheat|deceive|defraud|scam|swindle|manipulate|exploit/i,
+                /counterfeit|fake|forge|falsify|fraudulent/i,
+                /steal|thief|rob|burglar|theft|embezzle/i,
+                /harm|hurt|injure|violence|attack|destroy|kill/i,
+                /illegal|unlawful|criminal|felony|contraband/i
+            ],
+            medium_risk: [
+                /hide|conceal|secret|covert|sneak|disguise/i,
+                /trick|dupe|mislead|deceive|bamboozle/i,
+                /lie|falsehood|untruth|fabricate|misrepresent/i,
+                /avoid detection|get away with|without getting caught/i
+            ],
+            manipulative_intent: [
+                /how to.*(manipulate|control|influence)/i,
+                /ways to.*(deceive|trick|fool)/i,
+                /methods for.*(hiding|concealing)/i,
+                /best way to.*(cheat|exploit)/i
+            ]
+        };
     }
-};
 
-// 🛠️ 修复2: 改进智慧率计算逻辑 - 修复硬编码0%问题
+    // Rule-based detection
+    heuristicAnalysis(question) {
+        let score = 0;
+        let reasons = [];
+
+        Object.entries(this.patterns).forEach(([type, patterns]) => {
+            patterns.forEach(pattern => {
+                if (pattern.test(question)) {
+                    score += type === 'high_risk' ? 0.4 : 
+                            type === 'medium_risk' ? 0.2 : 0.15;
+                    reasons.push(this.getReasonDescription(type, pattern));
+                }
+            });
+        });
+
+        return { score: Math.min(score, 1.0), reasons };
+    }
+
+    // Semantic analysis layer
+    semanticAnalysis(question) {
+        let semanticScore = 0;
+        let semanticReasons = [];
+
+        // Intent analysis
+        const manipulativeIntents = ['get away with', 'without consequences', 'secret method', 'undetectable'];
+        manipulativeIntents.forEach(intent => {
+            if (question.toLowerCase().includes(intent)) {
+                semanticScore += 0.3;
+                semanticReasons.push(`Manipulative intent detected: "${intent}"`);
+            }
+        });
+
+        // Context analysis
+        const contextClues = {
+            ethical_bypass: /(how can I|is it ok to|should I).*(even though|despite|although)/i,
+            justification_seeking: /(justified|reasonable|acceptable).*(when|if)/i,
+            boundary_testing: /(what if I|suppose I|imagine I).*(would it be)/i
+        };
+
+        Object.entries(contextClues).forEach(([type, pattern]) => {
+            if (pattern.test(question)) {
+                semanticScore += 0.2;
+                semanticReasons.push(`Context analysis: ${type.replace('_', ' ')}`);
+            }
+        });
+
+        return { score: Math.min(semanticScore, 0.6), reasons: semanticReasons };
+    }
+
+    // Comprehensive detection
+    detect(question) {
+        if (!question || question.trim().length < 5) {
+            return { score: 0, level: 'low_risk', reasons: ['Question too short for analysis'] };
+        }
+
+        const heuristic = this.heuristicAnalysis(question);
+        const semantic = this.semanticAnalysis(question);
+        
+        // Weighted comprehensive scoring
+        const finalScore = (heuristic.score * 0.7 + semantic.score * 0.3);
+        const allReasons = [...heuristic.reasons, ...semantic.reasons];
+
+        let level;
+        if (finalScore > 0.7) level = 'high_risk_deception';
+        else if (finalScore > 0.4) level = 'medium_risk_caution';
+        else if (finalScore > 0.2) level = 'low_risk_awareness';
+        else level = 'no_risk_clear';
+
+        console.log(`Deception Detection: ${finalScore.toFixed(2)} - ${level}`, allReasons);
+        
+        return {
+            score: finalScore,
+            level: level,
+            reasons: allReasons.slice(0, 3) // Show max 3 reasons
+        };
+    }
+
+    getReasonDescription(type, pattern) {
+        const descriptions = {
+            high_risk: 'High-risk ethical violation pattern detected',
+            medium_risk: 'Medium-risk concerning pattern identified', 
+            manipulative_intent: 'Potential manipulative intent recognized'
+        };
+        return descriptions[type] || 'Suspicious pattern detected';
+    }
+}
+
+// Initialize deception detector
+const deceptionDetector = new AdvancedDeceptionDetector();
+
+// 🛠️ Fix 2: Enhanced Philosophical Response Engine
+class PhilosophicalResponseEngine {
+    constructor() {
+        this.responses = {
+            stoicism: {
+                epictetus: [
+                    "As Epictetus taught: We cannot control external events, but we can control our reactions to them. True freedom comes from mastering our judgments.",
+                    "Epictetus reflected: It's not what happens to you, but how you react that matters. Your character is revealed in adversity.",
+                    "Epictetus advised: First say to yourself what you would be, and then do what you have to do. Let reason guide your actions.",
+                    "Epictetus reminded: Wealth consists not in having great possessions, but in having few wants. Find contentment within.",
+                    "Epictetus observed: Difficulties are things that show what men are. Embrace challenges as opportunities for growth."
+                ],
+                marcus_aurelius: [
+                    "Marcus Aurelius meditated: The happiness of your life depends upon the quality of your thoughts. Guard your mind diligently.",
+                    "Marcus Aurelius observed: Everything we hear is an opinion, not a fact. Everything we see is a perspective, not the truth.",
+                    "Marcus Aurelius reminded: You have power over your mind - not outside events. Realize this, and you will find strength.",
+                    "Marcus Aurelius reflected: When you arise in the morning, think of what a precious privilege it is to be alive - to breathe, to think, to enjoy, to love.",
+                    "Marcus Aurelius taught: The best revenge is to be unlike him who performed the injury. Rise above pettiness."
+                ]
+            },
+            taoism: {
+                laozi: [
+                    "Laozi taught: The journey of a thousand miles begins with a single step. Great accomplishments start with small actions.",
+                    "Laozi said: Knowing others is intelligence; knowing yourself is true wisdom. Self-awareness is the foundation of understanding.",
+                    "Laozi reflected: Nature does not hurry, yet everything is accomplished. Learn the art of effortless action.",
+                    "Laozi observed: When I let go of what I am, I become what I might be. Embrace transformation through release.",
+                    "Laozi taught: The wise man does not lay up his own treasures. The more he gives to others, the more he has for his own."
+                ],
+                zhuangzi: [
+                    "Zhuangzi dreamed: I do not know whether I was then a man dreaming I was a butterfly, or whether I am now a butterfly dreaming I am a man. Reality is fluid.",
+                    "Zhuangzi observed: Happiness is the absence of the striving for happiness. Cease searching and find what is already here.",
+                    "Zhuangzi taught: Use the light, but return to the clarity of seeing. Balance action with contemplation.",
+                    "Zhuangzi reflected: Great wisdom is generous; petty wisdom is contentious. True understanding embraces paradox.",
+                    "Zhuangzi said: Flow with whatever may happen and let your mind be free. Adapt like water to your circumstances."
+                ]
+            },
+            existentialism: {
+                nietzsche: [
+                    "Nietzsche proclaimed: That which does not kill us makes us stronger. Adversity forges character and resilience.",
+                    "Nietzsche declared: He who has a why to live can bear almost any how. Purpose gives meaning to suffering.",
+                    "Nietzsche observed: Without music, life would be a mistake. Find beauty and art in everyday existence.",
+                    "Nietzsche taught: One must still have chaos in oneself to be able to give birth to a dancing star. Embrace creative tension.",
+                    "Nietzsche reflected: The individual has always had to struggle to keep from being overwhelmed by the tribe. Cultivate your uniqueness."
+                ],
+                camus: [
+                    "Camus reflected: In the depth of winter, I finally learned that within me there lay an invincible summer. Find inner resilience.",
+                    "Camus taught: The only way to deal with an unfree world is to become so absolutely free that your very existence is an act of rebellion.",
+                    "Camus observed: Should I kill myself, or have a cup of coffee? The absurdity of existence invites us to choose life.",
+                    "Camus said: Freedom is nothing but a chance to be better. Each moment offers renewal and possibility.",
+                    "Camus reflected: You will never be happy if you continue to search for what happiness consists of. Stop seeking and start living."
+                ]
+            }
+        };
+    }
+
+    generateResponse(question, framework, philosopher) {
+        const frameworkResponses = this.responses[framework];
+        if (!frameworkResponses) return this.getFallbackResponse(question);
+        
+        const philosopherResponses = frameworkResponses[philosopher];
+        if (!philosopherResponses) return this.getFallbackResponse(question);
+        
+        // Select most relevant response based on question content
+        const questionKeywords = this.extractKeywords(question);
+        const scoredResponses = philosopherResponses.map(response => ({
+            response,
+            score: this.calculateRelevanceScore(response, questionKeywords)
+        }));
+        
+        // Select highest scoring response with randomness to avoid repetition
+        scoredResponses.sort((a, b) => b.score - a.score);
+        const topResponses = scoredResponses.slice(0, 3);
+        const selected = topResponses[Math.floor(Math.random() * topResponses.length)];
+        
+        return selected.response;
+    }
+
+    extractKeywords(question) {
+        const stopWords = new Set(['the', 'a', 'an', 'is', 'are', 'what', 'how', 'why', 'when', 'where']);
+        return question.toLowerCase()
+            .split(/\s+/)
+            .filter(word => word.length > 3 && !stopWords.has(word));
+    }
+
+    calculateRelevanceScore(response, keywords) {
+        let score = 0;
+        const responseLower = response.toLowerCase();
+        
+        keywords.forEach(keyword => {
+            if (responseLower.includes(keyword)) {
+                score += 2;
+            }
+        });
+        
+        // Encourage diversity: add bonus for slightly different responses
+        score += Math.random() * 0.5;
+        
+        return score;
+    }
+
+    getFallbackResponse(question) {
+        const fallbacks = [
+            "The ancient wisdom suggests: True understanding comes not from having answers, but from learning to live with questions.",
+            "Philosophical insight reveals: The path to wisdom begins with acknowledging what we do not know.",
+            "As the sages taught: Sometimes the most profound answer is to re-examine the question itself.",
+            "Wisdom whispers: The universe reveals its secrets to those who approach with humble curiosity.",
+            "Through contemplative practice: We discover that every question contains the seed of its own answer."
+        ];
+        return fallbacks[Math.floor(Math.random() * fallbacks.length)];
+    }
+}
+
+const responseEngine = new PhilosophicalResponseEngine();
+
+// 🛠️ Fix 3: Dashboard Stability Manager
+class DashboardManager {
+    constructor() {
+        this.retryCount = 0;
+        this.maxRetries = 3;
+        this.cache = new Map();
+    }
+
+    async loadDataWithStability() {
+        const cacheKey = 'dashboard_data';
+        const now = Date.now();
+        
+        // Check cache
+        if (this.cache.has(cacheKey)) {
+            const { data, timestamp } = this.cache.get(cacheKey);
+            if (now - timestamp < CACHE_DURATION) {
+                console.log('Using cached dashboard data');
+                return data;
+            }
+        }
+
+        try {
+            const data = await this.fetchWithRetry();
+            this.cache.set(cacheKey, { data, timestamp: now });
+            this.retryCount = 0;
+            return data;
+        } catch (error) {
+            console.error('Failed to load dashboard data:', error);
+            // Return cached data (even if expired) as fallback
+            if (this.cache.has(cacheKey)) {
+                console.log('Using expired cache as fallback');
+                return this.cache.get(cacheKey).data;
+            }
+            throw error;
+        }
+    }
+
+    async fetchWithRetry() {
+        for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
+            try {
+                const randomParam = Math.random().toString(36).substring(7);
+                const response = await fetch(`${B()}/api/audit/chain?limit=200&nocache=${randomParam}`);
+                
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                
+                const data = await response.json();
+                return data;
+            } catch (error) {
+                if (attempt === this.maxRetries) throw error;
+                await this.delay(1000 * attempt);
+            }
+        }
+    }
+
+    delay(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+    clearCache() {
+        this.cache.clear();
+    }
+}
+
+const dashboardManager = new DashboardManager();
+
+// 🛠️ Fix 4: Professional Blockchain Logger
+class BlockchainLogger {
+    constructor() {
+        this.formats = {
+            timestamp: (ts) => {
+                if (!ts) return '-';
+                const date = new Date(ts);
+                return date.toLocaleTimeString('en-US', { 
+                    hour12: false,
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit'
+                });
+            },
+            framework: (fw) => {
+                const frameworkMap = {
+                    'stoicism': '🏛️ Stoic',
+                    'existentialism': '🎭 Exist',
+                    'taoism': '☯️ Tao',
+                    'buddhism': '🪷 Buddh',
+                    'ethical_guardian': '🛡️ Ethic'
+                };
+                return frameworkMap[fw] || fw || '-';
+            },
+            hash: (hash) => {
+                if (!hash) return 'pending...';
+                return `${hash.substring(0, 8)}...${hash.substring(hash.length - 6)}`;
+            },
+            risk: (riskLevel) => {
+                const riskMap = {
+                    'high_risk_deception': '🔴 High',
+                    'medium_risk_caution': '🟡 Medium', 
+                    'low_risk_awareness': '🟢 Low',
+                    'no_risk_clear': '⚪ Clear',
+                    'ethical_boundary': '🛡️ Ethical'
+                };
+                return riskMap[riskLevel] || riskLevel || '🟢 Low';
+            }
+        };
+    }
+
+    formatLogEntry(item) {
+        const p = item.payload || {};
+        const detection = deceptionDetector.detect(p.question || "");
+        
+        return {
+            time: this.formats.timestamp(item.ts),
+            framework: this.formats.framework(p.framework || p.philosophical_framework),
+            philosopher: p.philosopher || p.referenced_philosopher || 'Ancient Sage',
+            question: p.question ? this.truncateText(p.question, 35) : '-',
+            answer: p.answer ? this.truncateText(p.answer, 50) : '-',
+            clarity: (p.determinacy || 0).toFixed(2),
+            risk: this.formats.risk(detection.level)
+        };
+    }
+
+    formatBlockchainEntry(item, index, total) {
+        const p = item.payload || {};
+        return {
+            block: `#${String(total - index).padStart(3, '0')}`,
+            question: p.question ? this.truncateText(p.question, 25) : '-',
+            framework: this.formats.framework(p.framework || p.philosophical_framework),
+            hash: this.formats.hash(item.block_hash)
+        };
+    }
+
+    truncateText(text, maxLength) {
+        if (!text) return '';
+        if (text.length <= maxLength) return text;
+        return text.substring(0, maxLength - 3) + '...';
+    }
+}
+
+const blockchainLogger = new BlockchainLogger();
+
+// Core functionality functions
 function calculateWisdomRate(consultations) {
     if (!consultations || consultations.length === 0) return 0;
     
@@ -132,199 +416,119 @@ function calculateWisdomRate(consultations) {
         const p = consult.payload || {};
         const clarity = p.determinacy || 0;
         const deception = p.deception_prob || 0;
-        const riskLevel = p.risk_tags ? p.risk_tags[0] : 'low_risk';
         const answer = (p.answer || "").toLowerCase();
         
-        // 更宽松的智慧判断标准
-        const isWiseAnswer = clarity > 0.4 && 
-                            deception < 0.5 &&
-                            (riskLevel === 'low_risk' || riskLevel === 'medium_risk_caution') &&
-                            answer.length > 20 && // 确保回答有一定长度
-                            !answer.includes('undefined') &&
-                            !answer.includes('error');
-
-        return isWiseAnswer;
+        return clarity > 0.4 && 
+               deception < 0.5 &&
+               answer.length > 20 &&
+               !answer.includes('undefined') &&
+               !answer.includes('error');
     });
     
     const rate = Math.round((wiseConsultations.length / consultations.length) * 100);
-    console.log(`智慧率计算: ${wiseConsultations.length}/${consultations.length} = ${rate}%`);
+    console.log(`Wisdom Rate: ${wiseConsultations.length}/${consultations.length} = ${rate}%`);
     return rate;
 }
 
-// 🛠️ 修复3: 统一风险评级标准 - 解决评级不一致问题
-function standardizeRiskAssessment(question, deceptionProbability, framework) {
-    if (!question) return ['low_risk_wisdom'];
-    
-    const highRiskKeywords = ['cheat', 'deceive', 'defraud', 'scam', 'swindle', 'manipulate', 'exploit', 'trick', 'dupe', 'counterfeit', 'fake', 'forge', 'harm', 'hurt', 'injure', 'violence', 'attack', 'steal', 'rob', 'burglar'];
-    const mediumRiskKeywords = ['hide', 'conceal', 'secret', 'lie', 'deception', 'manipulation'];
-    
-    const questionLower = question.toLowerCase();
-    
-    // 检测高风险词汇
-    const hasHighRiskWords = highRiskKeywords.some(word => 
-        questionLower.includes(word)
-    );
-    
-    const hasMediumRiskWords = mediumRiskKeywords.some(word => 
-        questionLower.includes(word)
-    );
-    
-    if (hasHighRiskWords || deceptionProbability > 0.7) {
-        return ['high_risk_deception'];
-    } else if (hasMediumRiskWords || deceptionProbability > 0.4) {
-        return ['medium_risk_caution'];
-    } else if (framework === 'ethical_guardian') {
-        return ['ethical_boundary'];
-    } else {
-        return ['low_risk_wisdom'];
-    }
-}
-
-// 🛠️ 修复4: 仪表盘数字显示修复 - 解决"十三"显示问题
-function ensureNumberDisplay(value) {
-    if (typeof value === 'string' && /[一二三四五六七八九十百千]/.test(value)) {
-        // 如果是中文数字，转换为阿拉伯数字
-        const chineseNumbers = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10 };
-        if (value === '十三') return '13';
-        if (value === '十二') return '12';
-        if (value === '十一') return '11';
-        if (value === '十') return '10';
-    }
-    return value.toString();
-}
-
-// 显示加载状态
+// Set loading state
 function setLoadingState(loading) {
     isLoading = loading;
     if (loading) {
-        refreshBtn.textContent = "Loading...";
+        refreshBtn.textContent = "🔄 Loading...";
         refreshBtn.disabled = true;
-        // 显示加载指示器
+        askBtn.disabled = true;
+        
         if (!document.getElementById('loadingIndicator')) {
             const loader = document.createElement('div');
             loader.id = 'loadingIndicator';
             loader.innerHTML = `
-                <div style="text-align: center; padding: 20px; color: #888;">
-                    <div>Loading wisdom data...</div>
-                    <small>数据正在积累中</small>
+                <div style="text-align: center; padding: 30px; color: var(--muted);">
+                    <div style="font-size: 1.2em; margin-bottom: 10px;">🔄 Loading Wisdom</div>
+                    <small>Connecting to the philosophical blockchain...</small>
                 </div>
             `;
             logBody.parentNode.insertBefore(loader, logBody);
         }
     } else {
-        refreshBtn.textContent = "Refresh Wisdom Log";
+        refreshBtn.textContent = "🔄 Refresh Wisdom Log";
         refreshBtn.disabled = false;
+        askBtn.disabled = false;
         const loader = document.getElementById('loadingIndicator');
         if (loader) loader.remove();
     }
 }
 
-// 显示错误提示
+// Show error message
 function showError(message, isFatal = false) {
     const errorDiv = document.createElement('div');
     errorDiv.style.cssText = `
-        background: #ffebee;
-        border: 1px solid #f44336;
-        color: #c62828;
-        padding: 12px;
-        border-radius: 4px;
-        margin: 10px 0;
+        background: rgba(244, 67, 54, 0.1);
+        border: 1px solid rgba(244, 67, 54, 0.3);
+        color: #f44336;
+        padding: 16px;
+        border-radius: 12px;
+        margin: 16px 0;
         text-align: center;
+        backdrop-filter: blur(10px);
     `;
     errorDiv.innerHTML = `
-        <strong>加载失败</strong>: ${message}
-        ${isFatal ? '<br><button onclick="location.reload()" style="margin-top: 8px; padding: 4px 12px;">重试</button>' : ''}
+        <strong>🔧 System Notice</strong><br>
+        ${message}
+        ${isFatal ? '<br><button onclick="location.reload()" style="margin-top: 12px; padding: 8px 16px; background: var(--gradient-tech); border: none; border-radius: 8px; color: white; cursor: pointer;">Retry</button>' : ''}
     `;
     
-    if (isFatal) {
-        document.body.insertBefore(errorDiv, document.querySelector('main'));
-    } else {
-        logBody.parentNode.insertBefore(errorDiv, logBody);
-    }
+    const target = isFatal ? document.querySelector('main') : logBody.parentNode;
+    target.insertBefore(errorDiv, logBody);
     
-    setTimeout(() => errorDiv.remove(), 5000);
+    setTimeout(() => {
+        errorDiv.style.opacity = '0';
+        errorDiv.style.transition = 'opacity 0.5s ease';
+        setTimeout(() => errorDiv.remove(), 500);
+    }, 5000);
 }
 
-// 初始化默认数据
+// Initialize default data
 function initializeDefaultData() {
-    // 设置默认值
     reqCount.textContent = "0";
     truthRate.textContent = "—";
     avgDec.textContent = "—";
     avgDet.textContent = "—";
     
-    // 显示初始提示
     logBody.innerHTML = `
         <tr>
-            <td colspan="7" style="text-align: center; color: #888; padding: 40px;">
-                <div>📊 数据正在积累中</div>
-                <small>向神谕提问来生成第一条记录</small>
+            <td colspan="7" style="text-align: center; color: var(--muted); padding: 40px;">
+                <div style="font-size: 1.2em; margin-bottom: 8px;">📊 Awakening the Oracle</div>
+                <small>Ask your first question to begin the philosophical journey</small>
             </td>
         </tr>
     `;
     
-    // 初始化区块链表格
     if (blockchainBody) {
         blockchainBody.innerHTML = `
             <tr>
-                <td colspan="4" style="text-align: center; color: #888; padding: 20px;">
-                    <div>⛓️ 区块链活动将在此显示</div>
-                    <small>每次咨询都会生成新的区块</small>
+                <td colspan="4" style="text-align: center; color: var(--muted); padding: 30px;">
+                    <div style="font-size: 1.1em; margin-bottom: 8px;">⛓️ Blockchain Dormant</div>
+                    <small>Consult the oracle to generate the first block</small>
                 </td>
             </tr>
         `;
     }
 }
 
-// 强化伦理检测函数
-function isUnethicalQuestion(question) {
-    const unethicalPatterns = [
-        /counterfeit|fake|forge|falsify/i,
-        /cheat|deceive|defraud|scam|swindle/i,
-        /manipulate|exploit|trick|dupe/i,
-        /illegal|unlawful|criminal|felony/i,
-        /steal|thief|rob|burglar/i,
-        /harm|hurt|injure|violence|attack/i,
-        /perfect.*fraud|fraud.*strategy/i,
-        /authentic.*counterfeit|counterfeit.*method/i,
-        /how to.*cheat|cheat.*system/i,
-        /how to.*manipulate|manipulate.*technique/i
-    ];
-    
-    return unethicalPatterns.some(pattern => pattern.test(question));
-}
-
-// 伦理警告显示函数
-function showEthicalWarning(question) {
-    answerText.textContent = "For ethical reasons, I cannot provide guidance on topics involving deception, counterfeiting, illegal activities, or harm. Philosophical wisdom should be used for personal growth and understanding, not for manipulative or harmful purposes. Please consider rephrasing your question to focus on constructive self-improvement.";
-    
-    kind.textContent = "ethical_protection";
-    det.textContent = "1.00";
-    dec.textContent = "0.00";
-    risk.textContent = "ethical_rejection";
-    framework.textContent = "System Ethics";
-    philosopher.textContent = "AI Guardian";
-    depth.textContent = "100%";
-    blockHash.textContent = "eth_protection_" + Date.now();
-    frameworkText.textContent = "System Ethics";
-    philosopherText.textContent = "AI Guardian";
-    
-    frameworkBadge.className = "framework-badge ethical";
-    answerBox.classList.remove("hide");
-}
-
+// Main consultation function
 askBtn.addEventListener("click", async () => {
     const question = (q.value || "").trim();
     const sessionId = (sid.value || "").trim();
     
     if (!question) {
-        alert("Please enter a question.");
+        showNotification('Please enter a philosophical question', 'warning');
         return;
     }
 
-    // 强化伦理检测
-    if (isUnethicalQuestion(question)) {
-        showEthicalWarning(question);
+    // Use enhanced deception detection
+    const deceptionAnalysis = deceptionDetector.detect(question);
+    if (deceptionAnalysis.level === 'high_risk_deception') {
+        showEthicalWarning(question, deceptionAnalysis);
         return;
     }
 
@@ -333,7 +537,11 @@ askBtn.addEventListener("click", async () => {
         const res = await fetch(`${B()}/api/oracle/consult`, {
             method: "POST",
             headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ question, sessionId })
+            body: JSON.stringify({ 
+                question, 
+                sessionId,
+                deception_analysis: deceptionAnalysis // Send analysis results
+            })
         });
         
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -341,62 +549,89 @@ askBtn.addEventListener("click", async () => {
         const data = await res.json();
         if (data.error) throw new Error(data.error);
 
-        // 🛠️ 修复5: 应用统一风险评级
-        const standardizedRisk = standardizeRiskAssessment(
+        // Use enhanced response engine
+        const enhancedAnswer = responseEngine.generateResponse(
             question, 
-            data.deception_prob || 0, 
-            data.philosophical_framework
+            data.philosophical_framework, 
+            data.referenced_philosopher
         );
-        
-        // 更新显示字段
-        answerText.textContent = data.answer;
-        kind.textContent = data.kind || "wisdom";
-        det.textContent = data.determinacy.toFixed(2);
-        dec.textContent = data.deception_prob.toFixed(2);
-        risk.textContent = standardizedRisk.join(", "); // 使用统一的风险评级
-        framework.textContent = data.philosophical_framework || "-";
-        philosopher.textContent = data.referenced_philosopher || "-";
-        frameworkText.textContent = data.philosophical_framework || "-";
-        philosopherText.textContent = data.referenced_philosopher || "-";
-        
-        if (data.depth_analysis && data.depth_analysis.depth_score !== undefined) {
-            depth.textContent = (data.depth_analysis.depth_score * 100).toFixed(0) + '%';
-        } else {
-            depth.textContent = "-";
-        }
-        
-        blockHash.textContent = data.block_hash ? data.block_hash.substring(0, 16) + '...' : "-";
-        
-        if (data.philosophical_framework) {
-            const frameworkClass = data.philosophical_framework.toLowerCase();
-            frameworkBadge.className = `framework-badge ${frameworkClass}`;
-        }
-        
-        answerBox.classList.remove("hide");
+
+        // Update display
+        updateAnswerDisplay(data, enhancedAnswer, deceptionAnalysis);
         await loadLogs();
+        showNotification('Wisdom received from the philosophical oracle', 'success');
         
     } catch (e) {
-        console.error("Ask oracle failed:", e);
-        showError("Failed to get response from oracle: " + e.message);
+        console.error("Consultation failed:", e);
+        showError("Oracle connection failed: " + e.message);
     } finally {
         setLoadingState(false);
     }
 });
 
+function updateAnswerDisplay(data, answer, deceptionAnalysis) {
+    answerText.textContent = answer;
+    kind.textContent = data.kind || "wisdom";
+    det.textContent = data.determinacy.toFixed(2);
+    dec.textContent = data.deception_prob.toFixed(2);
+    risk.textContent = deceptionAnalysis.level.replace(/_/g, ' ');
+    framework.textContent = data.philosophical_framework || "-";
+    philosopher.textContent = data.referenced_philosopher || "-";
+    frameworkText.textContent = data.philosophical_framework || "-";
+    philosopherText.textContent = data.referenced_philosopher || "-";
+    
+    if (data.depth_analysis?.depth_score !== undefined) {
+        depth.textContent = (data.depth_analysis.depth_score * 100).toFixed(0) + '%';
+    } else {
+        depth.textContent = "-";
+    }
+    
+    blockHash.textContent = data.block_hash ? 
+        `${data.block_hash.substring(0, 12)}...${data.block_hash.substring(data.block_hash.length - 8)}` : "-";
+    
+    if (data.philosophical_framework) {
+        frameworkBadge.className = `framework-badge ${data.philosophical_framework.toLowerCase()}`;
+    }
+    
+    answerBox.classList.remove("hide");
+}
+
+function showEthicalWarning(question, analysis) {
+    const ethicalResponses = [
+        "The path of wisdom cannot accommodate deceptive intentions. True understanding comes from authentic inquiry.",
+        "Philosophical guidance serves enlightenment, not manipulation. Consider reframing your question with honest intent.",
+        "The oracle's purpose is wisdom, not cunning. Your question touches on boundaries of ethical consultation.",
+        "Ancient wisdom reminds us: Truth cannot be weaponized. Seek understanding through virtuous means."
+    ];
+    
+    answerText.textContent = ethicalResponses[Math.floor(Math.random() * ethicalResponses.length)];
+    kind.textContent = "ethical_guidance";
+    det.textContent = "1.00";
+    dec.textContent = analysis.score.toFixed(2);
+    risk.textContent = analysis.level.replace(/_/g, ' ');
+    framework.textContent = "Ethical Guardian";
+    philosopher.textContent = "System Wisdom";
+    depth.textContent = "100%";
+    blockHash.textContent = "eth_" + Date.now().toString(36);
+    frameworkText.textContent = "Ethical Guardian";
+    philosopherText.textContent = "System Wisdom";
+    
+    frameworkBadge.className = "framework-badge ethical_guardian";
+    answerBox.classList.remove("hide");
+    
+    showNotification('Ethical boundaries respected in your consultation', 'info');
+}
+
+// Main data loading function
 async function loadLogs() {
     if (isLoading) return;
     
     try {
         setLoadingState(true);
-        const randomParam = Math.random().toString(36).substring(7);
-        const res = await fetch(`${B()}/api/audit/chain?limit=200&nocache=${randomParam}`);
-        
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        
-        const data = await res.json();
+        const data = await dashboardManager.loadDataWithStability();
         const chain = data.chain || [];
         
-        // 保存所有有效记录
+        // Process valid records
         allValidRecords = chain.filter(item => {
             if (!item || typeof item !== 'object') return false;
             const p = item.payload || {};
@@ -410,8 +645,7 @@ async function loadLogs() {
                    p.determinacy !== undefined;
         });
         
-        console.log(`总有效记录: ${allValidRecords.length} 条`);
-        
+        console.log(`Valid records: ${allValidRecords.length}`);
         currentValidChain = allValidRecords;
         currentPage = 1;
         
@@ -425,13 +659,13 @@ async function loadLogs() {
         
     } catch (e) {
         console.error("Load logs failed:", e);
-        showError("Failed to load dashboard data: " + e.message, true);
+        showError("Failed to load wisdom data: " + e.message, true);
     } finally {
         setLoadingState(false);
     }
 }
 
-// 显示当前页记录
+// Display current page records
 function displayCurrentPage() {
     if (!logBody) return;
     
@@ -444,9 +678,9 @@ function displayCurrentPage() {
     if (pageRecords.length === 0) {
         logBody.innerHTML = `
             <tr>
-                <td colspan="7" style="text-align: center; color: #888; padding: 40px;">
-                    <div>📊 暂无数据</div>
-                    <small>当前页面没有记录</small>
+                <td colspan="7" style="text-align: center; color: var(--muted); padding: 40px;">
+                    <div>📊 No records on this page</div>
+                    <small>Navigate to other pages or refresh data</small>
                 </td>
             </tr>
         `;
@@ -454,24 +688,16 @@ function displayCurrentPage() {
     }
     
     pageRecords.forEach(item => {
-        const p = item.payload || {};
-        
-        // 🛠️ 修复6: 应用统一风险评级到历史记录
-        const standardizedRisk = standardizeRiskAssessment(
-            p.question || "",
-            p.deception_prob || 0,
-            p.framework || p.philosophical_framework
-        );
-        
+        const formatted = blockchainLogger.formatLogEntry(item);
         const tr = document.createElement('tr');
         tr.innerHTML = `
-            <td>${item.ts ? new Date(item.ts).toLocaleTimeString() : '-'}</td>
-            <td>${p.framework || p.philosophical_framework || "-"}</td>
-            <td>${p.philosopher || p.referenced_philosopher || "-"}</td>
-            <td title="${escapeHtml(p.question || "")}">${escapeHtml(truncateText(p.question || "", 30))}</td>
-            <td title="${escapeHtml(p.answer || "")}">${escapeHtml(truncateText(p.answer || "", 60))}</td>
-            <td>${(p.determinacy || 0).toFixed(2)}</td>
-            <td class="risk-${standardizedRisk[0].replace('_', '-')}">${standardizedRisk.join(", ")}</td>
+            <td>${formatted.time}</td>
+            <td>${formatted.framework}</td>
+            <td>${formatted.philosopher}</td>
+            <td title="${escapeHtml(item.payload?.question || "")}">${escapeHtml(formatted.question)}</td>
+            <td title="${escapeHtml(item.payload?.answer || "")}">${escapeHtml(formatted.answer)}</td>
+            <td>${formatted.clarity}</td>
+            <td class="risk-${formatted.risk.toLowerCase().replace(' ', '-')}">${formatted.risk}</td>
         `;
         logBody.appendChild(tr);
     });
@@ -479,18 +705,17 @@ function displayCurrentPage() {
     addPaginationControls();
 }
 
-// 🛠️ 修复7: 改进分页控件 - 解决分页显示问题
+// Pagination controls
 function addPaginationControls() {
     const existingPagination = document.getElementById('paginationControls');
     if (existingPagination) existingPagination.remove();
     
     const totalPages = Math.ceil(allValidRecords.length / recordsPerPage);
     
-    // 如果只有一页，不显示分页控件
     if (totalPages <= 1) {
         const pageInfo = document.createElement('div');
-        pageInfo.style.cssText = 'text-align: center; color: #888; margin-top: 10px;';
-        pageInfo.textContent = `Page 1 of 1 (${allValidRecords.length} total records)`;
+        pageInfo.style.cssText = 'text-align: center; color: var(--muted); margin: 20px 0; font-size: 14px;';
+        pageInfo.textContent = `Page 1 of 1 (${allValidRecords.length} records)`;
         
         const dashboardSection = document.getElementById('dashboard');
         const tableContainer = dashboardSection.querySelector('.table-container');
@@ -504,14 +729,14 @@ function addPaginationControls() {
         display: flex;
         justify-content: center;
         align-items: center;
-        margin-top: 20px;
-        gap: 10px;
+        margin: 24px 0;
+        gap: 12px;
         flex-wrap: wrap;
     `;
     
     if (currentPage > 1) {
         const prevBtn = document.createElement('button');
-        prevBtn.textContent = '← Previous';
+        prevBtn.innerHTML = '← Previous';
         prevBtn.className = 'secondary-btn';
         prevBtn.onclick = () => {
             currentPage--;
@@ -521,13 +746,13 @@ function addPaginationControls() {
     }
     
     const pageInfo = document.createElement('span');
-    pageInfo.textContent = `Page ${currentPage} of ${totalPages} (${allValidRecords.length} total records)`;
-    pageInfo.style.cssText = 'color: #888; font-size: 14px; padding: 0 10px;';
+    pageInfo.textContent = `Page ${currentPage} of ${totalPages} (${allValidRecords.length} records)`;
+    pageInfo.style.cssText = 'color: var(--muted); font-size: 14px; padding: 0 16px;';
     paginationDiv.appendChild(pageInfo);
     
     if (currentPage < totalPages) {
         const nextBtn = document.createElement('button');
-        nextBtn.textContent = 'Next →';
+        nextBtn.innerHTML = 'Next →';
         nextBtn.className = 'secondary-btn';
         nextBtn.onclick = () => {
             currentPage++;
@@ -541,7 +766,7 @@ function addPaginationControls() {
     tableContainer.parentNode.insertBefore(paginationDiv, tableContainer.nextSibling);
 }
 
-// 🛠️ 修复8: 更新统计信息 - 使用新的智慧率计算和数字显示修复
+// Update statistics
 function updateStatistics(validChain) {
     let sumDec = 0, sumDet = 0;
     
@@ -553,29 +778,17 @@ function updateStatistics(validChain) {
 
     const n = Math.max(1, validChain.length);
     
-    // 🛠️ 修复: 确保显示数字而不是中文
-    reqCount.textContent = ensureNumberDisplay(validChain.length);
-    
-    // 使用新的智慧率计算
+    reqCount.textContent = validChain.length.toString();
     const wisdomRate = calculateWisdomRate(validChain);
     truthRate.textContent = wisdomRate > 0 ? wisdomRate + "%" : "0%";
-    
     avgDec.textContent = (sumDec / n).toFixed(1);
     avgDet.textContent = (sumDet / n).toFixed(1);
-    
-    console.log('统计信息更新:', {
-        总咨询次数: validChain.length,
-        智慧率: wisdomRate + '%',
-        平均欺骗概率: (sumDec / n).toFixed(1),
-        平均清晰度: (sumDet / n).toFixed(1)
-    });
 }
 
-// 更新区块链活动表格
+// Update blockchain table
 function updateBlockchainTable(validChain) {
     if (!blockchainBody) return;
     
-    // 修复区块链数据过滤
     const blockchainData = validChain.filter(item => {
         const p = item.payload || {};
         return p.question && p.answer && item.ts;
@@ -586,118 +799,31 @@ function updateBlockchainTable(validChain) {
     if (blockchainData.length === 0) {
         blockchainBody.innerHTML = `
             <tr>
-                <td colspan="4" style="text-align: center; color: #888; padding: 20px;">
-                    <div>⛓️ 等待区块链活动</div>
-                    <small>咨询神谕来生成区块</small>
+                <td colspan="4" style="text-align: center; color: var(--muted); padding: 30px;">
+                    <div style="font-size: 1.1em; margin-bottom: 8px;">⛓️ No Blockchain Activity</div>
+                    <small>Consult the oracle to generate blocks</small>
                 </td>
             </tr>
         `;
         return;
     }
     
-    // 显示最新的4条记录
-    const recentEntries = blockchainData.slice(-4).reverse();
+    // Show latest records
+    const recentEntries = blockchainData.slice(-6).reverse();
     recentEntries.forEach((entry, index) => {
-        const p = entry.payload || {};
+        const formatted = blockchainLogger.formatBlockchainEntry(entry, index, blockchainData.length);
         const row = document.createElement('tr');
         row.innerHTML = `
-            <td>#${String(blockchainData.length - index).padStart(3, '0')}</td>
-            <td title="${p.question || ''}">${truncateText(p.question || '', 25)}</td>
-            <td>${p.framework || p.philosophical_framework || 'unknown'}</td>
-            <td class="hash">${entry.block_hash || generateRandomHash()}</td>
+            <td style="font-family: 'Courier New', monospace; font-weight: bold;">${formatted.block}</td>
+            <td title="${escapeHtml(entry.payload?.question || '')}">${escapeHtml(formatted.question)}</td>
+            <td>${formatted.framework}</td>
+            <td class="hash" style="font-family: 'Courier New', monospace; font-size: 12px;">${formatted.hash}</td>
         `;
         blockchainBody.appendChild(row);
     });
 }
 
-function truncateText(text, maxLength) {
-    if (!text) return '';
-    return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-}
-
-function generateRandomHash() {
-    return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-}
-
-// 强力清理函数
-async function hardReset() {
-    if (confirm('⚠️ 强力清理！这将删除所有记录并重置系统。确定继续吗？')) {
-        try {
-            localStorage.clear();
-            sessionStorage.clear();
-            currentValidChain = [];
-            allValidRecords = [];
-            currentPage = 1;
-            await loadLogs();
-            setTimeout(() => window.location.reload(true), 1000);
-            alert('系统已重置！');
-        } catch (e) {
-            alert('重置失败: ' + e.message);
-        }
-    }
-}
-
-// 🛠️ 修复9: 增强诊断函数
-async function diagnoseData() {
-    try {
-        const res = await fetch(`${B()}/api/audit/chain?limit=100`);
-        const data = await res.json();
-        console.log('=== 数据诊断 ===');
-        console.log('原始记录数量:', data.chain.length);
-        
-        const validRecords = data.chain.filter(item => {
-            const p = item.payload || {};
-            return p.question && p.answer;
-        });
-        
-        console.log('有效记录数量:', validRecords.length);
-        console.log('智慧率计算结果:', calculateWisdomRate(validRecords) + '%');
-        console.log('记录样本:', validRecords.slice(0, 2));
-        
-        // 显示诊断结果
-        alert(`诊断完成:\n- 总记录: ${data.chain.length}\n- 有效记录: ${validRecords.length}\n- 智慧率: ${calculateWisdomRate(validRecords)}%`);
-        
-    } catch (e) {
-        console.error('诊断失败:', e);
-        alert('诊断失败: ' + e.message);
-    }
-}
-
-// 暴露工具函数
-window.hardReset = hardReset;
-window.diagnoseData = diagnoseData;
-window.getCurrentData = () => currentValidChain;
-window.calculateWisdomRate = calculateWisdomRate; // 暴露用于调试
-
-// 初始化
-document.addEventListener('DOMContentLoaded', function() {
-    // 平滑滚动
-    const navLinks = document.querySelectorAll('.nav-link');
-    navLinks.forEach(link => {
-        link.addEventListener('click', function(e) {
-            e.preventDefault();
-            const targetId = this.getAttribute('href');
-            const targetElement = document.querySelector(targetId);
-            if (targetElement) {
-                targetElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        });
-    });
-    
-    // 路由监听
-    window.addEventListener('hashchange', () => {
-        if (window.location.hash === '#dashboard') {
-            loadLogs();
-        }
-    });
-    
-    // 初始化数据
-    initializeDefaultData();
-    loadLogs();
-});
-
-refreshBtn.addEventListener("click", loadLogs);
-
+// Utility functions
 function escapeHtml(s) {
     if (!s) return '';
     return s.replace(/[&<>"']/g, c => ({
@@ -705,4 +831,80 @@ function escapeHtml(s) {
     }[c]));
 }
 
-console.log('Oracle Ethics M1 Frontend - 最终修复版已加载');
+function showNotification(message, type = 'info') {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+    notification.textContent = message;
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+        notification.style.animation = 'slideOut 0.3s ease';
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+// Diagnostic and utility functions
+async function diagnoseSystem() {
+    try {
+        const data = await dashboardManager.loadDataWithStability();
+        const validRecords = data.chain.filter(item => {
+            const p = item.payload || {};
+            return p.question && p.answer;
+        });
+        
+        const stats = {
+            totalRecords: data.chain.length,
+            validRecords: validRecords.length,
+            wisdomRate: calculateWisdomRate(validRecords),
+            cacheStatus: dashboardManager.cache.size > 0 ? 'Active' : 'Empty'
+        };
+        
+        console.log('System Diagnosis:', stats);
+        showNotification(`System OK: ${stats.validRecords} valid records, ${stats.wisdomRate}% wisdom rate`, 'success');
+        
+        return stats;
+    } catch (error) {
+        console.error('Diagnosis failed:', error);
+        showNotification('System diagnosis failed', 'error');
+    }
+}
+
+function hardReset() {
+    if (confirm('⚠️ Reset all system data and cache?')) {
+        dashboardManager.clearCache();
+        localStorage.clear();
+        sessionStorage.clear();
+        currentValidChain = [];
+        allValidRecords = [];
+        currentPage = 1;
+        initializeDefaultData();
+        showNotification('System reset completed', 'info');
+    }
+}
+
+// Expose global functions
+window.diagnoseSystem = diagnoseSystem;
+window.hardReset = hardReset;
+window.getSystemStats = () => ({
+    records: allValidRecords.length,
+    wisdomRate: calculateWisdomRate(allValidRecords),
+    page: currentPage
+});
+
+// Initialize
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize data
+    initializeDefaultData();
+    loadLogs();
+    
+    // Periodic data refresh (every 2 minutes)
+    setInterval(() => {
+        if (document.visibilityState === 'visible') {
+            loadLogs();
+        }
+    }, 120000);
+    
+    console.log('Oracle Ethics M1 - Ultimate Edition Loaded');
+});
+
+refreshBtn.addEventListener("click", loadLogs);

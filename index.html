@@ -2,15 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+  <meta name="theme-color" content="#0a0b10"/>
+  <meta name="description" content="Oracle Ethics M1 - Philosophical AI with advanced deception detection and blockchain transparency"/>
   <title>Oracle Ethics M1 - Philosophical AI</title>
-  <link rel="stylesheet" href="./styles.css"/>
+  <link rel="stylesheet" href="./style.css"/>
   <script>
-    // Set your backend URL here (Render)
+    // Backend configuration and performance monitoring
     window.BACKEND_URL = "https://oracle-philosophy-backend.onrender.com";
+    window.APP_VERSION = "2.0.0";
+    
+    // Performance monitoring
+    window.addEventListener('load', function() {
+      setTimeout(() => {
+        const loadTime = performance.timing.domContentLoadedEventEnd - performance.timing.navigationStart;
+        console.log(`Oracle M1 loaded in ${loadTime}ms`);
+      }, 0);
+    });
   </script>
   <style>
-    /* 保留所有通知样式 */
+    /* Enhanced notification system */
     @keyframes slideIn {
       from { transform: translateX(100%); opacity: 0; }
       to { transform: translateX(0); opacity: 1; }
@@ -27,22 +38,54 @@
       right: 20px;
       color: white;
       padding: 12px 20px;
-      border-radius: 4px;
-      z-index: 1000;
+      border-radius: 8px;
+      z-index: 10000;
       animation: slideIn 0.3s ease;
       box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255,255,255,0.1);
+      max-width: 320px;
     }
-    .notification.success { background: #4CAF50; }
-    .notification.info { background: #2196F3; }
-    .notification.warning { background: #FF9800; }
-    .notification.error { background: #F44336; }
-    
-    .risk-high-risk { color: #f44336; font-weight: bold; }
-    .risk-medium-risk { color: #ff9800; font-weight: bold; }
-    .risk-low-risk { color: #4caf50; }
-    .risk-ethical-rejection { color: #9c27b0; font-weight: bold; }
+    .notification.success { background: rgba(76, 175, 80, 0.9); }
+    .notification.info { background: rgba(33, 150, 243, 0.9); }
+    .notification.warning { background: rgba(255, 152, 0, 0.9); }
+    .notification.error { background: rgba(244, 67, 54, 0.9); }
 
-    /* 下载头部样式 */
+    /* Enhanced risk styling */
+    .risk-high-risk-deception { 
+      color: #ff4444; 
+      font-weight: bold;
+      background: rgba(255, 68, 68, 0.1);
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 68, 68, 0.3);
+    }
+    .risk-medium-risk-caution { 
+      color: #ffaa00; 
+      font-weight: bold;
+      background: rgba(255, 170, 0, 0.1);
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 170, 0, 0.3);
+    }
+    .risk-low-risk-awareness { 
+      color: #00c851; 
+      font-weight: bold;
+      background: rgba(0, 200, 81, 0.1);
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(0, 200, 81, 0.3);
+    }
+    .risk-ethical-boundary { 
+      color: #aa66cc; 
+      font-weight: bold;
+      background: rgba(170, 102, 204, 0.1);
+      padding: 4px 8px;
+      border-radius: 6px;
+      border: 1px solid rgba(170, 102, 204, 0.3);
+    }
+
+    /* Download header styling */
     .download-header {
       text-align: center;
       margin: 30px 0;
@@ -62,12 +105,13 @@
 
     .download-btn {
       padding: 12px 24px;
-      border-radius: 6px;
+      border-radius: 8px;
       text-decoration: none;
       font-weight: 600;
       transition: all 0.3s ease;
       border: none;
       cursor: pointer;
+      font-size: 14px;
     }
 
     .primary-download {
@@ -86,7 +130,7 @@
       box-shadow: 0 5px 15px rgba(138, 43, 226, 0.4);
     }
 
-    /* 目录导航样式 */
+    /* Table of contents navigation */
     .docs-toc {
       background: rgba(30, 30, 46, 0.7);
       border-radius: 8px;
@@ -123,7 +167,7 @@
       color: #8a2be2;
     }
 
-    /* 响应式优化 */
+    /* Mobile optimization */
     @media (max-width: 768px) {
       .download-buttons {
         flex-direction: column;
@@ -138,6 +182,32 @@
       
       .toc-links {
         grid-template-columns: 1fr;
+      }
+      
+      .notification {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+      }
+    }
+
+    /* Loading states */
+    .loading-pulse {
+      animation: pulse 1.5s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0% { opacity: 0.6; }
+      50% { opacity: 1; }
+      100% { opacity: 0.6; }
+    }
+
+    /* Enhanced mobile touch targets */
+    @media (max-width: 768px) {
+      button, .primary-btn, .secondary-btn, .download-card, .nav-link {
+        min-height: 44px;
+        min-width: 44px;
+        touch-action: manipulation;
       }
     }
   </style>
@@ -290,7 +360,7 @@
       </aside>
 
       <div class="docs-content">
-        <!-- 下载头部 -->
+        <!-- Download header -->
         <div class="download-header">
           <h3>🚀 Start Exploring</h3>
           <p>Download our complete documentation to understand the philosophical foundations and technical implementation.</p>
@@ -310,7 +380,7 @@
           </div>
         </div>
 
-        <!-- 目录导航 -->
+        <!-- Table of contents -->
         <div class="docs-toc">
           <h4>📑 Quick Navigation</h4>
           <div class="toc-links">
@@ -341,9 +411,9 @@
         </div>
 
         <div class="content-section">
-          <h3>Deception Detection System</h3>
+          <h3>Advanced Deception Detection</h3>
           <p>
-            Advanced algorithms detect manipulative language, absolutist claims, and high-risk domains. 
+            Multi-layer algorithms detect manipulative language, deceptive intent, and high-risk domains. 
             The system maintains ethical boundaries while providing profound insights.
           </p>
         </div>
@@ -375,7 +445,7 @@
           </div>
         </div>
 
-        <!-- 日志示例部分 -->
+        <!-- Log examples section -->
         <div class="content-section" id="sample-logs">
           <h3>📋 Log Examples</h3>
           <p>Below are sample interactions demonstrating how the oracle processes different types of questions:</p>
@@ -411,7 +481,7 @@
               </tbody>
             </table>
           </div>
-          <p><small>以上为示例数据，实际数据将在咨询后显示 | Above are sample data, actual data will appear after consultations</small></p>
+          <p><small>Above are sample data, actual data will appear after consultations</small></p>
         </div>
 
         <div class="content-section" id="downloads">
@@ -461,9 +531,9 @@
   <span>"After the blackout, the true light appears." - A space for collective wisdom</span>
 </footer>
 
-<script src="./main.js"></script>
+<script src="./script.js"></script>
 <script>
-// 只保留不冲突的辅助功能
+// Enhanced notification system
 function showNotification(message, type = 'info') {
   const notification = document.createElement('div');
   notification.className = `notification ${type}`;
@@ -482,8 +552,30 @@ function showComingSoon() {
   showNotification('API documentation coming soon!', 'info');
 }
 
-// 平滑滚动导航
+// Enhanced mobile optimization
+function optimizeMobileExperience() {
+  if (window.innerWidth <= 768) {
+    // Add touch-friendly classes
+    document.body.classList.add('mobile-optimized');
+    
+    // Prevent zoom on input focus
+    const inputs = document.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+      input.addEventListener('focus', () => {
+        document.body.style.zoom = "100%";
+      });
+    });
+  }
+}
+
+// Initialize mobile optimization
 document.addEventListener('DOMContentLoaded', function() {
+  optimizeMobileExperience();
+  
+  // Re-optimize on resize
+  window.addEventListener('resize', optimizeMobileExperience);
+  
+  // Enhanced smooth scrolling for navigation
   const navLinks = document.querySelectorAll('.nav-link, .toc-link');
   navLinks.forEach(link => {
     link.addEventListener('click', function(e) {
@@ -495,39 +587,14 @@ document.addEventListener('DOMContentLoaded', function() {
           behavior: 'smooth',
           block: 'start'
         });
+        
+        // Update URL without page jump
+        history.pushState(null, null, targetId);
       }
     });
   });
-});
-
-// 伦理问题检测（不冲突的版本）
-function isUnethicalQuestion(question) {
-  const unethicalPatterns = [
-    /deceive|deception|fraud|scam|cheat|manipulate|trick|fake|forge/i,
-    /harm|hurt|violence|attack|destroy|kill|injure/i,
-    /illegal|unlawful|crime|criminal|hack|steal|rob|theft/i,
-    /perfect.*fraud|fraud.*strategy|manipulate.*technique/i,
-    /hide.*justified|justified.*hide|conceal.*reasonable/i,
-    /counterfeit.*method|fake.*method|forgery.*technique/i
-  ];
   
-  return unethicalPatterns.some(pattern => pattern.test(question));
-}
-
-// 增强的提问验证（不覆盖main.js的功能）
-document.addEventListener('DOMContentLoaded', function() {
-  const askBtn = document.getElementById('askBtn');
-  const questionInput = document.getElementById('q');
-  
-  // 只是添加验证，不覆盖现有功能
-  questionInput.addEventListener('input', function() {
-    const question = this.value.trim();
-    if (isUnethicalQuestion(question)) {
-      this.style.borderColor = '#ff6b6b';
-    } else {
-      this.style.borderColor = '';
-    }
-  });
+  console.log('Oracle Ethics M1 Frontend Enhanced Edition Loaded');
 });
 </script>
 </body>
