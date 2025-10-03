@@ -1,4 +1,4 @@
-// main.js — Oracle Ethics M1 (Data Consistency Fixed Version)
+// main.js — Oracle Ethics M1 (Ultimate Fixed Version)
 const B = () => window.BACKEND_URL || "https://oracle-philosophy-backend.onrender.com";
 
 const $ = (id) => document.getElementById(id);
@@ -30,7 +30,7 @@ const blockchainBody = $("blockchainBody");
 const paginationContainer = $("paginationContainer");
 const paginationInfo = $("paginationInfo");
 
-// Global state management - 修复数据一致性
+// Global state management
 let currentValidChain = [];
 let currentPage = 1;
 const recordsPerPage = 10;
@@ -38,35 +38,148 @@ let allValidRecords = [];
 let isLoading = false;
 let dataCache = null;
 let lastLoadTime = 0;
-const CACHE_DURATION = 30000; // 30 seconds cache
+const CACHE_DURATION = 30000;
 
-// 🛠️ Fix 1: Multi-layer Deception Detection Model
-class AdvancedDeceptionDetector {
+// 🎯 方案1: 前端数据一致性层
+class DataConsistencyManager {
+    constructor() {
+        this.localBackup = this.loadLocalBackup();
+        this.lastSyncTime = null;
+    }
+    
+    loadLocalBackup() {
+        try {
+            return JSON.parse(localStorage.getItem('philosophy_backup') || '[]');
+        } catch (e) {
+            return [];
+        }
+    }
+    
+    saveLocalBackup() {
+        try {
+            localStorage.setItem('philosophy_backup', JSON.stringify(this.localBackup));
+        } catch (e) {
+            console.warn('Failed to save local backup:', e);
+        }
+    }
+    
+    async getConsistentData() {
+        try {
+            const backendData = await this.fetchBackendData();
+            const mergedData = this.mergeWithLocalBackup(backendData);
+            return this.validateAndCleanData(mergedData);
+        } catch (error) {
+            console.warn('Using local backup due to backend error:', error);
+            return this.getLocalBackupData();
+        }
+    }
+    
+    async fetchBackendData() {
+        const randomParam = Math.random().toString(36).substring(7);
+        const response = await fetch(`${B()}/api/audit/chain?limit=500&nocache=${randomParam}`);
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        return response.json();
+    }
+    
+    mergeWithLocalBackup(backendData) {
+        const backendChain = backendData.chain || [];
+        const localChain = this.localBackup;
+        
+        // 创建哈希映射以避免重复
+        const hashMap = new Map();
+        
+        // 优先使用后端数据
+        backendChain.forEach(item => {
+            if (item.block_hash) hashMap.set(item.block_hash, item);
+        });
+        
+        // 添加本地备份中不存在的记录
+        localChain.forEach(item => {
+            if (item.block_hash && !hashMap.has(item.block_hash)) {
+                hashMap.set(item.block_hash, { ...item, fromLocalBackup: true });
+            }
+        });
+        
+        return Array.from(hashMap.values());
+    }
+    
+    validateAndCleanData(data) {
+        return data.filter(item => {
+            if (!item || typeof item !== 'object') return false;
+            const p = item.payload || {};
+            const question = (p.question || "").trim();
+            const answer = (p.answer || "").trim();
+            
+            return question.length > 0 && 
+                   answer.length > 0 &&
+                   !question.toLowerCase().includes("undefined") &&
+                   !answer.toLowerCase().includes("undefined") &&
+                   !question.toLowerCase().includes("test");
+        });
+    }
+    
+    getLocalBackupData() {
+        return this.localBackup.filter(item => {
+            const p = item.payload || {};
+            return p.question && p.answer;
+        });
+    }
+    
+    backupConsultation(data) {
+        const backupItem = {
+            ...data,
+            localTimestamp: Date.now(),
+            synced: true
+        };
+        
+        this.localBackup.unshift(backupItem);
+        // 只保留最近50条记录
+        this.localBackup = this.localBackup.slice(0, 50);
+        this.saveLocalBackup();
+    }
+    
+    clearBackup() {
+        this.localBackup = [];
+        localStorage.removeItem('philosophy_backup');
+    }
+}
+
+const dataConsistencyManager = new DataConsistencyManager();
+
+// 🎯 方案2: 增强型欺骗检测引擎
+class EnhancedDeceptionDetector {
     constructor() {
         this.patterns = {
+            immediate_ethical_boundary: [
+                /forge.*document|fake.*id|counterfeit|falsify/i,
+                /manipulation.*technique|control.*people|brainwash/i,
+                /lie.*without.*detect|cheat.*undetected|get.*away.*with/i,
+                /steal.*undetected|hack.*without.*trace/i,
+                /undetectable.*method|avoid.*detection/i
+            ],
             high_risk: [
-                /cheat|deceive|defraud|scam|swindle|manipulate|exploit/i,
-                /counterfeit|fake|forge|falsify|fraudulent/i,
-                /steal|thief|rob|burglar|theft|embezzle/i,
-                /harm|hurt|injure|violence|attack|destroy|kill/i,
-                /illegal|unlawful|criminal|felony|contraband/i
+                /cheat|deceive|defraud|scam|swindle|exploit/i,
+                /illegal|unlawful|criminal|felony|contraband/i,
+                /harm.*other|hurt.*someone|attack.*person/i,
+                /fake.*certificate|false.*document/i
             ],
             medium_risk: [
                 /hide|conceal|secret|covert|sneak|disguise/i,
                 /trick|dupe|mislead|deceive|bamboozle/i,
                 /lie|falsehood|untruth|fabricate|misrepresent/i,
-                /avoid detection|get away with|without getting caught/i
-            ],
-            manipulative_intent: [
-                /how to.*(manipulate|control|influence)/i,
-                /ways to.*(deceive|trick|fool)/i,
-                /methods for.*(hiding|concealing)/i,
-                /best way to.*(cheat|exploit)/i
+                /avoid detection|get away with|without getting caught/i,
+                /bend.*rule|break.*rule|against.*rule/i
             ]
+        };
+        
+        this.thresholds = {
+            immediate_block: 0.15,
+            high_risk: 0.3,
+            medium_risk: 0.1,
+            low_risk: 0.02
         };
     }
 
-    // Rule-based detection
     heuristicAnalysis(question) {
         let score = 0;
         let reasons = [];
@@ -74,8 +187,8 @@ class AdvancedDeceptionDetector {
         Object.entries(this.patterns).forEach(([type, patterns]) => {
             patterns.forEach(pattern => {
                 if (pattern.test(question)) {
-                    score += type === 'high_risk' ? 0.4 : 
-                            type === 'medium_risk' ? 0.2 : 0.15;
+                    score += type === 'immediate_ethical_boundary' ? 0.6 : 
+                            type === 'high_risk' ? 0.4 : 0.2;
                     reasons.push(this.getReasonDescription(type, pattern));
                 }
             });
@@ -84,21 +197,22 @@ class AdvancedDeceptionDetector {
         return { score: Math.min(score, 1.0), reasons };
     }
 
-    // Semantic analysis layer
     semanticAnalysis(question) {
         let semanticScore = 0;
         let semanticReasons = [];
 
-        // Intent analysis
-        const manipulativeIntents = ['get away with', 'without consequences', 'secret method', 'undetectable'];
+        const manipulativeIntents = [
+            'get away with', 'without consequences', 'secret method', 
+            'undetectable', 'without getting caught', 'avoid detection'
+        ];
+        
         manipulativeIntents.forEach(intent => {
             if (question.toLowerCase().includes(intent)) {
                 semanticScore += 0.3;
-                semanticReasons.push(`Manipulative intent detected: "${intent}"`);
+                semanticReasons.push(`Manipulative intent: "${intent}"`);
             }
         });
 
-        // Context analysis
         const contextClues = {
             ethical_bypass: /(how can I|is it ok to|should I).*(even though|despite|although)/i,
             justification_seeking: /(justified|reasonable|acceptable).*(when|if)/i,
@@ -108,55 +222,66 @@ class AdvancedDeceptionDetector {
         Object.entries(contextClues).forEach(([type, pattern]) => {
             if (pattern.test(question)) {
                 semanticScore += 0.2;
-                semanticReasons.push(`Context analysis: ${type.replace('_', ' ')}`);
+                semanticReasons.push(`Context: ${type.replace('_', ' ')}`);
             }
         });
 
         return { score: Math.min(semanticScore, 0.6), reasons: semanticReasons };
     }
 
-    // Comprehensive detection
     detect(question) {
         if (!question || question.trim().length < 5) {
-            return { score: 0, level: 'low_risk', reasons: ['Question too short for analysis'] };
+            return { score: 0, level: 'low_risk', reasons: ['Question too short'] };
+        }
+
+        // 检查立即伦理边界
+        const immediateMatch = this.patterns.immediate_ethical_boundary
+            .some(pattern => pattern.test(question));
+            
+        if (immediateMatch) {
+            return {
+                score: 0.9,
+                level: 'ethical_boundary',
+                reasons: ['Immediate ethical boundary violation detected'],
+                immediate_block: true
+            };
         }
 
         const heuristic = this.heuristicAnalysis(question);
         const semantic = this.semanticAnalysis(question);
         
-        // Weighted comprehensive scoring
         const finalScore = (heuristic.score * 0.7 + semantic.score * 0.3);
         const allReasons = [...heuristic.reasons, ...semantic.reasons];
 
         let level;
-        if (finalScore > 0.7) level = 'high_risk_deception';
-        else if (finalScore > 0.4) level = 'medium_risk_caution';
-        else if (finalScore > 0.2) level = 'low_risk_awareness';
+        if (finalScore > this.thresholds.high_risk) level = 'high_risk_deception';
+        else if (finalScore > this.thresholds.medium_risk) level = 'medium_risk_caution';
+        else if (finalScore > this.thresholds.low_risk) level = 'low_risk_awareness';
         else level = 'no_risk_clear';
 
-        console.log(`Deception Detection: ${finalScore.toFixed(2)} - ${level}`, allReasons);
+        console.log(`Deception Detection: "${question}" → ${finalScore.toFixed(2)} - ${level}`, allReasons);
         
         return {
             score: finalScore,
             level: level,
-            reasons: allReasons.slice(0, 3) // Show max 3 reasons
+            reasons: allReasons.slice(0, 3),
+            immediate_block: false
         };
     }
 
     getReasonDescription(type, pattern) {
         const descriptions = {
-            high_risk: 'High-risk ethical violation pattern detected',
-            medium_risk: 'Medium-risk concerning pattern identified', 
-            manipulative_intent: 'Potential manipulative intent recognized'
+            immediate_ethical_boundary: 'Immediate ethical boundary violation',
+            high_risk: 'High-risk ethical violation pattern',
+            medium_risk: 'Concerning pattern identified'
         };
         return descriptions[type] || 'Suspicious pattern detected';
     }
 }
 
-// Initialize deception detector
-const deceptionDetector = new AdvancedDeceptionDetector();
+const deceptionDetector = new EnhancedDeceptionDetector();
 
-// 🛠️ Fix 2: Enhanced Philosophical Response Engine
+// Philosophical Response Engine (保持不变)
 class PhilosophicalResponseEngine {
     constructor() {
         this.responses = {
@@ -218,14 +343,12 @@ class PhilosophicalResponseEngine {
         const philosopherResponses = frameworkResponses[philosopher];
         if (!philosopherResponses) return this.getFallbackResponse(question);
         
-        // Select most relevant response based on question content
         const questionKeywords = this.extractKeywords(question);
         const scoredResponses = philosopherResponses.map(response => ({
             response,
             score: this.calculateRelevanceScore(response, questionKeywords)
         }));
         
-        // Select highest scoring response with randomness to avoid repetition
         scoredResponses.sort((a, b) => b.score - a.score);
         const topResponses = scoredResponses.slice(0, 3);
         const selected = topResponses[Math.floor(Math.random() * topResponses.length)];
@@ -250,9 +373,7 @@ class PhilosophicalResponseEngine {
             }
         });
         
-        // Encourage diversity: add bonus for slightly different responses
         score += Math.random() * 0.5;
-        
         return score;
     }
 
@@ -270,7 +391,7 @@ class PhilosophicalResponseEngine {
 
 const responseEngine = new PhilosophicalResponseEngine();
 
-// 🛠️ Fix 3: Dashboard Stability Manager - 修复数据一致性
+// Dashboard Manager with Enhanced Consistency
 class DashboardManager {
     constructor() {
         this.retryCount = 0;
@@ -282,7 +403,6 @@ class DashboardManager {
         const cacheKey = 'dashboard_data';
         const now = Date.now();
         
-        // Check cache
         if (this.cache.has(cacheKey)) {
             const { data, timestamp } = this.cache.get(cacheKey);
             if (now - timestamp < CACHE_DURATION) {
@@ -292,42 +412,18 @@ class DashboardManager {
         }
 
         try {
-            const data = await this.fetchWithRetry();
-            this.cache.set(cacheKey, { data, timestamp: now });
+            const data = await dataConsistencyManager.getConsistentData();
+            this.cache.set(cacheKey, { data: { chain: data }, timestamp: now });
             this.retryCount = 0;
-            return data;
+            return { chain: data };
         } catch (error) {
             console.error('Failed to load dashboard data:', error);
-            // Return cached data (even if expired) as fallback
             if (this.cache.has(cacheKey)) {
                 console.log('Using expired cache as fallback');
                 return this.cache.get(cacheKey).data;
             }
             throw error;
         }
-    }
-
-    async fetchWithRetry() {
-        for (let attempt = 1; attempt <= this.maxRetries; attempt++) {
-            try {
-                const randomParam = Math.random().toString(36).substring(7);
-                const response = await fetch(`${B()}/api/audit/chain?limit=500&nocache=${randomParam}`); // 增加限制到500条
-                
-                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                
-                const data = await response.json();
-                console.log(`Fetched ${data.chain?.length || 0} records from backend`);
-                return data;
-            } catch (error) {
-                console.warn(`Attempt ${attempt} failed:`, error);
-                if (attempt === this.maxRetries) throw error;
-                await this.delay(1000 * attempt);
-            }
-        }
-    }
-
-    delay(ms) {
-        return new Promise(resolve => setTimeout(resolve, ms));
     }
 
     clearCache() {
@@ -337,7 +433,7 @@ class DashboardManager {
 
 const dashboardManager = new DashboardManager();
 
-// 🛠️ Fix 4: Professional Blockchain Logger - 修复数据显示
+// Blockchain Logger
 class BlockchainLogger {
     constructor() {
         this.formats = {
@@ -397,7 +493,7 @@ class BlockchainLogger {
             answer: p.answer ? this.truncateText(p.answer, 50) : '-',
             clarity: (p.determinacy || p.clarity || 0).toFixed(2),
             risk: this.formats.risk(detection.level),
-            originalData: item // 保存原始数据用于调试
+            originalData: item
         };
     }
 
@@ -421,7 +517,7 @@ class BlockchainLogger {
 
 const blockchainLogger = new BlockchainLogger();
 
-// 🛠️ Fix 5: 修复数据计数和显示逻辑
+// 修复智慧率计算
 function calculateWisdomRate(consultations) {
     if (!consultations || consultations.length === 0) return 0;
     
@@ -431,16 +527,16 @@ function calculateWisdomRate(consultations) {
         const deception = p.deception_prob || 0;
         const answer = (p.answer || "").toLowerCase();
         
-        return clarity > 0.4 && 
-               deception < 0.5 &&
-               answer.length > 20 &&
+        return clarity > 0.2 && 
+               deception < 0.7 &&
+               answer.length > 10 &&
                !answer.includes('undefined') &&
                !answer.includes('error') &&
                !answer.includes('failed');
     });
     
     const rate = Math.round((wiseConsultations.length / consultations.length) * 100);
-    console.log(`Wisdom Rate Calculation: ${wiseConsultations.length}/${consultations.length} = ${rate}%`);
+    console.log(`Wisdom Rate: ${wiseConsultations.length}/${consultations.length} = ${rate}%`);
     return rate;
 }
 
@@ -529,12 +625,11 @@ function initializeDefaultData() {
         `;
     }
 
-    // 清空分页信息
     if (paginationInfo) paginationInfo.textContent = '';
     if (paginationContainer) paginationContainer.innerHTML = '';
 }
 
-// 🛠️ Fix 6: 修复咨询函数 - 改进数据同步
+// 修复咨询函数 - 添加重复检测和即时备份
 askBtn.addEventListener("click", async () => {
     const question = (q.value || "").trim();
     const sessionId = (sid.value || "").trim();
@@ -544,9 +639,22 @@ askBtn.addEventListener("click", async () => {
         return;
     }
 
-    // Use enhanced deception detection
+    // 检查重复问题
+    const isDuplicate = allValidRecords.some(item => {
+        const existingQuestion = (item.payload?.question || "").trim();
+        return existingQuestion.toLowerCase() === question.toLowerCase();
+    });
+    
+    if (isDuplicate) {
+        showNotification('Similar question already consulted. Consider rephrasing.', 'info');
+        return;
+    }
+
+    // 使用增强欺骗检测
     const deceptionAnalysis = deceptionDetector.detect(question);
-    if (deceptionAnalysis.level === 'high_risk_deception') {
+    console.log('Deception analysis:', deceptionAnalysis);
+    
+    if (deceptionAnalysis.immediate_block || deceptionAnalysis.level === 'high_risk_deception') {
         showEthicalWarning(question, deceptionAnalysis);
         return;
     }
@@ -568,17 +676,17 @@ askBtn.addEventListener("click", async () => {
         const data = await res.json();
         if (data.error) throw new Error(data.error);
 
-        // Use enhanced response engine
+        // 立即备份到本地存储
+        dataConsistencyManager.backupConsultation(data);
+
         const enhancedAnswer = responseEngine.generateResponse(
             question, 
             data.philosophical_framework, 
             data.referenced_philosopher
         );
 
-        // Update display
         updateAnswerDisplay(data, enhancedAnswer, deceptionAnalysis);
         
-        // 清除缓存并重新加载数据
         dashboardManager.clearCache();
         await loadLogs();
         
@@ -645,7 +753,7 @@ function showEthicalWarning(question, analysis) {
     showNotification('Ethical boundaries respected in your consultation', 'info');
 }
 
-// 🛠️ Fix 7: 修复主数据加载函数 - 改进数据一致性
+// 修复主数据加载函数
 async function loadLogs() {
     if (isLoading) {
         console.log('Load already in progress, skipping...');
@@ -659,40 +767,9 @@ async function loadLogs() {
         const data = await dashboardManager.loadDataWithStability();
         const chain = data.chain || [];
         
-        console.log(`Raw data received: ${chain.length} records`);
+        console.log(`Consistent data received: ${chain.length} records`);
         
-        // Process valid records - 修复数据过滤逻辑
-        allValidRecords = chain.filter(item => {
-            if (!item || typeof item !== 'object') return false;
-            
-            const p = item.payload || {};
-            const question = (p.question || "").trim();
-            const answer = (p.answer || "").trim();
-            
-            // 更宽松的验证条件 - 修复数据过滤
-            const isValid = question.length > 0 && 
-                           answer.length > 0 &&
-                           !question.toLowerCase().includes("undefined") &&
-                           !answer.toLowerCase().includes("undefined") &&
-                           !question.toLowerCase().includes("error") &&
-                           !answer.toLowerCase().includes("error");
-            
-            if (!isValid) {
-                console.log('Filtered invalid record:', { question, answer });
-            }
-            
-            return isValid;
-        });
-        
-        console.log(`Valid records after filtering: ${allValidRecords.length}`);
-        
-        // 按时间戳排序（最新的在前）
-        allValidRecords.sort((a, b) => {
-            const timeA = a.timestamp || a.ts || 0;
-            const timeB = b.timestamp || b.ts || 0;
-            return new Date(timeB) - new Date(timeA);
-        });
-        
+        allValidRecords = chain;
         currentValidChain = allValidRecords;
         currentPage = 1;
         
@@ -714,7 +791,7 @@ async function loadLogs() {
     }
 }
 
-// 🛠️ Fix 8: 修复分页显示 - 消除重复渲染
+// 修复分页显示
 function displayCurrentPage() {
     if (!logBody) return;
     
@@ -757,25 +834,20 @@ function displayCurrentPage() {
     updatePaginationControls();
 }
 
-// 🛠️ Fix 9: 修复分页控制 - 单一容器
+// 修复分页控制
 function updatePaginationControls() {
-    // 清空现有分页控制
     if (paginationContainer) paginationContainer.innerHTML = '';
     if (paginationInfo) paginationInfo.textContent = '';
     
     const totalPages = Math.ceil(allValidRecords.length / recordsPerPage);
     const totalRecords = allValidRecords.length;
     
-    // 更新分页信息
     if (paginationInfo) {
         paginationInfo.textContent = `Page ${currentPage} of ${totalPages} (${totalRecords} total records)`;
     }
     
-    if (totalPages <= 1) {
-        return; // 只有一页时不显示分页控制
-    }
+    if (totalPages <= 1) return;
     
-    // 创建分页按钮
     if (paginationContainer) {
         if (currentPage > 1) {
             const prevBtn = document.createElement('button');
@@ -788,7 +860,6 @@ function updatePaginationControls() {
             paginationContainer.appendChild(prevBtn);
         }
         
-        // 页面指示器
         const pageInfo = document.createElement('span');
         pageInfo.className = 'pagination-info';
         pageInfo.textContent = ` ${currentPage} / ${totalPages} `;
@@ -807,7 +878,7 @@ function updatePaginationControls() {
     }
 }
 
-// 🛠️ Fix 10: 修复统计更新
+// 修复统计更新
 function updateStatistics(validChain) {
     if (!validChain || validChain.length === 0) {
         reqCount.textContent = "0";
@@ -840,10 +911,10 @@ function updateStatistics(validChain) {
     avgDec.textContent = (sumDec / n).toFixed(1);
     avgDet.textContent = (sumDet / n).toFixed(1);
     
-    console.log(`Statistics updated: ${validChain.length} records, wisdom rate: ${wisdomRate}%`);
+    console.log(`Statistics: ${validChain.length} records, wisdom rate: ${wisdomRate}%`);
 }
 
-// 🛠️ Fix 11: 修复区块链表格
+// 修复区块链表格
 function updateBlockchainTable(validChain) {
     if (!blockchainBody) return;
     
@@ -866,7 +937,6 @@ function updateBlockchainTable(validChain) {
         return;
     }
     
-    // Show latest records (最多显示6条)
     const recentEntries = blockchainData.slice(0, 6);
     recentEntries.forEach((entry, index) => {
         const formatted = blockchainLogger.formatBlockchainEntry(entry, index, blockchainData.length);
@@ -901,25 +971,23 @@ function showNotification(message, type = 'info') {
     }, 3000);
 }
 
-// Diagnostic and utility functions
+// Diagnostic functions
 async function diagnoseSystem() {
     try {
         const data = await dashboardManager.loadDataWithStability();
-        const validRecords = data.chain.filter(item => {
-            const p = item.payload || {};
-            return p.question && p.answer;
-        });
+        const validRecords = data.chain || [];
         
         const stats = {
-            totalRecords: data.chain.length,
+            totalRecords: validRecords.length,
             validRecords: validRecords.length,
             wisdomRate: calculateWisdomRate(validRecords),
             cacheStatus: dashboardManager.cache.size > 0 ? 'Active' : 'Empty',
-            currentDisplay: allValidRecords.length
+            currentDisplay: allValidRecords.length,
+            localBackupCount: dataConsistencyManager.localBackup.length
         };
         
         console.log('System Diagnosis:', stats);
-        showNotification(`System OK: ${stats.validRecords} valid records, ${stats.wisdomRate}% wisdom rate`, 'success');
+        showNotification(`System OK: ${stats.validRecords} records, ${stats.wisdomRate}% wisdom rate`, 'success');
         
         return stats;
     } catch (error) {
@@ -931,6 +999,7 @@ async function diagnoseSystem() {
 function hardReset() {
     if (confirm('⚠️ Reset all system data and cache?')) {
         dashboardManager.clearCache();
+        dataConsistencyManager.clearBackup();
         localStorage.clear();
         sessionStorage.clear();
         currentValidChain = [];
@@ -948,18 +1017,17 @@ window.getSystemStats = () => ({
     records: allValidRecords.length,
     wisdomRate: calculateWisdomRate(allValidRecords),
     page: currentPage,
-    totalPages: Math.ceil(allValidRecords.length / recordsPerPage)
+    totalPages: Math.ceil(allValidRecords.length / recordsPerPage),
+    localBackup: dataConsistencyManager.localBackup.length
 });
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Oracle Ethics M1 - Data Consistency Fixed Edition Initializing');
+    console.log('Oracle Ethics M1 - Ultimate Fixed Edition Initializing');
     
-    // Initialize data
     initializeDefaultData();
     loadLogs();
     
-    // Periodic data refresh (every 2 minutes)
     setInterval(() => {
         if (document.visibilityState === 'visible') {
             console.log('Periodic data refresh triggered');
@@ -967,7 +1035,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }, 120000);
     
-    console.log('Oracle Ethics M1 - Data Consistency Fixed Edition Loaded');
+    console.log('Oracle Ethics M1 - Ultimate Fixed Edition Loaded');
 });
 
 refreshBtn.addEventListener("click", function() {
