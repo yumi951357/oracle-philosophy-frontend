@@ -1,77 +1,84 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
   <meta charset="utf-8"/>
   <meta name="viewport" content="width=device-width,initial-scale=1"/>
-  <title>Oracle Ethics M1 - 哲学AI神谕</title>
+  <title>Oracle Ethics M1 - Philosophical AI</title>
   <link rel="stylesheet" href="./styles.css"/>
   <script>
-    // 设置后端URL
+    // Set your backend URL here (Render)
     window.BACKEND_URL = "https://oracle-philosophy-backend.onrender.com";
     
-    // 初始化真实数据状态
-    let realConsultationCount = 0;
-    let realBlockchainData = [];
+    // Global state for real data
+    window.APP_STATE = {
+      consultationCount: 0,
+      blockchainData: [],
+      stats: {
+        truthRate: 0,
+        avgDeception: 0,
+        avgDeterminacy: 0
+      }
+    };
   </script>
 </head>
 <body>
-  <!-- 科技网格背景 -->
+  <!-- Tech Grid Background -->
   <div class="tech-grid"></div>
   
 <header class="topbar">
   <div class="brand">Oracle Ethics M1</div>
   <nav>
-    <a href="#oracle">神谕</a>
-    <a href="#dashboard">透明度</a>
-    <a href="#philosophy">哲学</a>
-    <a href="#docs">文档</a>
-    <a href="#contact">联系</a>
+    <a href="#oracle">Oracle</a>
+    <a href="#dashboard">Transparency</a>
+    <a href="#philosophy">Philosophy</a>
+    <a href="#docs">Docs</a>
+    <a href="#contact">Contact</a>
   </nav>
 </header>
 
 <main>
   <!-- ORACLE -->
   <section id="oracle" class="card">
-    <h2>咨询哲学神谕</h2>
+    <h2>Consult the Philosophical Oracle</h2>
     <div class="form-row">
-      <label>您的问题</label>
-      <textarea id="q" rows="4" placeholder="提出关于生活、道德、意义的深刻问题... 例如：痛苦的目的是什么？我该如何真实地生活？"></textarea>
+      <label>Your Question</label>
+      <textarea id="q" rows="4" placeholder="Ask deep questions about life, ethics, meaning... e.g. What is the purpose of suffering? How should I live authentically?"></textarea>
     </div>
     <div class="form-row">
-      <label>会话 ID（可选）</label>
-      <input id="sid" placeholder="如果为空则自动生成"/>
+      <label>Session ID (optional)</label>
+      <input id="sid" placeholder="auto-generate if empty"/>
     </div>
-    <button id="askBtn" class="primary-btn">寻求智慧</button>
+    <button id="askBtn" class="primary-btn">Seek Wisdom</button>
 
     <div id="answerBox" class="answer hide">
-      <h3>神谕者的智慧</h3>
+      <h3>Oracle's Wisdom</h3>
       <div class="philosophy-header">
         <div class="framework-badge" id="frameworkBadge">
           <span id="frameworkText"></span>
         </div>
         <div class="philosopher-ref">
-          透过 <strong id="philosopherText"></strong> 的视角
+          Through the lens of <strong id="philosopherText"></strong>
         </div>
       </div>
       <p id="answerText" class="wisdom-text"></p>
       
       <div class="analysis-grid">
         <div class="analysis-column">
-          <h4>哲学分析</h4>
+          <h4>Philosophical Analysis</h4>
           <div class="metrics">
-            <div>智慧类型: <span id="kind"></span></div>
-            <div>框架: <span id="framework"></span></div>
-            <div>哲学家: <span id="philosopher"></span></div>
-            <div>深度分数: <span id="depth"></span></div>
+            <div>Wisdom Type: <span id="kind"></span></div>
+            <div>Framework: <span id="framework"></span></div>
+            <div>Philosopher: <span id="philosopher"></span></div>
+            <div>Depth Score: <span id="depth"></span></div>
           </div>
         </div>
         <div class="analysis-column">
-          <h4>道德指标</h4>
+          <h4>Ethical Metrics</h4>
           <div class="metrics">
-            <div>确定性: <span id="det"></span></div>
-            <div>欺骗概率: <span id="dec"></span></div>
-            <div>风险标签: <span id="risk"></span></div>
-            <div>区块哈希: <span id="blockHash" class="hash"></span></div>
+            <div>Determinacy: <span id="det"></span></div>
+            <div>Deception Prob.: <span id="dec"></span></div>
+            <div>Risk Tags: <span id="risk"></span></div>
+            <div>Block Hash: <span id="blockHash" class="hash"></span></div>
           </div>
         </div>
       </div>
@@ -80,23 +87,23 @@
 
   <!-- DASHBOARD -->
   <section id="dashboard" class="card">
-    <h2>智慧透明仪表板</h2>
+    <h2>Wisdom Transparency Dashboard</h2>
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-value" id="reqCount">0</div>
-        <div class="stat-label">总咨询次数</div>
+        <div class="stat-label">Total Consultations</div>
       </div>
       <div class="stat-card">
         <div class="stat-value" id="truthRate">—</div>
-        <div class="stat-label">智慧率</div>
+        <div class="stat-label">Wisdom Rate</div>
       </div>
       <div class="stat-card">
         <div class="stat-value" id="avgDec">—</div>
-        <div class="stat-label">平均欺骗程度</div>
+        <div class="stat-label">Avg. Deception</div>
       </div>
       <div class="stat-card">
         <div class="stat-value" id="avgDet">—</div>
-        <div class="stat-label">平均清晰度</div>
+        <div class="stat-label">Avg. Clarity</div>
       </div>
     </div>
 
@@ -104,46 +111,46 @@
       <table class="table" id="logTable">
         <thead>
           <tr>
-            <th>时间</th>
-            <th>框架</th>
-            <th>哲学家</th>
-            <th>问题</th>
-            <th>回答</th>
-            <th>明晰</th>
-            <th>风险</th>
+            <th>Time</th>
+            <th>Framework</th>
+            <th>Philosopher</th>
+            <th>Question</th>
+            <th>Answer</th>
+            <th>Clarity</th>
+            <th>Risk</th>
           </tr>
         </thead>
         <tbody id="logBody">
-          <!-- 动态数据将通过JavaScript填充 -->
+          <!-- Dynamic data will be populated by JavaScript -->
         </tbody>
       </table>
     </div>
-    <button id="refreshBtn" class="secondary-btn">刷新智慧日志</button>
+    <button id="refreshBtn" class="secondary-btn">Refresh Wisdom Log</button>
   </section>
 
   <!-- PHILOSOPHY GUIDE -->
   <section id="philosophy" class="card">
-    <h2>哲学框架</h2>
+    <h2>Philosophical Frameworks</h2>
     <div class="frameworks-grid">
       <div class="framework-card stoicism">
-        <h3>🏛️ 斯多葛主义</h3>
-        <p>专注于你能掌控的，接受你不能掌控的。美德至上。</p>
-        <div class="philosophers">马库斯·奥勒留、塞内卡、爱比克泰德</div>
+        <h3>🏛️ Stoicism</h3>
+        <p>Focus on what you can control, accept what you cannot. Virtue as the highest good.</p>
+        <div class="philosophers">Marcus Aurelius, Seneca, Epictetus</div>
       </div>
       <div class="framework-card existentialism">
-        <h3>🎭 存在主义</h3>
-        <p>存在先于本质。我们通过真实的选择和行动创造意义。</p>
-        <div class="philosophers">萨特、加缪、尼采</div>
+        <h3>🎭 Existentialism</h3>
+        <p>Existence precedes essence. We create meaning through authentic choices and actions.</p>
+        <div class="philosophers">Sartre, Camus, Nietzsche</div>
       </div>
       <div class="framework-card taoism">
-        <h3>☯️ 道教</h3>
-        <p>与自然之道和谐相处。无为——无为而为。</p>
-        <div class="philosophers">老子、庄子、列子</div>
+        <h3>☯️ Taoism</h3>
+        <p>Harmony with the natural way. Wu wei - action through non-action.</p>
+        <div class="philosophers">Laozi, Zhuangzi, Liezi</div>
       </div>
       <div class="framework-card buddhism">
-        <h3>🪷 佛教</h3>
-        <p>通过正念和摆脱渴望和厌恶来结束痛苦。</p>
-        <div class="philosophers">佛陀、龙树、一行禅师</div>
+        <h3>🪷 Buddhism</h3>
+        <p>End suffering through mindfulness and detachment from craving and aversion.</p>
+        <div class="philosophers">Buddha, Nagarjuna, Thich Nhat Hanh</div>
       </div>
     </div>
   </section>
@@ -152,88 +159,92 @@
   <section id="docs" class="card">
     <div class="docs-layout">
       <aside class="docs-nav">
-        <h3>文档</h3>
+        <h3>Documentation</h3>
         <ul>
-          <li><a href="#frameworks" class="nav-link">哲学框架</a></li>
-          <li><a href="#how-it-works" class="nav-link">工作原理</a></li>
-          <li><a href="#blockchain-logs" class="nav-link">区块链日志</a></li>
-          <li><a href="#downloads" class="nav-link">下载</a></li>
+          <li><a href="#frameworks" class="nav-link">Philosophical Frameworks</a></li>
+          <li><a href="#how-it-works" class="nav-link">How It Works</a></li>
+          <li><a href="#blockchain-logs" class="nav-link">Blockchain Logs</a></li>
+          <li><a href="#downloads" class="nav-link">Downloads</a></li>
         </ul>
       </aside>
 
       <div class="docs-content">
-        <h2 id="frameworks">预言机的工作原理</h2>
+        <h2 id="frameworks">How This Oracle Works</h2>
         
         <div class="content-section">
-          <h3>哲学人工智能引擎</h3>
+          <h3>Philosophical AI Engine</h3>
           <p>
-            这款神谕会运用多种哲学框架——斯多葛主义、存在主义、道教和佛教——来分析您的问题。它借鉴古典哲学家的智慧，并将其应用于现代困境。
+            This oracle analyzes your questions through multiple philosophical frameworks - Stoicism, Existentialism, Taoism, and Buddhism. 
+            It references classical philosophers and adapts their wisdom to modern dilemmas.
           </p>
         </div>
 
         <div class="content-section" id="how-it-works">
-          <h3>区块链智慧账本</h3>
+          <h3>Blockchain Wisdom Ledger</h3>
           <p>
-            每次咨询都会永久记录在不可篡改的区块链上。这确保了完全的透明度，并可以验证预言机的一致性和道德完整性。
+            Every consultation is permanently recorded on an immutable blockchain. This ensures complete transparency 
+            and allows verification of the oracle's consistency and ethical integrity.
           </p>
         </div>
 
         <div class="content-section">
-          <h3>欺骗检测系统</h3>
+          <h3>Deception Detection System</h3>
           <p>
-            先进的算法能够检测操纵性语言、绝对性主张和高风险领域。该系统在提供深刻见解的同时，坚守道德界限。
+            Advanced algorithms detect manipulative language, absolutist claims, and high-risk domains. 
+            The system maintains ethical boundaries while providing profound insights.
           </p>
         </div>
 
         <div class="content-section">
-          <h3>确定性和清晰度评分</h3>
+          <h3>Determinacy & Clarity Scoring</h3>
           <p>
-            答案的清晰度会根据具体性和可操作性进行评分（0-1）。分数越高，指导性越直接，分数越低，则越能引发思考。
+            Answers are scored for clarity (0-1) based on specificity and actionable wisdom. 
+            Higher scores indicate more direct guidance, while lower scores suggest contemplative insights.
           </p>
         </div>
 
         <div class="content-section" id="blockchain-logs">
-          <h3>近期区块链活动</h3>
+          <h3>Recent Blockchain Activity</h3>
           <div class="table-container">
             <table class="table blockchain-table">
               <thead>
                 <tr>
-                  <th>区块</th>
-                  <th>问题</th>
-                  <th>框架</th>
-                  <th>哈希</th>
+                  <th>Block</th>
+                  <th>Question</th>
+                  <th>Framework</th>
+                  <th>Hash</th>
                 </tr>
               </thead>
               <tbody id="blockchainBody">
-                <!-- 动态区块链数据 -->
+                <!-- Dynamic blockchain data -->
               </tbody>
             </table>
           </div>
         </div>
 
         <div class="content-section" id="downloads">
-          <h3>文档下载</h3>
+          <h3>Documentation Downloads</h3>
           <div class="download-grid">
-            <a href="https://raw.githubusercontent.com/yumi951357/oracle-philosophy-frontend/main/public/whitepaper.pdf" class="download-card" download="技术白皮书.pdf">
+            <a href="https://raw.githubusercontent.com/yumi951357/oracle-philosophy-frontend/main/public/whitepaper.pdf" class="download-card" download="Technical_Whitepaper.pdf">
               <div class="download-icon">📄</div>
               <div class="download-info">
-                <h4>技术白皮书</h4>
-                <p>完整的技术文档和架构</p>
+                <h4>Technical Whitepaper</h4>
+                <p>Complete technical documentation and architecture</p>
               </div>
             </a>
-            <a href="https://raw.githubusercontent.com/yumi951357/oracle-philosophy-frontend/main/public/ritual-handbook.pdf" class="download-card" download="仪式手册.pdf">
+            <a href="https://raw.githubusercontent.com/yumi951357/oracle-philosophy-frontend/main/public/ritual-handbook.pdf" class="download-card" download="Ritual_Handbook.pdf">
               <div class="download-icon">🔮</div>
               <div class="download-info">
-                <h4>仪式手册</h4>
-                <p>哲学基础和使用指南</p>
+                <h4>Ritual Handbook</h4>
+                <p>Philosophical foundations and usage guidelines</p>
               </div>
             </a>
-            <a href="#" class="download-card" onclick="alert('API文档即将推出，敬请期待！')">
+            <a href="#" class="download-card" onclick="showComingSoon()">
               <div class="download-icon">⚡</div>
               <div class="download-info">
-                <h4>API 文档</h4>
-                <p>完整的 API 参考和集成指南</p>
-                <small style="color: #888;">即将推出</small>
+                <h4>API Documentation</h4>
+                <p>Complete API reference and integration guide</p>
+                <small style="color: #888;">Coming Soon</small>
               </div>
             </a>
           </div>
@@ -244,125 +255,134 @@
 
   <!-- CONTACT -->
   <section id="contact" class="card">
-    <h2>联系与贡献</h2>
-    <p>这是一个关于哲学AI和道德技术的开放实验。</p>
+    <h2>Contact & Contribution</h2>
+    <p>This is an open experiment in philosophical AI and ethical technology.</p>
     <div class="contact-links">
-      <p>📧 邮箱: <a href="mailto:renshijian0258@proton.me">renshijian0258@proton.me</a></p>
+      <p>📧 Email: <a href="mailto:renshijian0258@proton.me">renshijian0258@proton.me</a></p>
       <p>✈️ Telegram: <a href="https://t.me/renshijian0" target="_blank">t.me/renshijian0</a></p>
-      <p>💡 GitHub: <a href="https://github.com/yumi951357/oracle-philosophy-frontend" target="_blank">查看源代码</a></p>
+      <p>💡 GitHub: <a href="https://github.com/yumi951357/oracle-philosophy-frontend" target="_blank">View Source Code</a></p>
     </div>
   </section>
 </main>
 
 <footer class="footer">
-  <span>"黑暗之后，真正的光明才会显现。" - 集体智慧的空间</span>
+  <span>"After the blackout, the true light appears." - A space for collective wisdom</span>
 </footer>
 
 <script src="./main.js"></script>
 <script>
-// 增强的仪表板功能
+// Enhanced Dashboard Functionality
 document.addEventListener('DOMContentLoaded', function() {
-  // 初始化真实数据
+  // Initialize real data system
   initializeRealData();
   
-  // 刷新按钮功能
+  // Refresh button functionality
   document.getElementById('refreshBtn').addEventListener('click', function() {
     refreshDashboardData();
   });
   
-  // 增强的提问验证
+  // Enhanced question validation
   const askBtn = document.getElementById('askBtn');
   const questionInput = document.getElementById('q');
   
-  askBtn.addEventListener('click', function() {
+  // Override or enhance the existing ask functionality
+  const originalAskFunction = askBtn.onclick;
+  askBtn.onclick = function() {
     const question = questionInput.value.trim();
     
-    // 增强的伦理检查
+    // Enhanced ethical checking
     if (isUnethicalQuestion(question)) {
       showEthicalWarning(question);
-      return;
+      return false;
     }
     
-    // 如果通过检查，继续正常流程
-  });
+    // If passes checks, continue with original function
+    if (originalAskFunction) {
+      return originalAskFunction();
+    }
+  };
 });
 
-// 初始化真实数据
+// Initialize real data system
 function initializeRealData() {
-  // 从localStorage加载或初始化数据
+  // Load from localStorage or initialize
   const savedData = localStorage.getItem('oracleDashboardData');
   if (savedData) {
     const data = JSON.parse(savedData);
-    realConsultationCount = data.consultationCount || 0;
-    realBlockchainData = data.blockchainData || [];
+    window.APP_STATE.consultationCount = data.consultationCount || 0;
+    window.APP_STATE.blockchainData = data.blockchainData || [];
+    window.APP_STATE.stats = data.stats || window.APP_STATE.stats;
   }
   
   updateDashboardDisplay();
 }
 
-// 更新仪表板显示
+// Update dashboard display with real data
 function updateDashboardDisplay() {
-  // 更新统计卡片
-  document.getElementById('reqCount').textContent = realConsultationCount;
+  // Update statistics cards
+  document.getElementById('reqCount').textContent = window.APP_STATE.consultationCount;
+  document.getElementById('truthRate').textContent = window.APP_STATE.stats.truthRate.toFixed(1) + '%';
+  document.getElementById('avgDec').textContent = window.APP_STATE.stats.avgDeception.toFixed(2);
+  document.getElementById('avgDet').textContent = window.APP_STATE.stats.avgDeterminacy.toFixed(2);
   
-  // 更新表格数据
+  // Update tables
   updateLogTable();
   updateBlockchainTable();
 }
 
-// 更新日志表格
+// Update consultation log table
 function updateLogTable() {
   const logBody = document.getElementById('logBody');
   logBody.innerHTML = '';
   
-  if (realBlockchainData.length === 0) {
-    // 如果没有真实数据，显示提示
+  if (window.APP_STATE.blockchainData.length === 0) {
+    // Show placeholder if no data
     const row = document.createElement('tr');
     row.innerHTML = `
       <td colspan="7" style="text-align: center; color: #888;">
-        暂无咨询记录。请先向神谕提问。
+        No consultation records yet. Ask the oracle first.
       </td>
     `;
     logBody.appendChild(row);
   } else {
-    // 显示真实数据
-    realBlockchainData.forEach(entry => {
+    // Display real consultation data
+    window.APP_STATE.blockchainData.slice().reverse().forEach(entry => {
       const row = document.createElement('tr');
       row.innerHTML = `
         <td>${entry.time}</td>
         <td>${entry.framework}</td>
         <td>${entry.philosopher}</td>
-        <td>${entry.question}</td>
-        <td>${entry.answer.substring(0, 50)}...</td>
+        <td title="${entry.question}">${truncateText(entry.question, 30)}</td>
+        <td title="${entry.answer}">${truncateText(entry.answer, 50)}</td>
         <td>${entry.determinacy}</td>
-        <td>${entry.risk}</td>
+        <td class="risk-${entry.risk.toLowerCase().replace(' ', '-')}">${entry.risk}</td>
       `;
       logBody.appendChild(row);
     });
   }
 }
 
-// 更新区块链表格
+// Update blockchain activity table
 function updateBlockchainTable() {
   const blockchainBody = document.getElementById('blockchainBody');
   blockchainBody.innerHTML = '';
   
-  if (realBlockchainData.length === 0) {
+  if (window.APP_STATE.blockchainData.length === 0) {
     const row = document.createElement('tr');
     row.innerHTML = `
       <td colspan="4" style="text-align: center; color: #888;">
-        等待首次咨询记录...
+        Waiting for first consultation...
       </td>
     `;
     blockchainBody.appendChild(row);
   } else {
-    // 显示最新的4条记录
-    const recentEntries = realBlockchainData.slice(-4).reverse();
+    // Show latest 4 entries
+    const recentEntries = window.APP_STATE.blockchainData.slice(-4).reverse();
     recentEntries.forEach((entry, index) => {
       const row = document.createElement('tr');
       row.innerHTML = `
-        <td>#${String(realBlockchainData.length - index).padStart(3, '0')}</td>
-        <td>${entry.question.substring(0, 30)}...</td>
+        <td>#${String(window.APP_STATE.blockchainData.length - index).padStart(3, '0')}</td>
+        <td title="${entry.question}">${truncateText(entry.question, 25)}</td>
         <td>${entry.framework}</td>
         <td class="hash">${entry.blockHash || generateRandomHash()}</td>
       `;
@@ -371,58 +391,60 @@ function updateBlockchainTable() {
   }
 }
 
-// 刷新仪表板数据
+// Refresh dashboard data
 function refreshDashboardData() {
-  // 模拟从服务器获取最新数据
-  console.log('刷新仪表板数据...');
+  console.log('Refreshing dashboard data...');
   
-  // 这里应该调用API获取真实数据
-  // 暂时使用本地存储的数据
+  // In a real implementation, this would fetch from your backend API
+  // For now, we'll update with current local state
   updateDashboardDisplay();
   
-  // 显示刷新提示
-  showNotification('仪表板数据已刷新', 'success');
+  showNotification('Dashboard data refreshed successfully', 'success');
 }
 
-// 伦理问题检测
+// Enhanced unethical question detection
 function isUnethicalQuestion(question) {
   const unethicalPatterns = [
-    /欺骗|欺诈|诈骗|作弊|操纵|骗局|造假|伪装/i,
-    /伤害|伤害|暴力|攻击|破坏|毁灭/i,
-    /非法|违法|犯罪|黑客|入侵|窃取/i,
-    /完美.*欺诈|欺诈.*策略|操纵.*技巧/i,
-    /隐瞒.*合理|合理.*隐瞒/i
+    /deceive|deception|fraud|scam|cheat|manipulate|trick|fake|forge/i,
+    /harm|hurt|violence|attack|destroy|kill|injure/i,
+    /illegal|unlawful|crime|criminal|hack|steal|rob|theft/i,
+    /perfect.*fraud|fraud.*strategy|manipulate.*technique/i,
+    /hide.*justified|justified.*hide|conceal.*reasonable/i,
+    /counterfeit.*method|fake.*method|forgery.*technique/i
   ];
   
   return unethicalPatterns.some(pattern => pattern.test(question));
 }
 
-// 显示伦理警告
+// Show ethical warning instead of answering
 function showEthicalWarning(question) {
   const answerBox = document.getElementById('answerBox');
   answerBox.classList.remove('hide');
   
-  document.getElementById('frameworkText').textContent = '伦理边界';
-  document.getElementById('philosopherText').textContent = '系统保护';
+  document.getElementById('frameworkText').textContent = 'Ethical Boundary';
+  document.getElementById('philosopherText').textContent = 'System Guardian';
   document.getElementById('answerText').textContent = 
-    '出于伦理考虑，我无法回答涉及欺骗、伤害或非法行为的问题。哲学智慧应用于提升自我和理解存在，而非操纵他人。请重新提出建设性的问题。';
+    'For ethical reasons, I cannot answer questions involving deception, harm, or illegal activities. Philosophical wisdom should be used for self-improvement and understanding existence, not for manipulating others. Please rephrase your question constructively.';
   
-  document.getElementById('kind').textContent = '伦理保护';
-  document.getElementById('framework').textContent = '系统伦理';
-  document.getElementById('philosopher').textContent = 'AI守护者';
+  document.getElementById('kind').textContent = 'Ethical Protection';
+  document.getElementById('framework').textContent = 'System Ethics';
+  document.getElementById('philosopher').textContent = 'AI Guardian';
   document.getElementById('depth').textContent = '100%';
   document.getElementById('det').textContent = '1.00';
   document.getElementById('dec').textContent = '0.00';
-  document.getElementById('risk').textContent = '伦理拒绝';
+  document.getElementById('risk').textContent = 'Ethical Rejection';
   document.getElementById('blockHash').textContent = 'eth_protection_' + Date.now();
 }
 
-// 生成随机哈希（模拟）
+// Utility functions
+function truncateText(text, maxLength) {
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+}
+
 function generateRandomHash() {
   return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
-// 显示通知
 function showNotification(message, type = 'info') {
   const notification = document.createElement('div');
   notification.className = `notification ${type}`;
@@ -437,29 +459,122 @@ function showNotification(message, type = 'info') {
     border-radius: 4px;
     z-index: 1000;
     animation: slideIn 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
   `;
   
   document.body.appendChild(notification);
   
   setTimeout(() => {
-    notification.remove();
+    notification.style.animation = 'slideOut 0.3s ease';
+    setTimeout(() => {
+      notification.remove();
+    }, 300);
   }, 3000);
 }
 
-// 添加CSS动画
-const style = document.createElement('style');
-style.textContent = `
+function showComingSoon() {
+  showNotification('API documentation coming soon!', 'info');
+}
+
+// Add CSS animations and styles
+const enhancedStyles = document.createElement('style');
+enhancedStyles.textContent = `
   @keyframes slideIn {
     from { transform: translateX(100%); opacity: 0; }
     to { transform: translateX(0); opacity: 1; }
+  }
+  
+  @keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
   }
   
   .notification.success { background: #4CAF50; }
   .notification.info { background: #2196F3; }
   .notification.warning { background: #FF9800; }
   .notification.error { background: #F44336; }
+  
+  .risk-high-risk { color: #f44336; font-weight: bold; }
+  .risk-medium-risk { color: #ff9800; font-weight: bold; }
+  .risk-low-risk { color: #4caf50; }
+  .risk-ethical-rejection { color: #9c27b0; font-weight: bold; }
+  
+  .hash {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85em;
+    color: #888;
+  }
 `;
-document.head.appendChild(style);
+document.head.appendChild(enhancedStyles);
+
+// Enhanced: Record consultation to local state
+function recordConsultation(question, answer, framework, philosopher, determinacy, deception, risk, blockHash) {
+  const consultation = {
+    time: new Date().toLocaleTimeString(),
+    question: question,
+    answer: answer,
+    framework: framework,
+    philosopher: philosopher,
+    determinacy: determinacy,
+    deception: deception,
+    risk: risk,
+    blockHash: blockHash,
+    timestamp: Date.now()
+  };
+  
+  window.APP_STATE.consultationCount++;
+  window.APP_STATE.blockchainData.push(consultation);
+  
+  // Update statistics
+  updateStatistics();
+  
+  // Save to localStorage
+  saveToLocalStorage();
+  
+  // Update display
+  updateDashboardDisplay();
+}
+
+function updateStatistics() {
+  const data = window.APP_STATE.blockchainData;
+  if (data.length === 0) return;
+  
+  const totalDeception = data.reduce((sum, entry) => sum + parseFloat(entry.deception), 0);
+  const totalDeterminacy = data.reduce((sum, entry) => sum + parseFloat(entry.determinacy), 0);
+  
+  window.APP_STATE.stats.avgDeception = totalDeception / data.length;
+  window.APP_STATE.stats.avgDeterminacy = totalDeterminacy / data.length;
+  window.APP_STATE.stats.truthRate = ((data.filter(entry => entry.deception < 0.1).length / data.length) * 100);
+}
+
+function saveToLocalStorage() {
+  localStorage.setItem('oracleDashboardData', JSON.stringify({
+    consultationCount: window.APP_STATE.consultationCount,
+    blockchainData: window.APP_STATE.blockchainData,
+    stats: window.APP_STATE.stats
+  }));
+}
+
+// Override or enhance the existing answer display to record consultations
+const originalDisplayAnswer = window.displayAnswer; // Assuming this exists in main.js
+if (originalDisplayAnswer) {
+  window.displayAnswer = function(data) {
+    // Call original function
+    originalDisplayAnswer(data);
+    
+    // Record the consultation
+    recordConsultation(
+      document.getElementById('q').value,
+      data.answer,
+      data.framework,
+      data.philosopher,
+      data.det,
+      data.dec,
+      data.risk,
+      data.blockHash
+    );
+  };
+}
 </script>
 </body>
 </html>
