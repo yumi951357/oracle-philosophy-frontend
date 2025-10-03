@@ -28,8 +28,11 @@ const avgDet = $("avgDet");
 const logBody = $("logBody");
 const blockchainBody = $("blockchainBody");
 
-// 存储当前有效记录，避免重复渲染
+// 全局状态管理
 let currentValidChain = [];
+let currentPage = 1;
+const recordsPerPage = 10;
+let allValidRecords = [];
 
 // 强化伦理检测函数
 function isUnethicalQuestion(question) {
@@ -133,21 +136,21 @@ async function loadLogs() {
   try {
     // 添加随机参数完全避免缓存
     const randomParam = Math.random().toString(36).substring(7);
-    const res = await fetch(`${B()}/api/audit/chain?limit=100&nocache=${randomParam}`);
+    const res = await fetch(`${B()}/api/audit/chain?limit=200&nocache=${randomParam}`);
     const data = await res.json();
     const chain = data.chain || [];
     
     console.log('原始API响应:', chain);
 
-    // 强力过滤：只保留真正有效的记录
-    const validChain = chain.filter(item => {
+    // 保存所有有效记录
+    allValidRecords = chain.filter(item => {
       if (!item || typeof item !== 'object') return false;
       
       const p = item.payload || {};
       const question = (p.question || "").trim();
       const answer = (p.answer || "").trim();
       
-      // 放宽过滤条件：允许时间戳为null
+      // 放宽过滤条件
       const isValid = 
         question.length > 0 &&                    // 问题不能为空
         answer.length > 0 &&                      // 回答不能为空
@@ -158,62 +161,138 @@ async function loadLogs() {
         p.determinacy !== undefined &&            // 必须有确定性分数
         p.determinacy !== null;
       
-      if (!isValid) {
-        console.log('过滤掉的无效记录:', item);
-      }
-      
       return isValid;
     });
     
-    console.log(`过滤结果: 原始 ${chain.length} 条 → 有效 ${validChain.length} 条`);
+    console.log(`总有效记录: ${allValidRecords.length} 条`);
     
     // 更新全局记录
-    currentValidChain = validChain;
+    currentValidChain = allValidRecords;
     
-    reqCount.textContent = validChain.length.toString();
-
-    // compute stats - 修复智慧率计算
-    let truths = 0, sumDec = 0, sumDet = 0;
-    logBody.innerHTML = "";
-    
-    validChain.slice().reverse().forEach(item => {
-      const p = item.payload || {};
-      
-      // 修复：如果kind不存在，默认为wisdom
-      const kind = p.kind || "wisdom";
-      if (kind === "truth" || kind === "wisdom" || kind === "insight") truths++;
-      
-      sumDec += (p.deception_prob || 0);
-      sumDet += (p.determinacy || 0);
-      
-      const tr = document.createElement("tr");
-      tr.innerHTML = `
-        <td>${item.ts ? new Date(item.ts).toLocaleTimeString() : '-'}</td>
-        <td>${p.framework || p.philosophical_framework || "-"}</td>
-        <td>${p.philosopher || p.referenced_philosopher || "-"}</td>
-        <td>${escapeHtml(p.question || "")}</td>
-        <td>${escapeHtml((p.answer || "").slice(0, 60))}…</td>
-        <td>${(p.determinacy || 0).toFixed(2)}</td>
-        <td class="risk-${(p.risk_tags?.[0] || 'low_risk').replace('_', '-')}">${(p.risk_tags || ["low_risk"]).join(", ")}</td>
-      `;
-      logBody.appendChild(tr);
-    });
-
-    const n = Math.max(1, validChain.length);
-    
-    // 修复显示：确保不会显示0.0%
-    const calculatedRate = n > 0 ? ((truths / n) * 100) : 0;
-    truthRate.textContent = calculatedRate > 0 ? calculatedRate.toFixed(1) + "%" : "0%";
-    avgDec.textContent = (sumDec / n).toFixed(1);
-    avgDet.textContent = (sumDet / n).toFixed(1);
-    
-    // 更新区块链活动表格
-    updateBlockchainTable(validChain);
+    // 显示第一页
+    currentPage = 1;
+    displayCurrentPage();
+    updateStatistics(allValidRecords);
+    updateBlockchainTable(allValidRecords);
     
   } catch (e) {
     console.warn("Load logs failed:", e);
     logBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ff6b6b;">加载失败: ${e.message}</td></tr>`;
   }
+}
+
+// 显示当前页记录
+function displayCurrentPage() {
+  if (!logBody) return;
+  
+  logBody.innerHTML = "";
+  
+  if (allValidRecords.length === 0) {
+    const row = document.createElement('tr');
+    row.innerHTML = `<td colspan="7" style="text-align: center; color: #888;">No consultation records yet.</td>`;
+    logBody.appendChild(row);
+    return;
+  }
+  
+  const startIndex = (currentPage - 1) * recordsPerPage;
+  const endIndex = Math.min(startIndex + recordsPerPage, allValidRecords.length);
+  const pageRecords = allValidRecords.slice(startIndex, endIndex);
+  
+  pageRecords.forEach(item => {
+    const p = item.payload || {};
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${item.ts ? new Date(item.ts).toLocaleTimeString() : '-'}</td>
+      <td>${p.framework || p.philosophical_framework || "-"}</td>
+      <td>${p.philosopher || p.referenced_philosopher || "-"}</td>
+      <td>${escapeHtml(p.question || "")}</td>
+      <td>${escapeHtml((p.answer || "").slice(0, 60))}…</td>
+      <td>${(p.determinacy || 0).toFixed(2)}</td>
+      <td class="risk-${(p.risk_tags?.[0] || 'low_risk').replace('_', '-')}">${(p.risk_tags || ["low_risk"]).join(", ")}</td>
+    `;
+    logBody.appendChild(tr);
+  });
+  
+  // 添加分页控件
+  addPaginationControls();
+}
+
+// 添加分页控件
+function addPaginationControls() {
+  // 移除现有的分页控件
+  const existingPagination = document.getElementById('paginationControls');
+  if (existingPagination) {
+    existingPagination.remove();
+  }
+  
+  if (allValidRecords.length <= recordsPerPage) return;
+  
+  const totalPages = Math.ceil(allValidRecords.length / recordsPerPage);
+  const paginationDiv = document.createElement('div');
+  paginationDiv.id = 'paginationControls';
+  paginationDiv.style.cssText = `
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    gap: 10px;
+  `;
+  
+  // 上一页按钮
+  if (currentPage > 1) {
+    const prevBtn = document.createElement('button');
+    prevBtn.textContent = '← Previous';
+    prevBtn.className = 'secondary-btn';
+    prevBtn.onclick = () => {
+      currentPage--;
+      displayCurrentPage();
+    };
+    paginationDiv.appendChild(prevBtn);
+  }
+  
+  // 页码信息
+  const pageInfo = document.createElement('span');
+  pageInfo.textContent = `Page ${currentPage} of ${totalPages} (${allValidRecords.length} total records)`;
+  pageInfo.style.cssText = 'color: #888; font-size: 14px;';
+  paginationDiv.appendChild(pageInfo);
+  
+  // 下一页按钮
+  if (currentPage < totalPages) {
+    const nextBtn = document.createElement('button');
+    nextBtn.textContent = 'Next →';
+    nextBtn.className = 'secondary-btn';
+    nextBtn.onclick = () => {
+      currentPage++;
+      displayCurrentPage();
+    };
+    paginationDiv.appendChild(nextBtn);
+  }
+  
+  // 插入到表格后面
+  const dashboardSection = document.getElementById('dashboard');
+  const tableContainer = dashboardSection.querySelector('.table-container');
+  tableContainer.parentNode.insertBefore(paginationDiv, tableContainer.nextSibling);
+}
+
+// 更新统计信息
+function updateStatistics(validChain) {
+  let truths = 0, sumDec = 0, sumDet = 0;
+  
+  validChain.forEach(item => {
+    const p = item.payload || {};
+    const kind = p.kind || "wisdom";
+    if (kind === "truth" || kind === "wisdom" || kind === "insight") truths++;
+    sumDec += (p.deception_prob || 0);
+    sumDet += (p.determinacy || 0);
+  });
+
+  const n = Math.max(1, validChain.length);
+  
+  reqCount.textContent = validChain.length.toString();
+  const calculatedRate = n > 0 ? ((truths / n) * 100) : 0;
+  truthRate.textContent = calculatedRate > 0 ? calculatedRate.toFixed(1) + "%" : "0%";
+  avgDec.textContent = (sumDec / n).toFixed(1);
+  avgDet.textContent = (sumDet / n).toFixed(1);
 }
 
 // 更新区块链活动表格
@@ -263,6 +342,8 @@ async function hardReset() {
       
       // 重新加载
       currentValidChain = [];
+      allValidRecords = [];
+      currentPage = 1;
       await loadLogs();
       
       // 强制刷新页面
