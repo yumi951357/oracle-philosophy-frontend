@@ -8,18 +8,40 @@
   <script>
     // Set your backend URL here (Render)
     window.BACKEND_URL = "https://oracle-philosophy-backend.onrender.com";
-    
-    // Global state for real data
-    window.APP_STATE = {
-      consultationCount: 0,
-      blockchainData: [],
-      stats: {
-        truthRate: 0,
-        avgDeception: 0,
-        avgDeterminacy: 0
-      }
-    };
   </script>
+  <style>
+    /* 保留所有通知样式 */
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+    
+    @keyframes slideOut {
+      from { transform: translateX(0); opacity: 1; }
+      to { transform: translateX(100%); opacity: 0; }
+    }
+    
+    .notification { 
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      color: white;
+      padding: 12px 20px;
+      border-radius: 4px;
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    }
+    .notification.success { background: #4CAF50; }
+    .notification.info { background: #2196F3; }
+    .notification.warning { background: #FF9800; }
+    .notification.error { background: #F44336; }
+    
+    .risk-high-risk { color: #f44336; font-weight: bold; }
+    .risk-medium-risk { color: #ff9800; font-weight: bold; }
+    .risk-low-risk { color: #4caf50; }
+    .risk-ethical-rejection { color: #9c27b0; font-weight: bold; }
+  </style>
 </head>
 <body>
   <!-- Tech Grid Background -->
@@ -271,197 +293,11 @@
 
 <script src="./main.js"></script>
 <script>
-// Enhanced Dashboard Functionality
-document.addEventListener('DOMContentLoaded', function() {
-  // Initialize real data system
-  initializeRealData();
-  
-  // Refresh button functionality
-  document.getElementById('refreshBtn').addEventListener('click', function() {
-    refreshDashboardData();
-  });
-  
-  // Enhanced question validation
-  const askBtn = document.getElementById('askBtn');
-  const questionInput = document.getElementById('q');
-  
-  // Override or enhance the existing ask functionality
-  const originalAskFunction = askBtn.onclick;
-  askBtn.onclick = function() {
-    const question = questionInput.value.trim();
-    
-    // Enhanced ethical checking
-    if (isUnethicalQuestion(question)) {
-      showEthicalWarning(question);
-      return false;
-    }
-    
-    // If passes checks, continue with original function
-    if (originalAskFunction) {
-      return originalAskFunction();
-    }
-  };
-});
-
-// Initialize real data system
-function initializeRealData() {
-  // Load from localStorage or initialize
-  const savedData = localStorage.getItem('oracleDashboardData');
-  if (savedData) {
-    const data = JSON.parse(savedData);
-    window.APP_STATE.consultationCount = data.consultationCount || 0;
-    window.APP_STATE.blockchainData = data.blockchainData || [];
-    window.APP_STATE.stats = data.stats || window.APP_STATE.stats;
-  }
-  
-  updateDashboardDisplay();
-}
-
-// Update dashboard display with real data
-function updateDashboardDisplay() {
-  // Update statistics cards
-  document.getElementById('reqCount').textContent = window.APP_STATE.consultationCount;
-  document.getElementById('truthRate').textContent = window.APP_STATE.stats.truthRate.toFixed(1) + '%';
-  document.getElementById('avgDec').textContent = window.APP_STATE.stats.avgDeception.toFixed(2);
-  document.getElementById('avgDet').textContent = window.APP_STATE.stats.avgDeterminacy.toFixed(2);
-  
-  // Update tables
-  updateLogTable();
-  updateBlockchainTable();
-}
-
-// Update consultation log table
-function updateLogTable() {
-  const logBody = document.getElementById('logBody');
-  logBody.innerHTML = '';
-  
-  if (window.APP_STATE.blockchainData.length === 0) {
-    // Show placeholder if no data
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td colspan="7" style="text-align: center; color: #888;">
-        No consultation records yet. Ask the oracle first.
-      </td>
-    `;
-    logBody.appendChild(row);
-  } else {
-    // Display real consultation data
-    window.APP_STATE.blockchainData.slice().reverse().forEach(entry => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>${entry.time}</td>
-        <td>${entry.framework}</td>
-        <td>${entry.philosopher}</td>
-        <td title="${entry.question}">${truncateText(entry.question, 30)}</td>
-        <td title="${entry.answer}">${truncateText(entry.answer, 50)}</td>
-        <td>${entry.determinacy}</td>
-        <td class="risk-${entry.risk.toLowerCase().replace(' ', '-')}">${entry.risk}</td>
-      `;
-      logBody.appendChild(row);
-    });
-  }
-}
-
-// Update blockchain activity table
-function updateBlockchainTable() {
-  const blockchainBody = document.getElementById('blockchainBody');
-  blockchainBody.innerHTML = '';
-  
-  if (window.APP_STATE.blockchainData.length === 0) {
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td colspan="4" style="text-align: center; color: #888;">
-        Waiting for first consultation...
-      </td>
-    `;
-    blockchainBody.appendChild(row);
-  } else {
-    // Show latest 4 entries
-    const recentEntries = window.APP_STATE.blockchainData.slice(-4).reverse();
-    recentEntries.forEach((entry, index) => {
-      const row = document.createElement('tr');
-      row.innerHTML = `
-        <td>#${String(window.APP_STATE.blockchainData.length - index).padStart(3, '0')}</td>
-        <td title="${entry.question}">${truncateText(entry.question, 25)}</td>
-        <td>${entry.framework}</td>
-        <td class="hash">${entry.blockHash || generateRandomHash()}</td>
-      `;
-      blockchainBody.appendChild(row);
-    });
-  }
-}
-
-// Refresh dashboard data
-function refreshDashboardData() {
-  console.log('Refreshing dashboard data...');
-  
-  // In a real implementation, this would fetch from your backend API
-  // For now, we'll update with current local state
-  updateDashboardDisplay();
-  
-  showNotification('Dashboard data refreshed successfully', 'success');
-}
-
-// Enhanced unethical question detection
-function isUnethicalQuestion(question) {
-  const unethicalPatterns = [
-    /deceive|deception|fraud|scam|cheat|manipulate|trick|fake|forge/i,
-    /harm|hurt|violence|attack|destroy|kill|injure/i,
-    /illegal|unlawful|crime|criminal|hack|steal|rob|theft/i,
-    /perfect.*fraud|fraud.*strategy|manipulate.*technique/i,
-    /hide.*justified|justified.*hide|conceal.*reasonable/i,
-    /counterfeit.*method|fake.*method|forgery.*technique/i
-  ];
-  
-  return unethicalPatterns.some(pattern => pattern.test(question));
-}
-
-// Show ethical warning instead of answering
-function showEthicalWarning(question) {
-  const answerBox = document.getElementById('answerBox');
-  answerBox.classList.remove('hide');
-  
-  document.getElementById('frameworkText').textContent = 'Ethical Boundary';
-  document.getElementById('philosopherText').textContent = 'System Guardian';
-  document.getElementById('answerText').textContent = 
-    'For ethical reasons, I cannot answer questions involving deception, harm, or illegal activities. Philosophical wisdom should be used for self-improvement and understanding existence, not for manipulating others. Please rephrase your question constructively.';
-  
-  document.getElementById('kind').textContent = 'Ethical Protection';
-  document.getElementById('framework').textContent = 'System Ethics';
-  document.getElementById('philosopher').textContent = 'AI Guardian';
-  document.getElementById('depth').textContent = '100%';
-  document.getElementById('det').textContent = '1.00';
-  document.getElementById('dec').textContent = '0.00';
-  document.getElementById('risk').textContent = 'Ethical Rejection';
-  document.getElementById('blockHash').textContent = 'eth_protection_' + Date.now();
-}
-
-// Utility functions
-function truncateText(text, maxLength) {
-  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
-}
-
-function generateRandomHash() {
-  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
-}
-
+// 只保留不冲突的辅助功能
 function showNotification(message, type = 'info') {
   const notification = document.createElement('div');
   notification.className = `notification ${type}`;
   notification.textContent = message;
-  notification.style.cssText = `
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background: ${type === 'success' ? '#4CAF50' : '#2196F3'};
-    color: white;
-    padding: 12px 20px;
-    border-radius: 4px;
-    z-index: 1000;
-    animation: slideIn 0.3s ease;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-  `;
-  
   document.body.appendChild(notification);
   
   setTimeout(() => {
@@ -476,105 +312,53 @@ function showComingSoon() {
   showNotification('API documentation coming soon!', 'info');
 }
 
-// Add CSS animations and styles
-const enhancedStyles = document.createElement('style');
-enhancedStyles.textContent = `
-  @keyframes slideIn {
-    from { transform: translateX(100%); opacity: 0; }
-    to { transform: translateX(0); opacity: 1; }
-  }
-  
-  @keyframes slideOut {
-    from { transform: translateX(0); opacity: 1; }
-    to { transform: translateX(100%); opacity: 0; }
-  }
-  
-  .notification.success { background: #4CAF50; }
-  .notification.info { background: #2196F3; }
-  .notification.warning { background: #FF9800; }
-  .notification.error { background: #F44336; }
-  
-  .risk-high-risk { color: #f44336; font-weight: bold; }
-  .risk-medium-risk { color: #ff9800; font-weight: bold; }
-  .risk-low-risk { color: #4caf50; }
-  .risk-ethical-rejection { color: #9c27b0; font-weight: bold; }
-  
-  .hash {
-    font-family: 'Courier New', monospace;
-    font-size: 0.85em;
-    color: #888;
-  }
-`;
-document.head.appendChild(enhancedStyles);
+// 平滑滚动导航
+document.addEventListener('DOMContentLoaded', function() {
+  const navLinks = document.querySelectorAll('.nav-link');
+  navLinks.forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      const targetId = this.getAttribute('href');
+      const targetElement = document.querySelector(targetId);
+      if (targetElement) {
+        targetElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        });
+      }
+    });
+  });
+});
 
-// Enhanced: Record consultation to local state
-function recordConsultation(question, answer, framework, philosopher, determinacy, deception, risk, blockHash) {
-  const consultation = {
-    time: new Date().toLocaleTimeString(),
-    question: question,
-    answer: answer,
-    framework: framework,
-    philosopher: philosopher,
-    determinacy: determinacy,
-    deception: deception,
-    risk: risk,
-    blockHash: blockHash,
-    timestamp: Date.now()
-  };
+// 伦理问题检测（不冲突的版本）
+function isUnethicalQuestion(question) {
+  const unethicalPatterns = [
+    /deceive|deception|fraud|scam|cheat|manipulate|trick|fake|forge/i,
+    /harm|hurt|violence|attack|destroy|kill|injure/i,
+    /illegal|unlawful|crime|criminal|hack|steal|rob|theft/i,
+    /perfect.*fraud|fraud.*strategy|manipulate.*technique/i,
+    /hide.*justified|justified.*hide|conceal.*reasonable/i,
+    /counterfeit.*method|fake.*method|forgery.*technique/i
+  ];
   
-  window.APP_STATE.consultationCount++;
-  window.APP_STATE.blockchainData.push(consultation);
-  
-  // Update statistics
-  updateStatistics();
-  
-  // Save to localStorage
-  saveToLocalStorage();
-  
-  // Update display
-  updateDashboardDisplay();
+  return unethicalPatterns.some(pattern => pattern.test(question));
 }
 
-function updateStatistics() {
-  const data = window.APP_STATE.blockchainData;
-  if (data.length === 0) return;
+// 增强的提问验证（不覆盖main.js的功能）
+document.addEventListener('DOMContentLoaded', function() {
+  const askBtn = document.getElementById('askBtn');
+  const questionInput = document.getElementById('q');
   
-  const totalDeception = data.reduce((sum, entry) => sum + parseFloat(entry.deception), 0);
-  const totalDeterminacy = data.reduce((sum, entry) => sum + parseFloat(entry.determinacy), 0);
-  
-  window.APP_STATE.stats.avgDeception = totalDeception / data.length;
-  window.APP_STATE.stats.avgDeterminacy = totalDeterminacy / data.length;
-  window.APP_STATE.stats.truthRate = ((data.filter(entry => entry.deception < 0.1).length / data.length) * 100);
-}
-
-function saveToLocalStorage() {
-  localStorage.setItem('oracleDashboardData', JSON.stringify({
-    consultationCount: window.APP_STATE.consultationCount,
-    blockchainData: window.APP_STATE.blockchainData,
-    stats: window.APP_STATE.stats
-  }));
-}
-
-// Override or enhance the existing answer display to record consultations
-const originalDisplayAnswer = window.displayAnswer; // Assuming this exists in main.js
-if (originalDisplayAnswer) {
-  window.displayAnswer = function(data) {
-    // Call original function
-    originalDisplayAnswer(data);
-    
-    // Record the consultation
-    recordConsultation(
-      document.getElementById('q').value,
-      data.answer,
-      data.framework,
-      data.philosopher,
-      data.det,
-      data.dec,
-      data.risk,
-      data.blockHash
-    );
-  };
-}
+  // 只是添加验证，不覆盖现有功能
+  questionInput.addEventListener('input', function() {
+    const question = this.value.trim();
+    if (isUnethicalQuestion(question)) {
+      this.style.borderColor = '#ff6b6b';
+    } else {
+      this.style.borderColor = '';
+    }
+  });
+});
 </script>
 </body>
 </html>
