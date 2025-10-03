@@ -4,6 +4,11 @@
 // Global configuration
 const CONFIG = {
     backendUrl: window.BACKEND_URL || "https://oracle-philosophy-backend.onrender.com",
+    apiEndpoints: {
+        ask: '/api/oracle/consult',           // 修正的路径
+        dashboard: '/api/audit/chain',        // 修正的路径
+        health: '/api/health'                 // 健康检查
+    },
     maxQuestionLength: 500,
     sessionId: generateSessionId()
 };
@@ -101,7 +106,7 @@ async function askOracle() {
     setLoadingState(true);
 
     try {
-        const response = await fetch(`${CONFIG.backendUrl}/api/v1/oracle/ask`, {
+        const response = await fetch(`${CONFIG.backendUrl}${CONFIG.apiEndpoints.ask}`, {  // 修正的路径
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -199,7 +204,7 @@ function styleFrameworkBadge(framework) {
 // Load dashboard data
 async function loadDashboardData() {
     try {
-        const response = await fetch(`${CONFIG.backendUrl}/api/v1/dashboard`);
+        const response = await fetch(`${CONFIG.backendUrl}${CONFIG.apiEndpoints.dashboard}`);  // 修正的路径
         
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
