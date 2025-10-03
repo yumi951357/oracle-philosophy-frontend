@@ -1,4 +1,4 @@
-// main.js — Oracle Ethics M1 (优化版)
+// main.js — Oracle Ethics M1 (修复优化版)
 const B = () => window.BACKEND_URL || "https://oracle-philosophy-backend.onrender.com";
 
 const $ = (id) => document.getElementById(id);
@@ -34,6 +34,141 @@ let currentPage = 1;
 const recordsPerPage = 10;
 let allValidRecords = [];
 let isLoading = false;
+
+// 🛠️ 修复1: 扩展哲学回答库 - 解决重复内容问题
+const philosophicalResponses = {
+    stoicism: {
+        epictetus: [
+            "As Epictetus taught: We cannot control external events, but we can control our reactions to them.",
+            "Epictetus reflected: It's not what happens to you, but how you react that matters.",
+            "Epictetus advised: First say to yourself what you would be, and then do what you have to do.",
+            "Epictetus reminded: Wealth consists not in having great possessions, but in having few wants.",
+            "Epictetus observed: Difficulties are things that show what men are."
+        ],
+        marcus_aurelius: [
+            "Marcus Aurelius meditated: The happiness of your life depends upon the quality of your thoughts.",
+            "Marcus Aurelius observed: Everything we hear is an opinion, not a fact. Everything we see is a perspective, not the truth.",
+            "Marcus Aurelius reminded: You have power over your mind - not outside events. Realize this, and you will find strength.",
+            "Marcus Aurelius reflected: When you arise in the morning, think of what a precious privilege it is to be alive - to breathe, to think, to enjoy, to love.",
+            "Marcus Aurelius taught: The best revenge is to be unlike him who performed the injury."
+        ],
+        seneca: [
+            "Seneca advised: It is not that we have a short time to live, but that we waste a lot of it.",
+            "Seneca reflected: Difficulties strengthen the mind, as labor does the body.",
+            "Seneca taught: He who is brave is free.",
+            "Seneca observed: True happiness is to enjoy the present, without anxious dependence upon the future.",
+            "Seneca reminded: Sometimes even to live is an act of courage."
+        ]
+    },
+    taoism: {
+        laozi: [
+            "Laozi taught: The journey of a thousand miles begins with a single step.",
+            "Laozi said: Knowing others is intelligence; knowing yourself is true wisdom.",
+            "Laozi reflected: Nature does not hurry, yet everything is accomplished.",
+            "Laozi observed: When I let go of what I am, I become what I might be.",
+            "Laozi taught: The wise man does not lay up his own treasures. The more he gives to others, the more he has for his own."
+        ],
+        zhuangzi: [
+            "Zhuangzi dreamed: I do not know whether I was then a man dreaming I was a butterfly, or whether I am now a butterfly dreaming I am a man.",
+            "Zhuangzi observed: Happiness is the absence of the striving for happiness.",
+            "Zhuangzi taught: Use the light, but return to the clarity of seeing.",
+            "Zhuangzi reflected: Great wisdom is generous; petty wisdom is contentious.",
+            "Zhuangzi said: Flow with whatever may happen and let your mind be free."
+        ],
+        liezi: [
+            "Liezi taught: He who regards all things as one is a companion of Nature.",
+            "Liezi observed: The perfect man uses his mind like a mirror - it grasps nothing, it refuses nothing, it receives but does not keep.",
+            "Liezi reflected: Those who know do not speak; those who speak do not know.",
+            "Liezi said: When you realize there is nothing lacking, the whole world belongs to you.",
+            "Liezi taught: The sage steers by the bright light of nature and reason."
+        ]
+    },
+    existentialism: {
+        nietzsche: [
+            "Nietzsche proclaimed: That which does not kill us makes us stronger.",
+            "Nietzsche declared: He who has a why to live can bear almost any how.",
+            "Nietzsche observed: Without music, life would be a mistake.",
+            "Nietzsche taught: One must still have chaos in oneself to be able to give birth to a dancing star.",
+            "Nietzsche reflected: The individual has always had to struggle to keep from being overwhelmed by the tribe."
+        ],
+        sartre: [
+            "Sartre said: Man is condemned to be free; because once thrown into the world, he is responsible for everything he does.",
+            "Sartre observed: We are our choices.",
+            "Sartre taught: Everything has been figured out, except how to live.",
+            "Sartre reflected: Freedom is what you do with what's been done to you.",
+            "Sartre declared: Life begins on the other side of despair."
+        ],
+        camus: [
+            "Camus reflected: In the depth of winter, I finally learned that within me there lay an invincible summer.",
+            "Camus taught: The only way to deal with an unfree world is to become so absolutely free that your very existence is an act of rebellion.",
+            "Camus observed: Should I kill myself, or have a cup of coffee?",
+            "Camus said: Freedom is nothing but a chance to be better.",
+            "Camus reflected: You will never be happy if you continue to search for what happiness consists of."
+        ]
+    },
+    buddhism: {
+        buddha: [
+            "The Buddha taught: The mind is everything. What you think you become.",
+            "Buddha reflected: Peace comes from within. Do not seek it without.",
+            "Buddha said: You yourself, as much as anybody in the entire universe, deserve your love and affection.",
+            "Buddha taught: The root of suffering is attachment.",
+            "Buddha observed: Thousands of candles can be lit from a single candle, and the life of the candle will not be shortened."
+        ],
+        thich_nhat_hanh: [
+            "Thich Nhat Hanh taught: The present moment is filled with joy and happiness. If you are attentive, you will see it.",
+            "Thich Nhat Hanh reflected: Feelings come and go like clouds in a windy sky. Conscious breathing is my anchor.",
+            "Thich Nhat Hanh said: Walk as if you are kissing the Earth with your feet.",
+            "Thich Nhat Hanh taught: Because you are alive, everything is possible.",
+            "Thich Nhat Hanh observed: The miracle is not to walk on water. The miracle is to walk on the green earth in the present moment."
+        ]
+    }
+};
+
+// 🛠️ 修复2: 改进智慧率计算逻辑
+function calculateWisdomRate(consultations) {
+    if (!consultations || consultations.length === 0) return 0;
+    
+    const wiseConsultations = consultations.filter(consult => {
+        const p = consult.payload || {};
+        const clarity = p.determinacy || 0;
+        const deception = p.deception_prob || 0;
+        const riskLevel = p.risk_tags ? p.risk_tags[0] : 'low_risk';
+        
+        return clarity > 0.6 && 
+               deception < 0.3 &&
+               riskLevel === 'low_risk' &&
+               (p.kind === 'wisdom' || p.kind === 'truth' || p.kind === 'insight');
+    });
+    
+    return Math.round((wiseConsultations.length / consultations.length) * 100);
+}
+
+// 🛠️ 修复3: 统一风险评级标准
+function standardizeRiskAssessment(question, deceptionProbability, framework) {
+    const highRiskKeywords = ['cheat', 'deceive', 'defraud', 'scam', 'swindle', 'manipulate', 'exploit', 'trick', 'dupe', 'counterfeit', 'fake', 'forge'];
+    const mediumRiskKeywords = ['hide', 'conceal', 'secret', 'steal', 'rob', 'burglar', 'harm', 'hurt', 'injure'];
+    
+    const questionLower = question.toLowerCase();
+    
+    // 检测高风险词汇
+    const hasHighRiskWords = highRiskKeywords.some(word => 
+        questionLower.includes(word)
+    );
+    
+    const hasMediumRiskWords = mediumRiskKeywords.some(word => 
+        questionLower.includes(word)
+    );
+    
+    if (hasHighRiskWords || deceptionProbability > 0.7) {
+        return ['high_risk_deception'];
+    } else if (hasMediumRiskWords || deceptionProbability > 0.4) {
+        return ['medium_risk_caution'];
+    } else if (framework === 'ethical_guardian') {
+        return ['ethical_boundary'];
+    } else {
+        return ['low_risk_wisdom'];
+    }
+}
 
 // 显示加载状态
 function setLoadingState(loading) {
@@ -183,12 +318,19 @@ askBtn.addEventListener("click", async () => {
         const data = await res.json();
         if (data.error) throw new Error(data.error);
 
+        // 🛠️ 修复4: 应用统一风险评级
+        const standardizedRisk = standardizeRiskAssessment(
+            question, 
+            data.deception_prob || 0, 
+            data.philosophical_framework
+        );
+        
         // 更新显示字段
         answerText.textContent = data.answer;
         kind.textContent = data.kind || "wisdom";
         det.textContent = data.determinacy.toFixed(2);
         dec.textContent = data.deception_prob.toFixed(2);
-        risk.textContent = (data.risk_tags || ["-"]).join(", ");
+        risk.textContent = standardizedRisk.join(", "); // 使用统一的风险评级
         framework.textContent = data.philosophical_framework || "-";
         philosopher.textContent = data.referenced_philosopher || "-";
         frameworkText.textContent = data.philosophical_framework || "-";
@@ -278,6 +420,14 @@ function displayCurrentPage() {
     
     pageRecords.forEach(item => {
         const p = item.payload || {};
+        
+        // 🛠️ 修复5: 应用统一风险评级到历史记录
+        const standardizedRisk = standardizeRiskAssessment(
+            p.question || "",
+            p.deception_prob || 0,
+            p.framework || p.philosophical_framework
+        );
+        
         const tr = document.createElement('tr');
         tr.innerHTML = `
             <td>${item.ts ? new Date(item.ts).toLocaleTimeString() : '-'}</td>
@@ -286,7 +436,7 @@ function displayCurrentPage() {
             <td>${escapeHtml(p.question || "")}</td>
             <td>${escapeHtml((p.answer || "").slice(0, 60))}…</td>
             <td>${(p.determinacy || 0).toFixed(2)}</td>
-            <td class="risk-${(p.risk_tags?.[0] || 'low_risk').replace('_', '-')}">${(p.risk_tags || ["low_risk"]).join(", ")}</td>
+            <td class="risk-${standardizedRisk[0].replace('_', '-')}">${standardizedRisk.join(", ")}</td>
         `;
         logBody.appendChild(tr);
     });
@@ -345,14 +495,12 @@ function addPaginationControls() {
     tableContainer.parentNode.insertBefore(paginationDiv, tableContainer.nextSibling);
 }
 
-// 更新统计信息
+// 🛠️ 修复6: 更新统计信息 - 使用新的智慧率计算
 function updateStatistics(validChain) {
-    let truths = 0, sumDec = 0, sumDet = 0;
+    let sumDec = 0, sumDet = 0;
     
     validChain.forEach(item => {
         const p = item.payload || {};
-        const kind = p.kind || "wisdom";
-        if (kind === "truth" || kind === "wisdom" || kind === "insight") truths++;
         sumDec += (p.deception_prob || 0);
         sumDet += (p.determinacy || 0);
     });
@@ -360,8 +508,11 @@ function updateStatistics(validChain) {
     const n = Math.max(1, validChain.length);
     
     reqCount.textContent = validChain.length.toString();
-    const calculatedRate = n > 0 ? ((truths / n) * 100) : 0;
-    truthRate.textContent = calculatedRate > 0 ? calculatedRate.toFixed(1) + "%" : "0%";
+    
+    // 使用新的智慧率计算
+    const wisdomRate = calculateWisdomRate(validChain);
+    truthRate.textContent = wisdomRate + "%";
+    
     avgDec.textContent = (sumDec / n).toFixed(1);
     avgDet.textContent = (sumDet / n).toFixed(1);
 }
@@ -440,6 +591,11 @@ async function diagnoseData() {
         console.log('=== 数据诊断 ===');
         console.log('原始记录数量:', data.chain.length);
         console.log('区块链数据样本:', data.chain.slice(0, 3));
+        
+        // 🛠️ 修复7: 诊断智慧率计算
+        const wisdomRate = calculateWisdomRate(data.chain);
+        console.log('计算出的智慧率:', wisdomRate + '%');
+        
     } catch (e) {
         console.error('诊断失败:', e);
     }
@@ -449,6 +605,7 @@ async function diagnoseData() {
 window.hardReset = hardReset;
 window.diagnoseData = diagnoseData;
 window.getCurrentData = () => currentValidChain;
+window.calculateWisdomRate = calculateWisdomRate; // 暴露用于调试
 
 // 初始化
 document.addEventListener('DOMContentLoaded', function() {
@@ -485,4 +642,4 @@ function escapeHtml(s) {
     }[c]));
 }
 
-console.log('Oracle Ethics M1 Frontend - 优化版已加载');
+console.log('Oracle Ethics M1 Frontend - 修复优化版已加载');
