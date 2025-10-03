@@ -1,5 +1,5 @@
 // main.js — Oracle Ethics M1 (vanilla JS)
-const B = () => window.BACKEND_URL || "";
+const B = () => window.BACKEND_URL || "https://oracle-philosophy-backend.onrender.com";
 
 const $ = (id) => document.getElementById(id);
 const askBtn = $("askBtn");
