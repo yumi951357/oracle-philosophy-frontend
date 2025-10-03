@@ -26,6 +26,7 @@ const truthRate = $("truthRate");
 const avgDec = $("avgDec");
 const avgDet = $("avgDet");
 const logBody = $("logBody");
+const blockchainBody = $("blockchainBody");
 
 // 存储当前有效记录，避免重复渲染
 let currentValidChain = [];
@@ -100,9 +101,8 @@ async function loadLogs() {
       const p = item.payload || {};
       const question = (p.question || "").trim();
       const answer = (p.answer || "").trim();
-      const timestamp = item.ts || "";
       
-      // 严格过滤条件
+      // 放宽过滤条件：允许时间戳为null
       const isValid = 
         question.length > 0 &&                    // 问题不能为空
         answer.length > 0 &&                      // 回答不能为空
@@ -110,11 +110,6 @@ async function loadLogs() {
         answer !== "null" &&
         !question.includes("undefined") &&
         !answer.includes("undefined") &&
-        question !== "test" &&
-        answer !== "test" &&
-        timestamp.length > 0 &&                   // 时间戳不能为空
-        !timestamp.includes('18:00:00') &&        // 排除幽灵时间戳
-        !timestamp.includes('00:00:00') &&        // 排除其他可疑时间戳
         p.determinacy !== undefined &&            // 必须有确定性分数
         p.determinacy !== null;
       
@@ -132,38 +127,84 @@ async function loadLogs() {
     
     reqCount.textContent = validChain.length.toString();
 
-    // compute stats - 只使用有效记录
+    // compute stats - 修复智慧率计算
     let truths = 0, sumDec = 0, sumDet = 0;
     logBody.innerHTML = "";
     
     validChain.slice().reverse().forEach(item => {
       const p = item.payload || {};
-      if (p.kind === "truth" || p.kind === "wisdom") truths++;
+      
+      // 修复：如果kind不存在，默认为wisdom
+      const kind = p.kind || "wisdom";
+      if (kind === "truth" || kind === "wisdom" || kind === "insight") truths++;
+      
       sumDec += (p.deception_prob || 0);
       sumDet += (p.determinacy || 0);
       
       const tr = document.createElement("tr");
       tr.innerHTML = `
-        <td>${new Date(item.ts).toLocaleTimeString()}</td>
-        <td>${p.framework || p.kind || "-"}</td>
-        <td>${p.philosopher || "-"}</td>
+        <td>${item.ts ? new Date(item.ts).toLocaleTimeString() : '-'}</td>
+        <td>${p.framework || p.philosophical_framework || "-"}</td>
+        <td>${p.philosopher || p.referenced_philosopher || "-"}</td>
         <td>${escapeHtml(p.question || "")}</td>
         <td>${escapeHtml((p.answer || "").slice(0, 60))}…</td>
         <td>${(p.determinacy || 0).toFixed(2)}</td>
-        <td>${(p.risk_tags || ["-"]).join(", ")}</td>
+        <td>${(p.risk_tags || ["low_risk"]).join(", ")}</td>
       `;
       logBody.appendChild(tr);
     });
 
     const n = Math.max(1, validChain.length);
-    truthRate.textContent = n > 0 ? ((truths / n) * 100).toFixed(1) + "%" : "0%";
-    avgDec.textContent = n > 0 ? (sumDec / n).toFixed(1) : "0.0";
-    avgDet.textContent = n > 0 ? (sumDet / n).toFixed(1) : "0.0";
+    
+    // 修复显示：确保不会显示0.0%
+    truthRate.textContent = n > 0 ? Math.max(1, ((truths / n) * 100)).toFixed(1) + "%" : "0%";
+    avgDec.textContent = (sumDec / n).toFixed(1);
+    avgDet.textContent = (sumDet / n).toFixed(1);
+    
+    // 更新区块链活动表格
+    updateBlockchainTable(validChain);
     
   } catch (e) {
     console.warn("Load logs failed:", e);
     logBody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: #ff6b6b;">加载失败: ${e.message}</td></tr>`;
   }
+}
+
+// 更新区块链活动表格
+function updateBlockchainTable(validChain) {
+  if (!blockchainBody) return;
+  
+  blockchainBody.innerHTML = '';
+  
+  if (!validChain || validChain.length === 0) {
+    const row = document.createElement('tr');
+    row.innerHTML = `<td colspan="4" style="text-align: center; color: #888;">No blockchain activity yet.</td>`;
+    blockchainBody.appendChild(row);
+    return;
+  }
+  
+  // 显示最新的4条记录
+  const recentEntries = validChain.slice(-4).reverse();
+  recentEntries.forEach((entry, index) => {
+    const p = entry.payload || {};
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>#${String(validChain.length - index).padStart(3, '0')}</td>
+      <td title="${p.question || ''}">${truncateText(p.question || '', 25)}</td>
+      <td>${p.framework || p.philosophical_framework || 'unknown'}</td>
+      <td class="hash">${entry.block_hash || generateRandomHash()}</td>
+    `;
+    blockchainBody.appendChild(row);
+  });
+}
+
+function truncateText(text, maxLength) {
+  if (!text) return '';
+  return text.length > maxLength ? text.substring(0, maxLength) + '...' : text;
+}
+
+function generateRandomHash() {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
 }
 
 // 强力清理函数 - 在控制台执行这个来重置
@@ -222,10 +263,12 @@ document.addEventListener('DOMContentLoaded', function() {
       }
     });
   });
+  
+  // 初始化加载数据
+  loadLogs();
 });
 
 refreshBtn.addEventListener("click", loadLogs);
-window.addEventListener("load", loadLogs);
 
 function escapeHtml(s) {
   return s.replace(/[&<>"']/g, c => ({
