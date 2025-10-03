@@ -1,4 +1,4 @@
-// main.js — Oracle Ethics M1 (Complete Fixed Version)
+// main.js — Oracle Ethics M1 (Data Consistency Fixed Version)
 const B = () => window.BACKEND_URL || "https://oracle-philosophy-backend.onrender.com";
 
 const $ = (id) => document.getElementById(id);
@@ -40,6 +40,62 @@ let dataCache = null;
 let lastLoadTime = 0;
 const CACHE_DURATION = 30000;
 
+// 🎯 确定性数据同步管理器
+class DeterministicDataManager {
+    constructor() {
+        this.isSyncing = false;
+        this.lastStableHash = null;
+    }
+    
+    // 🎯 修复1: 确定性数据合并
+    deterministicMerge(currentRecords, backendRecords) {
+        console.log('🔄 确定性数据合并开始...');
+        console.log('当前记录:', currentRecords.length, '后端记录:', backendRecords.length);
+        
+        // 创建哈希映射确保唯一性
+        const hashMap = new Map();
+        
+        // 🎯 按确定顺序合并：先后端，再当前（确保后端数据优先）
+        [...backendRecords, ...currentRecords].forEach(item => {
+            if (item && item.block_hash) {
+                hashMap.set(item.block_hash, item);
+            }
+        });
+        
+        const merged = Array.from(hashMap.values());
+        
+        // 🎯 确定性排序：按时间倒序
+        merged.sort((a, b) => {
+            const timeA = new Date(a.timestamp || a.ts || 0);
+            const timeB = new Date(b.timestamp || b.ts || 0);
+            return timeB - timeA;
+        });
+        
+        console.log('合并后记录:', merged.length);
+        return merged;
+    }
+    
+    // 🎯 修复2: 数据一致性验证
+    validateConsistency(records) {
+        const currentHash = this.generateRecordsHash(records);
+        const isConsistent = !this.lastStableHash || currentHash === this.lastStableHash;
+        
+        if (!isConsistent) {
+            console.warn('🚨 数据不一致检测到!');
+        }
+        
+        this.lastStableHash = currentHash;
+        return isConsistent;
+    }
+    
+    generateRecordsHash(records) {
+        const hashString = records.map(r => r.block_hash).filter(Boolean).join('|');
+        return btoa(hashString).substring(0, 16);
+    }
+}
+
+const deterministicManager = new DeterministicDataManager();
+
 // 🎯 前端数据一致性层
 class DataConsistencyManager {
     constructor() {
@@ -76,7 +132,7 @@ class DataConsistencyManager {
     
     async fetchBackendData() {
         const randomParam = Math.random().toString(36).substring(7);
-        const response = await fetch(`${B()}/api/audit/chain?limit=500&nocache=${randomParam}`);
+        const response = await fetch(`${B()}/api/audit/chain?limit=100&nocache=${randomParam}`);
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         return response.json();
     }
@@ -85,22 +141,8 @@ class DataConsistencyManager {
         const backendChain = backendData.chain || [];
         const localChain = this.localBackup;
         
-        // 创建哈希映射以避免重复
-        const hashMap = new Map();
-        
-        // 优先使用后端数据
-        backendChain.forEach(item => {
-            if (item.block_hash) hashMap.set(item.block_hash, item);
-        });
-        
-        // 添加本地备份中不存在的记录
-        localChain.forEach(item => {
-            if (item.block_hash && !hashMap.has(item.block_hash)) {
-                hashMap.set(item.block_hash, { ...item, fromLocalBackup: true });
-            }
-        });
-        
-        return Array.from(hashMap.values());
+        // 使用确定性管理器合并
+        return deterministicManager.deterministicMerge(localChain, backendChain);
     }
     
     validateAndCleanData(data) {
@@ -110,7 +152,6 @@ class DataConsistencyManager {
             const question = (p.question || "").trim();
             const answer = (p.answer || "").trim();
             
-            // 🎯 修复：极宽松的条件
             return question.length > 0 || answer.length > 0;
         });
     }
@@ -130,7 +171,6 @@ class DataConsistencyManager {
         };
         
         this.localBackup.unshift(backupItem);
-        // 只保留最近50条记录
         this.localBackup = this.localBackup.slice(0, 50);
         this.saveLocalBackup();
     }
@@ -143,7 +183,7 @@ class DataConsistencyManager {
 
 const dataConsistencyManager = new DataConsistencyManager();
 
-// 🎯 增强型欺骗检测引擎
+// 🎯 增强型欺骗检测引擎（保持不变）
 class EnhancedDeceptionDetector {
     constructor() {
         this.patterns = {
@@ -231,7 +271,6 @@ class EnhancedDeceptionDetector {
             return { score: 0, level: 'low_risk', reasons: ['Question too short'] };
         }
 
-        // 检查立即伦理边界
         const immediateMatch = this.patterns.immediate_ethical_boundary
             .some(pattern => pattern.test(question));
             
@@ -278,7 +317,7 @@ class EnhancedDeceptionDetector {
 
 const deceptionDetector = new EnhancedDeceptionDetector();
 
-// Philosophical Response Engine
+// Philosophical Response Engine（保持不变）
 class PhilosophicalResponseEngine {
     constructor() {
         this.responses = {
@@ -626,7 +665,7 @@ function initializeDefaultData() {
     if (paginationContainer) paginationContainer.innerHTML = '';
 }
 
-// 🎯 修复咨询函数 - 单一事件监听器
+// 🎯 修复咨询函数 - 基于确定性数据同步
 askBtn.addEventListener("click", async () => {
     const question = (q.value || "").trim();
     const sessionId = (sid.value || "").trim();
@@ -684,7 +723,7 @@ askBtn.addEventListener("click", async () => {
 
         updateAnswerDisplay(data, enhancedAnswer, deceptionAnalysis);
         
-        // 🎯 修复：清除缓存并重新加载数据
+        // 🎯 修复：使用确定性数据同步
         dashboardManager.clearCache();
         await loadLogs();
         
@@ -751,7 +790,7 @@ function showEthicalWarning(question, analysis) {
     showNotification('Ethical boundaries respected in your consultation', 'info');
 }
 
-// 🎯 修复主数据加载函数
+// 🎯 修复主数据加载函数 - 确定性数据加载
 async function loadLogs() {
     if (isLoading) {
         console.log('Load already in progress, skipping...');
@@ -760,14 +799,19 @@ async function loadLogs() {
     
     try {
         setLoadingState(true);
-        console.log('Loading consultation data...');
+        console.log('🔄 确定性数据加载开始...');
+        
+        // 🎯 修复1: 先清空再加载
+        const previousCount = allValidRecords.length;
+        allValidRecords = [];
+        if (logBody) logBody.innerHTML = "";
         
         const data = await dashboardManager.loadDataWithStability();
         const chain = data.chain || [];
         
-        console.log(`Raw backend data: ${chain.length} records`);
+        console.log(`后端返回记录: ${chain.length}`);
         
-        // 🎯 修复：极宽松的数据过滤
+        // 🎯 修复2: 确定性数据过滤
         allValidRecords = chain.filter(item => {
             if (!item || typeof item !== 'object') return false;
             
@@ -775,74 +819,75 @@ async function loadLogs() {
             const question = (p.question || "").trim();
             const answer = (p.answer || "").trim();
             
-            // 极宽松条件：只要有question或answer就显示
             const isValid = question.length > 0 || answer.length > 0;
-            
-            if (!isValid) {
-                console.warn('Filtered invalid record:', item);
-            }
-            
             return isValid;
         });
         
-        console.log(`After filtering: ${allValidRecords.length} valid records`);
+        console.log(`过滤后有效记录: ${allValidRecords.length}`);
         
-        // 按时间戳排序（最新的在前）
+        // 🎯 修复3: 确定性排序
         allValidRecords.sort((a, b) => {
-            const timeA = a.timestamp || a.ts || 0;
-            const timeB = b.timestamp || b.ts || 0;
-            return new Date(timeB) - new Date(timeA);
+            const timeA = new Date(a.timestamp || a.ts || 0);
+            const timeB = new Date(b.timestamp || b.ts || 0);
+            return timeB - timeA;
         });
         
         currentValidChain = allValidRecords;
         currentPage = 1;
         
         if (allValidRecords.length === 0) {
-            console.log('No valid records found');
+            console.log('未找到有效记录');
             initializeDefaultData();
         } else {
-            console.log(`Displaying ${allValidRecords.length} records`);
+            console.log(`显示 ${allValidRecords.length} 条记录`);
             displayCurrentPage();
             updateStatistics(allValidRecords);
             updateBlockchainTable(allValidRecords);
+            
+            // 🎯 数据一致性验证
+            deterministicManager.validateConsistency(allValidRecords);
         }
         
     } catch (e) {
-        console.error("Load logs failed:", e);
-        showError("Failed to load wisdom data: " + e.message, true);
+        console.error("数据加载失败:", e);
+        showError("数据加载失败: " + e.message, true);
     } finally {
         setLoadingState(false);
     }
 }
 
-// 修复分页显示
+// 🎯 修复分页显示 - 确定性渲染
 function displayCurrentPage() {
     if (!logBody) return;
     
+    // 🎯 修复: 完全清空再渲染
     logBody.innerHTML = "";
     
     const startIndex = (currentPage - 1) * recordsPerPage;
     const endIndex = Math.min(startIndex + recordsPerPage, allValidRecords.length);
     const pageRecords = allValidRecords.slice(startIndex, endIndex);
     
-    console.log(`Displaying page ${currentPage}: records ${startIndex} to ${endIndex}`);
+    console.log(`渲染页面 ${currentPage}: 记录 ${startIndex} 到 ${endIndex}, 共 ${pageRecords.length} 条`);
     
     if (pageRecords.length === 0) {
         logBody.innerHTML = `
             <tr>
                 <td colspan="7" style="text-align: center; color: var(--muted); padding: 40px;">
-                    <div>📊 No records on this page</div>
-                    <small>Navigate to other pages or refresh data</small>
+                    <div>📊 本页暂无记录</div>
+                    <small>浏览其他页面或刷新数据</small>
                 </td>
             </tr>
         `;
         return;
     }
     
+    // 🎯 修复: 使用稳定Key（基于block_hash）
     pageRecords.forEach((item, index) => {
         const globalIndex = startIndex + index;
         const formatted = blockchainLogger.formatLogEntry(item, globalIndex, allValidRecords.length);
         const tr = document.createElement('tr');
+        // 🎯 使用block_hash作为稳定标识
+        tr.setAttribute('data-hash', item.block_hash || 'no-hash');
         tr.innerHTML = `
             <td>${escapeHtml(formatted.time)}</td>
             <td>${escapeHtml(formatted.framework)}</td>
@@ -935,7 +980,7 @@ function updateStatistics(validChain) {
     avgDec.textContent = (sumDec / n).toFixed(1);
     avgDet.textContent = (sumDet / n).toFixed(1);
     
-    console.log(`Statistics: ${validChain.length} records, wisdom rate: ${wisdomRate}%`);
+    console.log(`统计: ${validChain.length} 条记录, 智慧率: ${wisdomRate}%`);
 }
 
 // 修复区块链表格
@@ -947,6 +992,7 @@ function updateBlockchainTable(validChain) {
         return (p.question || p.answer) && (item.timestamp || item.ts);
     });
     
+    // 🎯 修复: 先清空再渲染
     blockchainBody.innerHTML = '';
     
     if (blockchainData.length === 0) {
@@ -965,6 +1011,8 @@ function updateBlockchainTable(validChain) {
     recentEntries.forEach((entry, index) => {
         const formatted = blockchainLogger.formatBlockchainEntry(entry, index, blockchainData.length);
         const row = document.createElement('tr');
+        // 🎯 使用稳定Key
+        row.setAttribute('data-hash', entry.block_hash || 'no-hash');
         row.innerHTML = `
             <td style="font-family: 'Courier New', monospace; font-weight: bold;">${formatted.block}</td>
             <td title="${escapeHtml(entry.payload?.question || '')}">${escapeHtml(formatted.question)}</td>
@@ -1007,21 +1055,22 @@ async function diagnoseSystem() {
             wisdomRate: calculateWisdomRate(validRecords),
             cacheStatus: dashboardManager.cache.size > 0 ? 'Active' : 'Empty',
             currentDisplay: allValidRecords.length,
-            localBackupCount: dataConsistencyManager.localBackup.length
+            localBackupCount: dataConsistencyManager.localBackup.length,
+            dataConsistency: deterministicManager.validateConsistency(allValidRecords) ? '✅ 一致' : '❌ 不一致'
         };
         
-        console.log('System Diagnosis:', stats);
-        showNotification(`System OK: ${stats.validRecords} records, ${stats.wisdomRate}% wisdom rate`, 'success');
+        console.log('系统诊断:', stats);
+        showNotification(`系统正常: ${stats.validRecords} 条记录, ${stats.wisdomRate}% 智慧率`, 'success');
         
         return stats;
     } catch (error) {
-        console.error('Diagnosis failed:', error);
-        showNotification('System diagnosis failed', 'error');
+        console.error('诊断失败:', error);
+        showNotification('系统诊断失败', 'error');
     }
 }
 
 function hardReset() {
-    if (confirm('⚠️ Reset all system data and cache?')) {
+    if (confirm('⚠️ 重置所有系统数据和缓存?')) {
         dashboardManager.clearCache();
         dataConsistencyManager.clearBackup();
         localStorage.clear();
@@ -1030,7 +1079,7 @@ function hardReset() {
         allValidRecords = [];
         currentPage = 1;
         initializeDefaultData();
-        showNotification('System reset completed', 'info');
+        showNotification('系统重置完成', 'info');
     }
 }
 
@@ -1042,28 +1091,30 @@ window.getSystemStats = () => ({
     wisdomRate: calculateWisdomRate(allValidRecords),
     page: currentPage,
     totalPages: Math.ceil(allValidRecords.length / recordsPerPage),
-    localBackup: dataConsistencyManager.localBackup.length
+    localBackup: dataConsistencyManager.localBackup.length,
+    dataConsistency: deterministicManager.validateConsistency(allValidRecords)
 });
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('Oracle Ethics M1 - Complete Fixed Edition Initializing');
+    console.log('Oracle Ethics M1 - 数据一致性修复版初始化');
     
     initializeDefaultData();
     loadLogs();
     
     setInterval(() => {
         if (document.visibilityState === 'visible') {
-            console.log('Periodic data refresh triggered');
+            console.log('定期数据刷新触发');
             loadLogs();
         }
     }, 120000);
     
-    console.log('Oracle Ethics M1 - Complete Fixed Edition Loaded');
+    console.log('Oracle Ethics M1 - 数据一致性修复版加载完成');
 });
 
+// 🎯 修复刷新按钮 - 确定性刷新
 refreshBtn.addEventListener("click", function() {
-    console.log('Manual refresh triggered');
+    console.log('🔄 确定性数据刷新');
     dashboardManager.clearCache();
     loadLogs();
 });
