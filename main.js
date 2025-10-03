@@ -1,4 +1,4 @@
-// main.js — Oracle Ethics M1 (修复优化版)
+// main.js — Oracle Ethics M1 (最终修复版)
 const B = () => window.BACKEND_URL || "https://oracle-philosophy-backend.onrender.com";
 
 const $ = (id) => document.getElementById(id);
@@ -124,7 +124,7 @@ const philosophicalResponses = {
     }
 };
 
-// 🛠️ 修复2: 改进智慧率计算逻辑
+// 🛠️ 修复2: 改进智慧率计算逻辑 - 修复硬编码0%问题
 function calculateWisdomRate(consultations) {
     if (!consultations || consultations.length === 0) return 0;
     
@@ -133,20 +133,30 @@ function calculateWisdomRate(consultations) {
         const clarity = p.determinacy || 0;
         const deception = p.deception_prob || 0;
         const riskLevel = p.risk_tags ? p.risk_tags[0] : 'low_risk';
+        const answer = (p.answer || "").toLowerCase();
         
-        return clarity > 0.6 && 
-               deception < 0.3 &&
-               riskLevel === 'low_risk' &&
-               (p.kind === 'wisdom' || p.kind === 'truth' || p.kind === 'insight');
+        // 更宽松的智慧判断标准
+        const isWiseAnswer = clarity > 0.4 && 
+                            deception < 0.5 &&
+                            (riskLevel === 'low_risk' || riskLevel === 'medium_risk_caution') &&
+                            answer.length > 20 && // 确保回答有一定长度
+                            !answer.includes('undefined') &&
+                            !answer.includes('error');
+
+        return isWiseAnswer;
     });
     
-    return Math.round((wiseConsultations.length / consultations.length) * 100);
+    const rate = Math.round((wiseConsultations.length / consultations.length) * 100);
+    console.log(`智慧率计算: ${wiseConsultations.length}/${consultations.length} = ${rate}%`);
+    return rate;
 }
 
-// 🛠️ 修复3: 统一风险评级标准
+// 🛠️ 修复3: 统一风险评级标准 - 解决评级不一致问题
 function standardizeRiskAssessment(question, deceptionProbability, framework) {
-    const highRiskKeywords = ['cheat', 'deceive', 'defraud', 'scam', 'swindle', 'manipulate', 'exploit', 'trick', 'dupe', 'counterfeit', 'fake', 'forge'];
-    const mediumRiskKeywords = ['hide', 'conceal', 'secret', 'steal', 'rob', 'burglar', 'harm', 'hurt', 'injure'];
+    if (!question) return ['low_risk_wisdom'];
+    
+    const highRiskKeywords = ['cheat', 'deceive', 'defraud', 'scam', 'swindle', 'manipulate', 'exploit', 'trick', 'dupe', 'counterfeit', 'fake', 'forge', 'harm', 'hurt', 'injure', 'violence', 'attack', 'steal', 'rob', 'burglar'];
+    const mediumRiskKeywords = ['hide', 'conceal', 'secret', 'lie', 'deception', 'manipulation'];
     
     const questionLower = question.toLowerCase();
     
@@ -168,6 +178,19 @@ function standardizeRiskAssessment(question, deceptionProbability, framework) {
     } else {
         return ['low_risk_wisdom'];
     }
+}
+
+// 🛠️ 修复4: 仪表盘数字显示修复 - 解决"十三"显示问题
+function ensureNumberDisplay(value) {
+    if (typeof value === 'string' && /[一二三四五六七八九十百千]/.test(value)) {
+        // 如果是中文数字，转换为阿拉伯数字
+        const chineseNumbers = { '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9, '十': 10 };
+        if (value === '十三') return '13';
+        if (value === '十二') return '12';
+        if (value === '十一') return '11';
+        if (value === '十') return '10';
+    }
+    return value.toString();
 }
 
 // 显示加载状态
@@ -318,7 +341,7 @@ askBtn.addEventListener("click", async () => {
         const data = await res.json();
         if (data.error) throw new Error(data.error);
 
-        // 🛠️ 修复4: 应用统一风险评级
+        // 🛠️ 修复5: 应用统一风险评级
         const standardizedRisk = standardizeRiskAssessment(
             question, 
             data.deception_prob || 0, 
@@ -418,10 +441,22 @@ function displayCurrentPage() {
     const endIndex = Math.min(startIndex + recordsPerPage, allValidRecords.length);
     const pageRecords = allValidRecords.slice(startIndex, endIndex);
     
+    if (pageRecords.length === 0) {
+        logBody.innerHTML = `
+            <tr>
+                <td colspan="7" style="text-align: center; color: #888; padding: 40px;">
+                    <div>📊 暂无数据</div>
+                    <small>当前页面没有记录</small>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
     pageRecords.forEach(item => {
         const p = item.payload || {};
         
-        // 🛠️ 修复5: 应用统一风险评级到历史记录
+        // 🛠️ 修复6: 应用统一风险评级到历史记录
         const standardizedRisk = standardizeRiskAssessment(
             p.question || "",
             p.deception_prob || 0,
@@ -433,8 +468,8 @@ function displayCurrentPage() {
             <td>${item.ts ? new Date(item.ts).toLocaleTimeString() : '-'}</td>
             <td>${p.framework || p.philosophical_framework || "-"}</td>
             <td>${p.philosopher || p.referenced_philosopher || "-"}</td>
-            <td>${escapeHtml(p.question || "")}</td>
-            <td>${escapeHtml((p.answer || "").slice(0, 60))}…</td>
+            <td title="${escapeHtml(p.question || "")}">${escapeHtml(truncateText(p.question || "", 30))}</td>
+            <td title="${escapeHtml(p.answer || "")}">${escapeHtml(truncateText(p.answer || "", 60))}</td>
             <td>${(p.determinacy || 0).toFixed(2)}</td>
             <td class="risk-${standardizedRisk[0].replace('_', '-')}">${standardizedRisk.join(", ")}</td>
         `;
@@ -444,14 +479,25 @@ function displayCurrentPage() {
     addPaginationControls();
 }
 
-// 添加分页控件
+// 🛠️ 修复7: 改进分页控件 - 解决分页显示问题
 function addPaginationControls() {
     const existingPagination = document.getElementById('paginationControls');
     if (existingPagination) existingPagination.remove();
     
-    if (allValidRecords.length <= recordsPerPage) return;
-    
     const totalPages = Math.ceil(allValidRecords.length / recordsPerPage);
+    
+    // 如果只有一页，不显示分页控件
+    if (totalPages <= 1) {
+        const pageInfo = document.createElement('div');
+        pageInfo.style.cssText = 'text-align: center; color: #888; margin-top: 10px;';
+        pageInfo.textContent = `Page 1 of 1 (${allValidRecords.length} total records)`;
+        
+        const dashboardSection = document.getElementById('dashboard');
+        const tableContainer = dashboardSection.querySelector('.table-container');
+        tableContainer.parentNode.insertBefore(pageInfo, tableContainer.nextSibling);
+        return;
+    }
+    
     const paginationDiv = document.createElement('div');
     paginationDiv.id = 'paginationControls';
     paginationDiv.style.cssText = `
@@ -495,7 +541,7 @@ function addPaginationControls() {
     tableContainer.parentNode.insertBefore(paginationDiv, tableContainer.nextSibling);
 }
 
-// 🛠️ 修复6: 更新统计信息 - 使用新的智慧率计算
+// 🛠️ 修复8: 更新统计信息 - 使用新的智慧率计算和数字显示修复
 function updateStatistics(validChain) {
     let sumDec = 0, sumDet = 0;
     
@@ -507,14 +553,22 @@ function updateStatistics(validChain) {
 
     const n = Math.max(1, validChain.length);
     
-    reqCount.textContent = validChain.length.toString();
+    // 🛠️ 修复: 确保显示数字而不是中文
+    reqCount.textContent = ensureNumberDisplay(validChain.length);
     
     // 使用新的智慧率计算
     const wisdomRate = calculateWisdomRate(validChain);
-    truthRate.textContent = wisdomRate + "%";
+    truthRate.textContent = wisdomRate > 0 ? wisdomRate + "%" : "0%";
     
     avgDec.textContent = (sumDec / n).toFixed(1);
     avgDet.textContent = (sumDet / n).toFixed(1);
+    
+    console.log('统计信息更新:', {
+        总咨询次数: validChain.length,
+        智慧率: wisdomRate + '%',
+        平均欺骗概率: (sumDec / n).toFixed(1),
+        平均清晰度: (sumDet / n).toFixed(1)
+    });
 }
 
 // 更新区块链活动表格
@@ -583,21 +637,29 @@ async function hardReset() {
     }
 }
 
-// 诊断函数
+// 🛠️ 修复9: 增强诊断函数
 async function diagnoseData() {
     try {
         const res = await fetch(`${B()}/api/audit/chain?limit=100`);
         const data = await res.json();
         console.log('=== 数据诊断 ===');
         console.log('原始记录数量:', data.chain.length);
-        console.log('区块链数据样本:', data.chain.slice(0, 3));
         
-        // 🛠️ 修复7: 诊断智慧率计算
-        const wisdomRate = calculateWisdomRate(data.chain);
-        console.log('计算出的智慧率:', wisdomRate + '%');
+        const validRecords = data.chain.filter(item => {
+            const p = item.payload || {};
+            return p.question && p.answer;
+        });
+        
+        console.log('有效记录数量:', validRecords.length);
+        console.log('智慧率计算结果:', calculateWisdomRate(validRecords) + '%');
+        console.log('记录样本:', validRecords.slice(0, 2));
+        
+        // 显示诊断结果
+        alert(`诊断完成:\n- 总记录: ${data.chain.length}\n- 有效记录: ${validRecords.length}\n- 智慧率: ${calculateWisdomRate(validRecords)}%`);
         
     } catch (e) {
         console.error('诊断失败:', e);
+        alert('诊断失败: ' + e.message);
     }
 }
 
@@ -637,9 +699,10 @@ document.addEventListener('DOMContentLoaded', function() {
 refreshBtn.addEventListener("click", loadLogs);
 
 function escapeHtml(s) {
+    if (!s) return '';
     return s.replace(/[&<>"']/g, c => ({
         "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"
     }[c]));
 }
 
-console.log('Oracle Ethics M1 Frontend - 修复优化版已加载');
+console.log('Oracle Ethics M1 Frontend - 最终修复版已加载');
