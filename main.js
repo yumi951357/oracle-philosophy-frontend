@@ -62,8 +62,8 @@ function renderDocs() {
       <h1>Documentation</h1>
       <p>Core idea: verifiable AI ethics — every answer is logged into a tamper-evident audit chain.</p>
       <ul>
-        <li><a href="./whitepaper.pdf" target="_blank">Whitepaper (PDF)</a></li>
-        <li><a href="./handbook.pdf" target="_blank">Ritual Handbook (PDF)</a></li>
+        <li><a href="https://raw.githubusercontent.com/yumi951357/oracle-philosophy-frontend/main/public/whitepaper.pdf" target="_blank">Whitepaper (PDF)</a></li>
+        <li><a href="https://raw.githubusercontent.com/yumi951357/oracle-philosophy-frontend/main/public/ritual-handbook.pdf" target="_blank">Ritual Handbook (PDF)</a></li>
         <li><a href="https://github.com/yumi951357/oracle-philosophy-frontend" target="_blank">Frontend Repository</a></li>
       </ul>
     </div>
