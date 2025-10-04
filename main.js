@@ -4,7 +4,7 @@ const BACKEND_URL = "https://oracle-philosophy-backend.onrender.com";
 // ===== SIMPLE ROUTER =====
 const routes = {
   oracle: renderOracle,
-  vision: renderVision,  // 新增
+  vision: renderVision,
   docs: renderDocs,
   discussion: renderDiscussion,
   verify: renderVerify,
@@ -16,7 +16,7 @@ function mount() {
   const view = routes[hash] || renderOracle;
   document.getElementById("app").innerHTML = view();
   if (hash === "oracle") wireOracle();
-  if (hash === "vision") wireVision();  // 新增
+  if (hash === "vision") wireVision();
   if (hash === "discussion") wireDiscussion();
   if (hash === "verify") wireVerify();
 }
@@ -61,7 +61,6 @@ function renderOracle() {
   </div>`;
 }
 
-// 新增 Vision 页面
 function renderVision() {
   return `
   <div class="container">
@@ -309,9 +308,8 @@ function wireOracle() {
   loadChain();
 }
 
-// 新增 Vision 页面逻辑
 function wireVision() {
-  // 可以添加一些交互效果，比如时间线动画等
+  // Vision page logic can be added here
   console.log("Vision page loaded");
 }
 
@@ -445,6 +443,138 @@ function wireVerify() {
   };
 }
 
+// ===== ENHANCED FUNCTIONS =====
+async function loadChain() {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/audit/chain`);
+    const data = await res.json();
+    const rows = (data.records || []).slice(-10).reverse().map(r => {
+      const t = new Date(r.timestamp * 1000).toLocaleTimeString();
+      const kind = (r.deception_prob >= 0.6) ? "deception" : "truth";
+      return `<tr>
+        <td>${t}</td>
+        <td>${kind}</td>
+        <td title="${escapeHtml(r.question)}">${escapeHtml(truncate(r.question, 42))}</td>
+        <td>${Number(r.determinacy).toFixed(2)}</td>
+        <td>${Number(r.deception_prob).toFixed(2)}</td>
+        <td class="mono" title="${r.hash}">
+          ${r.hash.slice(0,10)}…
+          <button class="verify-hash-btn" onclick="verifyHashDirectly('${r.hash}')" title="Verify this hash">
+            🔍
+          </button>
+        </td>
+      </tr>`;
+    }).join("");
+    
+    document.querySelector("#chainTable tbody").innerHTML = rows || "<tr><td colspan='6'>No records</td></tr>";
+  } catch(e) {
+    document.querySelector("#chainTable tbody").innerHTML = "<tr><td colspan='6'>Failed to load chain</td></tr>";
+  }
+}
+
+// 新增：直接验证哈希函数
+async function verifyHashDirectly(hash) {
+  try {
+    // 显示验证中状态
+    const verifyBtn = event.target;
+    verifyBtn.innerHTML = '⏳';
+    verifyBtn.disabled = true;
+
+    const res = await fetch(`${BACKEND_URL}/api/verify/${hash}`);
+    const data = await res.json();
+    
+    if (data.verified) {
+      // 成功验证 - 显示绿色对勾
+      verifyBtn.innerHTML = '✅';
+      verifyBtn.style.color = '#00c851';
+      
+      // 3秒后恢复原状
+      setTimeout(() => {
+        verifyBtn.innerHTML = '🔍';
+        verifyBtn.style.color = '';
+        verifyBtn.disabled = false;
+      }, 3000);
+      
+      // 显示详细验证结果
+      showVerificationResult(data, hash);
+    } else {
+      // 验证失败 - 显示红色叉号
+      verifyBtn.innerHTML = '❌';
+      verifyBtn.style.color = '#ff4444';
+      
+      setTimeout(() => {
+        verifyBtn.innerHTML = '🔍';
+        verifyBtn.style.color = '';
+        verifyBtn.disabled = false;
+      }, 3000);
+      
+      alert(`Verification failed: ${data.error || 'Hash not found'}`);
+    }
+    
+  } catch (e) {
+    // 错误情况
+    const verifyBtn = event.target;
+    verifyBtn.innerHTML = '❌';
+    verifyBtn.style.color = '#ff4444';
+    
+    setTimeout(() => {
+      verifyBtn.innerHTML = '🔍';
+      verifyBtn.style.color = '';
+      verifyBtn.disabled = false;
+    }, 3000);
+    
+    alert("Verification error: " + e.message);
+  }
+}
+
+// 新增：显示详细验证结果
+function showVerificationResult(data, hash) {
+  const modal = document.createElement('div');
+  modal.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: var(--panel);
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px solid #00c851;
+    z-index: 1000;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  `;
+  
+  modal.innerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h3 style="margin: 0; color: #00c851;">✅ Verification Successful</h3>
+      <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.2em;">×</button>
+    </div>
+    <div style="margin-bottom: 16px;">
+      <p><strong>Hash:</strong> <code>${hash}</code></p>
+      <p><strong>Record Found:</strong> ✅ Yes</p>
+      <p><strong>Chain Integrity:</strong> ${data.chain_valid ? "✅ Valid" : "❌ Compromised"}</p>
+      <p><strong>Timestamp:</strong> ${new Date(data.record.timestamp * 1000).toLocaleString()}</p>
+      <p><strong>Question:</strong> "${escapeHtml(data.record.payload?.question || "N/A")}"</p>
+      <p><strong>Answer Type:</strong> ${data.record.payload?.kind || "truth"}</p>
+      <p><strong>Determinacy:</strong> ${data.record.payload?.determinacy || 0}</p>
+      <p><strong>Deception Probability:</strong> ${data.record.payload?.deception_prob || 0}</p>
+    </div>
+    <div style="padding: 12px; background: rgba(0, 200, 81, 0.1); border-radius: 8px; border-left: 4px solid #00c851;">
+      <small>This record is permanently stored in the immutable audit chain. Any modification would break the cryptographic links.</small>
+    </div>
+  `;
+  
+  document.body.appendChild(modal);
+  
+  // 点击背景关闭
+  modal.addEventListener('click', (e) => {
+    if (e.target === modal) {
+      modal.remove();
+    }
+  });
+}
+
 async function loadMessages() {
   const messagesList = document.getElementById("messagesList");
   
@@ -501,29 +631,6 @@ async function likeMessage(messageId) {
 
   } catch (e) {
     alert("Error liking message: " + e.message);
-  }
-}
-
-async function loadChain() {
-  try {
-    const res = await fetch(`${BACKEND_URL}/api/audit/chain`);
-    const data = await res.json();
-    const rows = (data.records || []).slice(-10).reverse().map(r => {
-      const t = new Date(r.timestamp * 1000).toLocaleTimeString();
-      const kind = (r.deception_prob >= 0.6) ? "deception" : "truth";
-      return `<tr>
-        <td>${t}</td>
-        <td>${kind}</td>
-        <td title="${escapeHtml(r.question)}">${escapeHtml(truncate(r.question, 42))}</td>
-        <td>${Number(r.determinacy).toFixed(2)}</td>
-        <td>${Number(r.deception_prob).toFixed(2)}</td>
-        <td class="mono" title="${r.hash}">${r.hash.slice(0,10)}…</td>
-      </tr>`;
-    }).join("");
-    
-    document.querySelector("#chainTable tbody").innerHTML = rows || "<tr><td colspan='6'>No records</td></tr>";
-  } catch(e) {
-    document.querySelector("#chainTable tbody").innerHTML = "<tr><td colspan='6'>Failed to load chain</td></tr>";
   }
 }
 
