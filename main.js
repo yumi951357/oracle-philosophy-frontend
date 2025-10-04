@@ -1,4 +1,4 @@
-// main.js — Oracle Ethics M1 (Data Consistency Fixed Version)
+// main.js — Oracle Ethics M1 (Data Consistency Fixed Version) - Wisdom Logs Removed
 const B = () => window.BACKEND_URL || "https://oracle-philosophy-backend.onrender.com";
 
 const $ = (id) => document.getElementById(id);
@@ -641,6 +641,8 @@ function initializeDefaultData() {
     avgDec.textContent = "—";
     avgDet.textContent = "—";
     
+    // 🚫 注释掉智慧日志的默认显示
+    /*
     logBody.innerHTML = `
         <tr>
             <td colspan="7" style="text-align: center; color: var(--muted); padding: 40px;">
@@ -649,6 +651,7 @@ function initializeDefaultData() {
             </td>
         </tr>
     `;
+    */
     
     if (blockchainBody) {
         blockchainBody.innerHTML = `
@@ -840,7 +843,8 @@ async function loadLogs() {
             initializeDefaultData();
         } else {
             console.log(`Displaying ${allValidRecords.length} records`);
-            displayCurrentPage();
+            // 🚫 注释掉页面显示调用
+            // displayCurrentPage();
             updateStatistics(allValidRecords);
             updateBlockchainTable(allValidRecords);
             
@@ -856,7 +860,8 @@ async function loadLogs() {
     }
 }
 
-// 🎯 Fix pagination display - deterministic rendering
+// 🎯 Fix pagination display - 注释掉整个函数
+/*
 function displayCurrentPage() {
     if (!logBody) return;
     
@@ -902,8 +907,10 @@ function displayCurrentPage() {
     
     updatePaginationControls();
 }
+*/
 
-// Fix pagination controls
+// Fix pagination controls - 注释掉整个函数
+/*
 function updatePaginationControls() {
     if (paginationContainer) paginationContainer.innerHTML = '';
     if (paginationInfo) paginationInfo.textContent = '';
@@ -946,6 +953,7 @@ function updatePaginationControls() {
         }
     }
 }
+*/
 
 // Fix statistics update
 function updateStatistics(validChain) {
