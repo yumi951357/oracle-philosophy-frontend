@@ -1,5 +1,5 @@
 // ===== CONFIG =====
-const BACKEND_URL = "https://YOUR-RENDER-BACKEND.onrender.com"; // <-- set yours
+const BACKEND_URL = "https://oracle-philosophy-backend.onrender.com";
 
 // ===== SIMPLE ROUTER =====
 const routes = {
@@ -59,12 +59,12 @@ function renderDocs() {
   return `
   <div class="container">
     <div class="panel">
-      <h1>Docs</h1>
+      <h1>Documentation</h1>
       <p>Core idea: verifiable AI ethics — every answer is logged into a tamper-evident audit chain.</p>
       <ul>
         <li><a href="./whitepaper.pdf" target="_blank">Whitepaper (PDF)</a></li>
         <li><a href="./handbook.pdf" target="_blank">Ritual Handbook (PDF)</a></li>
-        <li><a href="https://github.com/your-frontend-repo" target="_blank">Frontend Repo</a></li>
+        <li><a href="https://github.com/yumi951357/oracle-philosophy-frontend" target="_blank">Frontend Repository</a></li>
       </ul>
     </div>
   </div>`;
@@ -76,7 +76,8 @@ function renderContact() {
     <div class="panel">
       <h1>Contact</h1>
       <p>Email: renshijian0258@proton.me</p>
-      <p>Telegram: renshijian0</p>
+      <p>Telegram: @renshijian0</p>
+      <p>GitHub: yumi951357</p>
     </div>
   </div>`;
 }
@@ -93,35 +94,42 @@ function wireOracle() {
     const session_id = sidEl.value.trim() || ("session_" + Date.now());
     sidEl.value = session_id;
 
-    btn.disabled = true; btn.innerText = "Thinking…";
+    btn.disabled = true; 
+    btn.innerText = "Thinking…";
+    
     try {
       const res = await fetch(`${BACKEND_URL}/api/consult`, {
         method: "POST",
-        headers: {"Content-Type":"application/json"},
+        headers: {"Content-Type": "application/json"},
         body: JSON.stringify({ question, session_id })
       });
+      
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Request failed");
 
+      // Show answer panel
       document.getElementById("answerPanel").style.display = "block";
       document.getElementById("answerText").innerText = data.answer;
+      
+      // Update badge
       const badge = document.getElementById("kindBadge");
       badge.innerText = data.kind;
-      badge.className =     <a href="#contact
-
+      badge.className = "badge " + (data.kind || "truth");
+      
+      // Update metrics
       document.getElementById("det").innerText = data.determinacy.toFixed(2);
       document.getElementById("dec").innerText = data.deception_prob.toFixed(2);
       document.getElementById("risk").innerText = (data.risk_tags || []).join(", ");
       document.getElementById("hash").innerText = data.hash;
       document.getElementById("prev").innerText = data.prev_hash;
-      document.
-getElementById("ts").innerText = new Date(data.timestamp*1000).toISOString();
+      document.getElementById("ts").innerText = new Date(data.timestamp * 1000).toISOString();
 
       await loadChain();
     } catch (e) {
-      alert(e.message);
+      alert("Error: " + e.message);
     } finally {
-      btn.disabled = false; btn.innerText = "Seek the Truth";
+      btn.disabled = false; 
+      btn.innerText = "Seek the Truth";
     }
   };
 
@@ -133,7 +141,7 @@ async function loadChain() {
     const res = await fetch(`${BACKEND_URL}/api/audit/chain`);
     const data = await res.json();
     const rows = (data.records || []).slice(-10).reverse().map(r => {
-      const t = new Date(r.timestamp*1000).toLocaleTimeString();
+      const t = new Date(r.timestamp * 1000).toLocaleTimeString();
       const kind = (r.deception_prob >= 0.6) ? "deception" : "truth";
       return `<tr>
         <td>${t}</td>
@@ -144,11 +152,23 @@ async function loadChain() {
         <td class="mono" title="${r.hash}">${r.hash.slice(0,10)}…</td>
       </tr>`;
     }).join("");
+    
     document.querySelector("#chainTable tbody").innerHTML = rows || "<tr><td colspan='6'>No records</td></tr>";
-  } catch(e){
+  } catch(e) {
     document.querySelector("#chainTable tbody").innerHTML = "<tr><td colspan='6'>Failed to load chain</td></tr>";
   }
 }
 
-function truncate(s, n){ return (s || "").length > n ? s.slice(0,n) + "…" : s }
-function escapeHtml(s){ return (s || "").replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m])) }
+function truncate(s, n) { 
+  return (s || "").length > n ? s.slice(0, n) + "…" : s; 
+}
+
+function escapeHtml(s) { 
+  return (s || "").replace(/[&<>"']/g, m => ({
+    '&': '&amp;',
+    '<': '&lt;', 
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  }[m])); 
+}
