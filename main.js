@@ -5,6 +5,7 @@ const BACKEND_URL = "https://oracle-philosophy-backend.onrender.com";
 const routes = {
   oracle: renderOracle,
   docs: renderDocs,
+  discussion: renderDiscussion,
   contact: renderContact
 };
 
@@ -13,6 +14,7 @@ function mount() {
   const view = routes[hash] || renderOracle;
   document.getElementById("app").innerHTML = view();
   if (hash === "oracle") wireOracle();
+  if (hash === "discussion") wireDiscussion();
 }
 window.addEventListener("hashchange", mount);
 window.addEventListener("load", mount);
@@ -66,6 +68,34 @@ function renderDocs() {
         <li><a href="https://raw.githubusercontent.com/yumi951357/oracle-philosophy-frontend/main/public/ritual-handbook.pdf" target="_blank">Ritual Handbook (PDF)</a></li>
         <li><a href="https://github.com/yumi951357/oracle-philosophy-frontend" target="_blank">Frontend Repository</a></li>
       </ul>
+    </div>
+  </div>`;
+}
+
+function renderDiscussion() {
+  return `
+  <div class="container">
+    <div class="panel">
+      <h1>Discussion Board</h1>
+      <p>Share your thoughts about philosophy, ethics, and the oracle (max 300 characters)</p>
+      
+      <div class="message-form">
+        <label>Your Name (optional)</label>
+        <input type="text" id="authorInput" placeholder="Anonymous" maxlength="50">
+        
+        <label>Your Message</label>
+        <textarea id="messageInput" rows="4" placeholder="Share your philosophical insights..." maxlength="300"></textarea>
+        <div class="char-count"><span id="charCount">0</span>/300 characters</div>
+        
+        <button id="postMessageBtn" style="margin-top:12px">Post Message</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Community Messages</h2>
+      <div id="messagesList" class="messages-list">
+        <div class="loading">Loading messages...</div>
+      </div>
     </div>
   </div>`;
 }
@@ -136,6 +166,131 @@ function wireOracle() {
   loadChain();
 }
 
+function wireDiscussion() {
+  const messageInput = document.getElementById("messageInput");
+  const authorInput = document.getElementById("authorInput");
+  const postBtn = document.getElementById("postMessageBtn");
+  const charCount = document.getElementById("charCount");
+
+  // Character counter
+  messageInput.addEventListener("input", () => {
+    const count = messageInput.value.length;
+    charCount.textContent = count;
+    charCount.style.color = count > 280 ? "#ff4444" : "#888";
+  });
+
+  // Post message
+  postBtn.onclick = async () => {
+    const message = messageInput.value.trim();
+    const author = authorInput.value.trim();
+
+    if (!message) {
+      alert("Please enter a message.");
+      return;
+    }
+
+    if (message.length > 300) {
+      alert("Message too long (max 300 characters).");
+      return;
+    }
+
+    postBtn.disabled = true;
+    postBtn.innerText = "Posting...";
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/messages`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ 
+          message: message,
+          author: author 
+        })
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to post message");
+
+      // Clear form
+      messageInput.value = "";
+      authorInput.value = "";
+      charCount.textContent = "0";
+      charCount.style.color = "#888";
+
+      // Reload messages
+      loadMessages();
+      alert("Message posted successfully!");
+
+    } catch (e) {
+      alert("Error: " + e.message);
+    } finally {
+      postBtn.disabled = false;
+      postBtn.innerText = "Post Message";
+    }
+  };
+
+  // Load messages on page load
+  loadMessages();
+}
+
+async function loadMessages() {
+  const messagesList = document.getElementById("messagesList");
+  
+  try {
+    messagesList.innerHTML = "<div class='loading'>Loading messages...</div>";
+    
+    const res = await fetch(`${BACKEND_URL}/api/messages`);
+    const data = await res.json();
+    
+    if (!res.ok) throw new Error(data.error || "Failed to load messages");
+
+    if (data.messages.length === 0) {
+      messagesList.innerHTML = "<div class='no-messages'>No messages yet. Be the first to share your thoughts!</div>";
+      return;
+    }
+
+    const messagesHtml = data.messages.map(msg => `
+      <div class="message-item">
+        <div class="message-header">
+          <strong>${escapeHtml(msg.author)}</strong>
+          <span class="message-time">${formatTime(msg.timestamp)}</span>
+        </div>
+        <div class="message-content">${escapeHtml(msg.message)}</div>
+        <div class="message-footer">
+          <button class="like-btn" onclick="likeMessage(${msg.id})">
+            👍 <span class="like-count">${msg.likes || 0}</span>
+          </button>
+        </div>
+      </div>
+    `).join("");
+
+    messagesList.innerHTML = messagesHtml;
+
+  } catch (e) {
+    messagesList.innerHTML = `<div class="error">Failed to load messages: ${e.message}</div>`;
+  }
+}
+
+async function likeMessage(messageId) {
+  try {
+    const res = await fetch(`${BACKEND_URL}/api/messages/${messageId}/like`, {
+      method: "POST"
+    });
+    
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Failed to like message");
+
+    // Update like count in UI
+    const likeBtn = document.querySelector(`.like-btn[onclick="likeMessage(${messageId})"]`);
+    if (likeBtn) {
+      const likeCount = likeBtn.querySelector('.like-count');
+      likeCount.textContent = data.likes;
+    }
+
+  } catch (e) {
+    alert("Error liking message: " + e.message);
+  }
+}
+
 async function loadChain() {
   try {
     const res = await fetch(`${BACKEND_URL}/api/audit/chain`);
@@ -157,6 +312,11 @@ async function loadChain() {
   } catch(e) {
     document.querySelector("#chainTable tbody").innerHTML = "<tr><td colspan='6'>Failed to load chain</td></tr>";
   }
+}
+
+function formatTime(timestamp) {
+  const date = new Date(timestamp);
+  return date.toLocaleString();
 }
 
 function truncate(s, n) { 
