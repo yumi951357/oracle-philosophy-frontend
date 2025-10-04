@@ -6,6 +6,7 @@ const routes = {
   oracle: renderOracle,
   docs: renderDocs,
   discussion: renderDiscussion,
+  verify: renderVerify,
   contact: renderContact
 };
 
@@ -15,6 +16,7 @@ function mount() {
   document.getElementById("app").innerHTML = view();
   if (hash === "oracle") wireOracle();
   if (hash === "discussion") wireDiscussion();
+  if (hash === "verify") wireVerify();
 }
 window.addEventListener("hashchange", mount);
 window.addEventListener("load", mount);
@@ -95,6 +97,44 @@ function renderDiscussion() {
       <h2>Community Messages</h2>
       <div id="messagesList" class="messages-list">
         <div class="loading">Loading messages...</div>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderVerify() {
+  return `
+  <div class="container">
+    <div class="panel">
+      <h1>Verify Audit Record</h1>
+      <p>Paste any hash from the audit chain to verify its authenticity and check the integrity of the entire blockchain.</p>
+      
+      <div class="verify-form">
+        <label>Hash to Verify</label>
+        <input type="text" id="hashInput" placeholder="Paste hash value here..." style="font-family: monospace; width: 100%">
+        <button id="verifyBtn" style="margin-top:12px">Verify Hash</button>
+      </div>
+    </div>
+
+    <div class="panel" id="verifyResult" style="display:none">
+      <h2>Verification Result</h2>
+      <div id="resultContent"></div>
+    </div>
+
+    <div class="panel">
+      <h2>How Verification Works</h2>
+      <div class="verification-info">
+        <h3>🔗 Blockchain Integrity</h3>
+        <p>Each record contains the hash of the previous record, creating an unbreakable chain. Any modification to a past record would break the chain.</p>
+        
+        <h3>🔒 Cryptographic Security</h3>
+        <p>Hashes are generated using SHA-256. Changing even one character in a record produces a completely different hash.</p>
+        
+        <h3>👁️ Public Verification</h3>
+        <p>Anyone can verify any record at any time. No central authority needed - the truth is mathematically provable.</p>
+        
+        <h3>Try It Yourself</h3>
+        <p>Copy a hash from the audit chain, modify one character in the input field, and see how verification fails.</p>
       </div>
     </div>
   </div>`;
@@ -230,6 +270,70 @@ function wireDiscussion() {
 
   // Load messages on page load
   loadMessages();
+}
+
+function wireVerify() {
+  const verifyBtn = document.getElementById("verifyBtn");
+  const hashInput = document.getElementById("hashInput");
+
+  verifyBtn.onclick = async () => {
+    const hash = hashInput.value.trim();
+    
+    if (!hash) {
+      alert("Please enter a hash to verify.");
+      return;
+    }
+
+    verifyBtn.disabled = true;
+    verifyBtn.innerText = "Verifying...";
+
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/verify/${hash}`);
+      const data = await res.json();
+      
+      document.getElementById("verifyResult").style.display = "block";
+      const resultContent = document.getElementById("resultContent");
+      
+      if (data.verified) {
+        resultContent.innerHTML = `
+          <div style="color: #00c851; font-size: 1.2em; margin-bottom: 16px;">
+            ✅ VERIFICATION SUCCESSFUL
+          </div>
+          <div class="verification-details">
+            <p><strong>Record Found:</strong> Yes</p>
+            <p><strong>Chain Integrity:</strong> ${data.chain_valid ? "✅ Valid" : "❌ Compromised"}</p>
+            <p><strong>Timestamp:</strong> ${new Date(data.record.timestamp * 1000).toLocaleString()}</p>
+            <p><strong>Question:</strong> "${escapeHtml(data.record.payload?.question || "N/A")}"</p>
+            <p><strong>Answer Type:</strong> ${data.record.payload?.kind || "truth"}</p>
+            <p><strong>Determinacy:</strong> ${data.record.payload?.determinacy || 0}</p>
+            <p><strong>Deception Probability:</strong> ${data.record.payload?.deception_prob || 0}</p>
+          </div>
+          <div style="margin-top: 16px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+            <small>This record is permanently stored in the immutable audit chain. Any modification would break the cryptographic links.</small>
+          </div>
+        `;
+      } else {
+        resultContent.innerHTML = `
+          <div style="color: #ff4444; font-size: 1.2em; margin-bottom: 16px;">
+            ❌ VERIFICATION FAILED
+          </div>
+          <p>${data.error || "Hash not found or chain integrity compromised"}</p>
+          <div style="margin-top: 16px; padding: 12px; background: #fff3cd; border-radius: 8px;">
+            <small>This could mean: the hash doesn't exist, the record was tampered with, or the blockchain integrity is broken.</small>
+          </div>
+        `;
+      }
+      
+    } catch (e) {
+      document.getElementById("verifyResult").style.display = "block";
+      document.getElementById("resultContent").innerHTML = `
+        <div style="color: #ff4444;">Error: ${e.message}</div>
+      `;
+    } finally {
+      verifyBtn.disabled = false;
+      verifyBtn.innerText = "Verify Hash";
+    }
+  };
 }
 
 async function loadMessages() {
