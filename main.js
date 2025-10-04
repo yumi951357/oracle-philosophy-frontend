@@ -3,7 +3,8 @@ const B = () => window.BACKEND_URL || "https://oracle-philosophy-backend.onrende
 
 const $ = (id) => document.getElementById(id);
 const askBtn = $("askBtn");
-const refreshBtn = $("refreshBtn");
+// 🚫 注释掉 refreshBtn 引用，因为按钮已被隐藏
+// const refreshBtn = $("refreshBtn");
 const q = $("q");
 const sid = $("sid");
 
@@ -25,10 +26,11 @@ const reqCount = $("reqCount");
 const truthRate = $("truthRate");
 const avgDec = $("avgDec");
 const avgDet = $("avgDet");
-const logBody = $("logBody");
+// 🚫 注释掉日志相关的 DOM 引用
+// const logBody = $("logBody");
 const blockchainBody = $("blockchainBody");
-const paginationContainer = $("paginationContainer");
-const paginationInfo = $("paginationInfo");
+// const paginationContainer = $("paginationContainer");
+// const paginationInfo = $("paginationInfo");
 
 // Global state management
 let currentValidChain = [];
@@ -580,10 +582,13 @@ function calculateWisdomRate(consultations) {
 function setLoadingState(loading) {
     isLoading = loading;
     if (loading) {
-        refreshBtn.textContent = "🔄 Loading...";
-        refreshBtn.disabled = true;
+        // 🚫 注释掉 refreshBtn 相关代码
+        // refreshBtn.textContent = "🔄 Loading...";
+        // refreshBtn.disabled = true;
         askBtn.disabled = true;
         
+        // 🚫 注释掉日志加载指示器
+        /*
         if (!document.getElementById('loadingIndicator')) {
             const loader = document.createElement('div');
             loader.id = 'loadingIndicator';
@@ -596,12 +601,15 @@ function setLoadingState(loading) {
             `;
             logBody.parentNode.insertBefore(loader, logBody);
         }
+        */
     } else {
-        refreshBtn.textContent = "🔄 Refresh Wisdom Log";
-        refreshBtn.disabled = false;
+        // 🚫 注释掉 refreshBtn 相关代码
+        // refreshBtn.textContent = "🔄 Refresh Wisdom Log";
+        // refreshBtn.disabled = false;
         askBtn.disabled = false;
-        const loader = document.getElementById('loadingIndicator');
-        if (loader) loader.remove();
+        // 🚫 注释掉日志加载指示器移除
+        // const loader = document.getElementById('loadingIndicator');
+        // if (loader) loader.remove();
     }
 }
 
@@ -624,8 +632,8 @@ function showError(message, isFatal = false) {
         ${isFatal ? '<br><button onclick="location.reload()" style="margin-top: 12px; padding: 8px 16px; background: var(--gradient-tech); border: none; border-radius: 8px; color: white; cursor: pointer;">Retry</button>' : ''}
     `;
     
-    const target = isFatal ? document.querySelector('main') : logBody.parentNode;
-    target.insertBefore(errorDiv, logBody);
+    const target = isFatal ? document.querySelector('main') : document.getElementById('dashboard');
+    target.insertBefore(errorDiv, target.firstChild);
     
     setTimeout(() => {
         errorDiv.style.opacity = '0';
@@ -641,7 +649,7 @@ function initializeDefaultData() {
     avgDec.textContent = "—";
     avgDet.textContent = "—";
     
-    // 🚫 注释掉智慧日志的默认显示
+    // 🚫 注释掉日志表格的默认显示
     /*
     logBody.innerHTML = `
         <tr>
@@ -664,8 +672,9 @@ function initializeDefaultData() {
         `;
     }
 
-    if (paginationInfo) paginationInfo.textContent = '';
-    if (paginationContainer) paginationContainer.innerHTML = '';
+    // 🚫 注释掉分页信息
+    // if (paginationInfo) paginationInfo.textContent = '';
+    // if (paginationContainer) paginationContainer.innerHTML = '';
 }
 
 // 🎯 Fix consultation function - based on deterministic data synchronization
@@ -807,7 +816,8 @@ async function loadLogs() {
         // 🎯 Fix 1: Clear before loading
         const previousCount = allValidRecords.length;
         allValidRecords = [];
-        if (logBody) logBody.innerHTML = "";
+        // 🚫 注释掉日志表格清空
+        // if (logBody) logBody.innerHTML = "";
         
         const data = await dashboardManager.loadDataWithStability();
         const chain = data.chain || [];
@@ -860,7 +870,7 @@ async function loadLogs() {
     }
 }
 
-// 🎯 Fix pagination display - 注释掉整个函数
+// 🎯 Fix pagination display - 🚫 完全注释掉整个函数
 /*
 function displayCurrentPage() {
     if (!logBody) return;
@@ -909,7 +919,7 @@ function displayCurrentPage() {
 }
 */
 
-// Fix pagination controls - 注释掉整个函数
+// Fix pagination controls - 🚫 完全注释掉整个函数
 /*
 function updatePaginationControls() {
     if (paginationContainer) paginationContainer.innerHTML = '';
@@ -1120,9 +1130,11 @@ document.addEventListener('DOMContentLoaded', function() {
     console.log('Oracle Ethics M1 - Data Consistency Fixed Version Loaded');
 });
 
-// 🎯 Fix refresh button - deterministic refresh
+// 🎯 Fix refresh button - 🚫 注释掉整个事件监听器
+/*
 refreshBtn.addEventListener("click", function() {
     console.log('🔄 Deterministic data refresh');
     dashboardManager.clearCache();
     loadLogs();
 });
+*/
