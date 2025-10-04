@@ -4,6 +4,7 @@ const BACKEND_URL = "https://oracle-philosophy-backend.onrender.com";
 // ===== SIMPLE ROUTER =====
 const routes = {
   oracle: renderOracle,
+  vision: renderVision,  // 新增
   docs: renderDocs,
   discussion: renderDiscussion,
   verify: renderVerify,
@@ -15,6 +16,7 @@ function mount() {
   const view = routes[hash] || renderOracle;
   document.getElementById("app").innerHTML = view();
   if (hash === "oracle") wireOracle();
+  if (hash === "vision") wireVision();  // 新增
   if (hash === "discussion") wireDiscussion();
   if (hash === "verify") wireVerify();
 }
@@ -55,6 +57,107 @@ function renderOracle() {
         <thead><tr><th>Time</th><th>Type</th><th>Q</th><th>Det.</th><th>Dec.</th><th>Hash</th></tr></thead>
         <tbody></tbody>
       </table>
+    </div>
+  </div>`;
+}
+
+// 新增 Vision 页面
+function renderVision() {
+  return `
+  <div class="container">
+    <div class="panel futuristic">
+      <div class="vision-header">
+        <h1>🚀 Oracle Ethics M1.5</h1>
+        <div class="glow-text">Building Trustworthy AI for the Future</div>
+      </div>
+      
+      <div class="manifesto-section">
+        <h2>🌌 Our Vision</h2>
+        <p>In an era of information explosion and algorithmic black boxes, truth and trust have become scarce resources. Oracle Ethics is not just a Q&A tool, but a new paradigm for AI design: transparent, verifiable, and immutable.</p>
+      </div>
+
+      <div class="manifesto-section">
+        <h2>🎯 Our Mission</h2>
+        <p>Build the world's first AI system that is:</p>
+        <ul class="mission-list">
+          <li>🔗 Self-auditing with blockchain-style audit logs</li>
+          <li>🛡️ Equipped with multi-layer risk and deception detection</li>
+          <li>🔍 Independently verifiable by users</li>
+          <li>📜 Creates the first "trustworthy oracle" that can prove its own honesty</li>
+        </ul>
+      </div>
+
+      <div class="core-principles">
+        <h2>⭐ Core Principles</h2>
+        <div class="principles-grid">
+          <div class="principle-card">
+            <h3>🔍 Transparency</h3>
+            <p>Every answer generates an audit record, publicly accessible and traceable.</p>
+          </div>
+          <div class="principle-card">
+            <h3>🔒 Verifiability</h3>
+            <p>Users can verify answer integrity through cryptographic hashes.</p>
+          </div>
+          <div class="principle-card">
+            <h3>🌐 Multi-perspective</h3>
+            <p>Each question receives answers from multiple philosophical frameworks with risk assessments.</p>
+          </div>
+          <div class="principle-card">
+            <h3>🔄 Self-evolution</h3>
+            <p>Future versions will feature introspection mechanisms for enhanced reliability.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="manifesto-section">
+        <h2>💫 What Makes Us Different</h2>
+        <div class="differentiation">
+          <div class="diff-item">
+            <strong>• Other AIs are black boxes;</strong> We are glass boxes (auditable, traceable)
+          </div>
+          <div class="diff-item">
+            <strong>• Other AIs disappear after answering;</strong> We preserve verifiable "Wisdom Logs"
+          </div>
+          <div class="diff-item">
+            <strong>• Other AIs just output;</strong> We self-inspect and label deception/risk scores before output
+          </div>
+        </div>
+      </div>
+
+      <div class="roadmap">
+        <h2>🛣️ Our Roadmap</h2>
+        <div class="timeline">
+          <div class="timeline-item current">
+            <div class="timeline-marker">🚀</div>
+            <div class="timeline-content">
+              <h3>M1.5 - NOW</h3>
+              <p>Trustworthy Q&A + Audit Chains (Currently Live)</p>
+            </div>
+          </div>
+          <div class="timeline-item future">
+            <div class="timeline-marker">🔮</div>
+            <div class="timeline-content">
+              <h3>M2 - NEXT</h3>
+              <p>Internal Self-check Engine + Advanced Risk Assessment</p>
+            </div>
+          </div>
+          <div class="timeline-item future">
+            <div class="timeline-marker">🌍</div>
+            <div class="timeline-content">
+              <h3>M3 - FUTURE</h3>
+              <p>Collective Wisdom Module - AI and users co-evolving towards a new social contract</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="manifesto-final">
+        <blockquote class="vision-quote">
+          "After the blackout, the true light appears."
+          <footer>— Oracle Ethics Manifesto</footer>
+        </blockquote>
+        <p>Oracle Ethics is not just another AI project, but the blueprint for the next generation of trustworthy artificial intelligence.</p>
+      </div>
     </div>
   </div>`;
 }
@@ -204,6 +307,12 @@ function wireOracle() {
   };
 
   loadChain();
+}
+
+// 新增 Vision 页面逻辑
+function wireVision() {
+  // 可以添加一些交互效果，比如时间线动画等
+  console.log("Vision page loaded");
 }
 
 function wireDiscussion() {

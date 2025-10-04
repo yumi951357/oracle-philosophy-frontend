@@ -20,3 +20,136 @@ button:disabled{opacity:.55;cursor:not-allowed}
 .table{width:100%;border-collapse:collapse}
 .table th,.table td{padding:8px;border-bottom:1px solid #1f2630;font-size:14px}
 .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
+
+/* 未来风格样式 */
+.futuristic {
+  background: linear-gradient(135deg, #0a0b10 0%, #1a1b2e 100%);
+  border: 1px solid rgba(138, 43, 226, 0.3);
+  box-shadow: 0 8px 32px rgba(138, 43, 226, 0.1);
+}
+
+.glow-text {
+  background: linear-gradient(90deg, #8a2be2, #00bfff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-size: 1.2em;
+  font-weight: 300;
+}
+
+.manifesto-section {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border-left: 4px solid #8a2be2;
+}
+
+.mission-list {
+  list-style: none;
+  padding: 0;
+}
+
+.mission-list li {
+  padding: 0.5rem 0;
+  font-size: 1.1em;
+}
+
+.principles-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.principle-card {
+  background: rgba(138, 43, 226, 0.1);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(138, 43, 226, 0.2);
+  transition: transform 0.3s ease;
+}
+
+.principle-card:hover {
+  transform: translateY(-5px);
+}
+
+.roadmap {
+  margin: 3rem 0;
+}
+
+.timeline {
+  position: relative;
+  margin: 2rem 0;
+}
+
+.timeline::before {
+  content: '';
+  position: absolute;
+  left: 30px;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: linear-gradient(to bottom, #8a2be2, #00bfff);
+}
+
+.timeline-item {
+  display: flex;
+  margin: 2rem 0;
+  align-items: flex-start;
+}
+
+.timeline-marker {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: rgba(138, 43, 226, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5em;
+  margin-right: 1.5rem;
+  border: 2px solid #8a2be2;
+  z-index: 2;
+}
+
+.timeline-content {
+  flex: 1;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border-left: 4px solid #8a2be2;
+}
+
+.timeline-item.current .timeline-marker {
+  background: rgba(0, 191, 255, 0.2);
+  border-color: #00bfff;
+  animation: pulse 2s infinite;
+}
+
+.timeline-item.future .timeline-marker {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: #666;
+}
+
+.vision-quote {
+  font-size: 1.4em;
+  font-style: italic;
+  text-align: center;
+  margin: 2rem 0;
+  padding: 2rem;
+  background: rgba(138, 43, 226, 0.1);
+  border-radius: 12px;
+  border-left: 4px solid #8a2be2;
+}
+
+.vision-quote footer {
+  margin-top: 1rem;
+  font-size: 0.8em;
+  opacity: 0.8;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 0 0 rgba(0, 191, 255, 0.4); }
+  70% { box-shadow: 0 0 0 10px rgba(0, 191, 255, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(0, 191, 255, 0); }
+}
