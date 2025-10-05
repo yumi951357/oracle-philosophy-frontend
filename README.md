@@ -1,10 +1,49 @@
-# Oracle Ethics M1 — Frontend
+# 🔮 Oracle Philosophy Frontend
 
-Static HTML/JS/CSS. No build needed.
+> The Blackout Protocol - Truth Verification Interface
 
-## Configure
-Edit    chain = []
-```html
-<script>
-  window.BACKEND_URL = "https://YOUR-RENDER-BACKEND.onrender.com";
-</script>
+![Version](https://img.shields.io/badge/version-M1.5-blue)
+![Deployment](https://img.shields.io/badge/deployed-Vercel-success)
+
+## 🧭 Overview
+
+Frontend portal for the Oracle Philosophy system (M1.5) - a verifiable AI oracle that cryptographically audits its own honesty through blockchain-style audit logs.
+
+**Live Demo:** https://oracle-philosophy-frontend-hnup.vercel.app/
+
+## ✨ Core Features
+
+- **🔍 Oracle Interface**: Ask questions and receive analyzed responses
+- **📊 Integrity Metrics**: View determinacy & deception probability scores
+- **⛓️ Audit Chain Verification**: Hash-based blockchain verification system
+- **📄 Documentation**: Integrated whitepaper and protocol guide
+- **🔐 Transparency Tools**: Real-time truth integrity verification
+
+## 🛠️ Tech Stack
+
+- **Frontend**: HTML5 / CSS3 / Vanilla JavaScript
+- **HTTP Client**: Axios for API communication
+- **Deployment**: Vercel
+- **Styling**: Custom CSS with responsive design
+- **Verification**: SHA-256 hash verification module
+
+## 🚀 Quick Start
+
+### Prerequisites
+- Modern web browser with JavaScript enabled
+- Local development server (optional)
+
+### Local Development
+```bash
+# Clone repository
+git clone https://github.com/yumi951357/oracle-philosophy-frontend.git
+
+# Navigate to project directory
+cd oracle-philosophy-frontend
+
+# Open with local server (using Python)
+python -m http.server 8000
+# or using Node.js
+npx live-server
+# or using PHP
+php -S localhost:8000
