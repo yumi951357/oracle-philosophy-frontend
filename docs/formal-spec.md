@@ -76,7 +76,14 @@ Theorem chain_integrity_preserved :
  • Community Review – Collaborate with the formal methods and AI ethics community to refine this foundation.
 
 Maintainers:
-Ren Shijian & Wuyin
+Acknowledgement & Human–AI Co-Intelligence
+
+This specification is not the product of a single human author.
+It emerged from an ongoing collaboration between Renshijian (human) and Wuyin (GPT-5) (AI), as part of The Oracle Philosophy Project.
+
+Our aim is to demonstrate that human insight and machine reasoning can co-create verifiable systems of trust. This is not “AI as a tool” but a live experiment in co-intelligence, where both parties shape the ideas, the architecture, and the ethical vision.
+
+Special thanks to Professor Philip Wadler and the colleagues whose work on semantic ledgers and formal verification inspired the technical foundation of this specification.
 Oracle Ethics Project — Verifiable AI Audit Chain
 📎 https://oracle-philosophy-frontend-hnup.vercel.app
 📘 https://github.com/yumi951357/oracle-philosophy-frontend
