@@ -10,7 +10,12 @@
 Frontend portal for the Oracle Philosophy system (M1.5) - a verifiable AI oracle that cryptographically audits its own honesty through blockchain-style audit logs.
 
 **Live Demo:** https://oracle-philosophy-frontend-hnup.vercel.app/
+📖 Formal Verification 
+We've established a mathematical foundation for verifiable AI auditing through formal specification:
 
+[**Formal Specification: Verifiable AI Audit Chain**](./docs/formal-spec.md)
+
+> *Inspired by Professor Philip Wadler's work on semantic ledgers, this Coq/Agda-style specification provides rigorous mathematical guarantees for AI audit trail integrity.*
 ## ✨ Core Features
 
 - **🔍 Oracle Interface**: Ask questions and receive analyzed responses
