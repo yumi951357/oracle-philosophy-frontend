@@ -40,7 +40,7 @@ function renderOracle() {
 
     <div class="panel" id="answerPanel" style="display:none">
       <h2>Oracle's Reply <span id="kindBadge" class="badge"></span></h2>
-      <p id="answerText"></p>
+      <div id="answerText"></div>
       <div class="kvp">
         <div>Determinacy</div><div class="mono" id="det"></div>
         <div>Deception Prob.</div><div class="mono" id="dec"></div>
@@ -281,7 +281,36 @@ function wireOracle() {
 
       // Show answer panel
       document.getElementById("answerPanel").style.display = "block";
-      document.getElementById("answerText").innerText = data.answer;
+
+      // 更新回答显示，包含解释和证据
+      const explanationHtml = data.explanation ? `
+          <div style="margin-top: 16px; padding: 12px; background: rgba(109, 169, 255, 0.1); border-radius: 8px; border-left: 4px solid var(--accent);">
+              <strong>Why this answer?</strong>
+              <div style="margin-top: 8px; font-size: 0.9em; color: var(--muted);">
+                  ${escapeHtml(data.explanation)}
+              </div>
+          </div>
+      ` : '';
+
+      const evidenceHtml = data.evidence && data.evidence.length > 0 ? `
+          <div style="margin-top: 12px;">
+              <strong>Evidence:</strong>
+              <div style="margin-top: 8px;">
+                  ${data.evidence.map(e => `
+                      <a href="${e.url}" target="_blank" style="display: block; margin: 4px 0; color: var(--accent); text-decoration: none;">
+                          📚 ${escapeHtml(e.title)}
+                      </a>
+                  `).join('')}
+              </div>
+          </div>
+      ` : '';
+
+      // 使用 innerHTML 而不是 innerText 来显示富文本
+      document.getElementById("answerText").innerHTML = `
+          <div style="margin-bottom: 16px;">${escapeHtml(data.answer)}</div>
+          ${explanationHtml}
+          ${evidenceHtml}
+      `;
       
       // Update badge
       const badge = document.getElementById("kindBadge");
