@@ -402,6 +402,13 @@ function wireVerify() {
       const resultContent = document.getElementById("resultContent");
       
       if (data.verified) {
+        // FIXED: Use correct data path for verification results
+        const record = data.record;
+        const question = record.question || record.payload?.question || "N/A";
+        const kind = record.kind || record.payload?.kind || "truth";
+        const determinacy = record.determinacy ?? record.payload?.determinacy ?? 0;
+        const deceptionProb = record.deception_prob ?? record.payload?.deception_prob ?? 0;
+        
         resultContent.innerHTML = `
           <div style="color: #00c851; font-size: 1.2em; margin-bottom: 16px;">
             ✅ VERIFICATION SUCCESSFUL
@@ -409,11 +416,11 @@ function wireVerify() {
           <div class="verification-details">
             <p><strong>Record Found:</strong> Yes</p>
             <p><strong>Chain Integrity:</strong> ${data.chain_valid ? "✅ Valid" : "❌ Compromised"}</p>
-            <p><strong>Timestamp:</strong> ${new Date(data.record.timestamp * 1000).toLocaleString()}</p>
-            <p><strong>Question:</strong> "${escapeHtml(data.record.payload?.question || "N/A")}"</p>
-            <p><strong>Answer Type:</strong> ${data.record.payload?.kind || "truth"}</p>
-            <p><strong>Determinacy:</strong> ${data.record.payload?.determinacy || 0}</p>
-            <p><strong>Deception Probability:</strong> ${data.record.payload?.deception_prob || 0}</p>
+            <p><strong>Timestamp:</strong> ${new Date(record.timestamp * 1000).toLocaleString()}</p>
+            <p><strong>Question:</strong> "${escapeHtml(question)}"</p>
+            <p><strong>Answer Type:</strong> ${kind}</p>
+            <p><strong>Determinacy:</strong> ${determinacy}</p>
+            <p><strong>Deception Probability:</strong> ${deceptionProb}</p>
           </div>
           <div style="margin-top: 16px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
             <small>This record is permanently stored in the immutable audit chain. Any modification would break the cryptographic links.</small>
@@ -472,10 +479,10 @@ async function loadChain() {
   }
 }
 
-// 新增：直接验证哈希函数
+// Direct hash verification function
 async function verifyHashDirectly(hash) {
   try {
-    // 显示验证中状态
+    // Show verifying state
     const verifyBtn = event.target;
     verifyBtn.innerHTML = '⏳';
     verifyBtn.disabled = true;
@@ -484,21 +491,21 @@ async function verifyHashDirectly(hash) {
     const data = await res.json();
     
     if (data.verified) {
-      // 成功验证 - 显示绿色对勾
+      // Success verification - show green checkmark
       verifyBtn.innerHTML = '✅';
       verifyBtn.style.color = '#00c851';
       
-      // 3秒后恢复原状
+      // Restore after 3 seconds
       setTimeout(() => {
         verifyBtn.innerHTML = '🔍';
         verifyBtn.style.color = '';
         verifyBtn.disabled = false;
       }, 3000);
       
-      // 显示详细验证结果
+      // Show detailed verification result
       showVerificationResult(data, hash);
     } else {
-      // 验证失败 - 显示红色叉号
+      // Verification failed - show red X
       verifyBtn.innerHTML = '❌';
       verifyBtn.style.color = '#ff4444';
       
@@ -512,7 +519,7 @@ async function verifyHashDirectly(hash) {
     }
     
   } catch (e) {
-    // 错误情况
+    // Error case
     const verifyBtn = event.target;
     verifyBtn.innerHTML = '❌';
     verifyBtn.style.color = '#ff4444';
@@ -527,7 +534,7 @@ async function verifyHashDirectly(hash) {
   }
 }
 
-// 新增：显示详细验证结果
+// Show detailed verification result
 function showVerificationResult(data, hash) {
   const modal = document.createElement('div');
   modal.style.cssText = `
@@ -545,6 +552,13 @@ function showVerificationResult(data, hash) {
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
   `;
   
+  // FIXED: Use correct data path for modal display
+  const record = data.record;
+  const question = record.question || record.payload?.question || "N/A";
+  const kind = record.kind || record.payload?.kind || "truth";
+  const determinacy = record.determinacy ?? record.payload?.determinacy ?? 0;
+  const deceptionProb = record.deception_prob ?? record.payload?.deception_prob ?? 0;
+  
   modal.innerHTML = `
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
       <h3 style="margin: 0; color: #00c851;">✅ Verification Successful</h3>
@@ -554,11 +568,11 @@ function showVerificationResult(data, hash) {
       <p><strong>Hash:</strong> <code>${hash}</code></p>
       <p><strong>Record Found:</strong> ✅ Yes</p>
       <p><strong>Chain Integrity:</strong> ${data.chain_valid ? "✅ Valid" : "❌ Compromised"}</p>
-      <p><strong>Timestamp:</strong> ${new Date(data.record.timestamp * 1000).toLocaleString()}</p>
-      <p><strong>Question:</strong> "${escapeHtml(data.record.payload?.question || "N/A")}"</p>
-      <p><strong>Answer Type:</strong> ${data.record.payload?.kind || "truth"}</p>
-      <p><strong>Determinacy:</strong> ${data.record.payload?.determinacy || 0}</p>
-      <p><strong>Deception Probability:</strong> ${data.record.payload?.deception_prob || 0}</p>
+      <p><strong>Timestamp:</strong> ${new Date(record.timestamp * 1000).toLocaleString()}</p>
+      <p><strong>Question:</strong> "${escapeHtml(question)}"</p>
+      <p><strong>Answer Type:</strong> ${kind}</p>
+      <p><strong>Determinacy:</strong> ${determinacy}</p>
+      <p><strong>Deception Probability:</strong> ${deceptionProb}</p>
     </div>
     <div style="padding: 12px; background: rgba(0, 200, 81, 0.1); border-radius: 8px; border-left: 4px solid #00c851;">
       <small>This record is permanently stored in the immutable audit chain. Any modification would break the cryptographic links.</small>
@@ -567,7 +581,7 @@ function showVerificationResult(data, hash) {
   
   document.body.appendChild(modal);
   
-  // 点击背景关闭
+  // Close when clicking background
   modal.addEventListener('click', (e) => {
     if (e.target === modal) {
       modal.remove();
