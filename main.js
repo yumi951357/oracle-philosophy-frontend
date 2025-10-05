@@ -395,11 +395,7 @@ function wireVerify() {
     verifyBtn.innerText = "Verifying...";
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/verify`, {
-  method: "POST",
-  headers: {"Content-Type": "application/json"},
-  body: JSON.stringify({ hash: hash })
-});
+      const res = await fetch(`${BACKEND_URL}/api/verify/${hash}`);
       const data = await res.json();
       
       document.getElementById("verifyResult").style.display = "block";
@@ -470,7 +466,7 @@ async function loadChain() {
         <td>${Number(r.deception_prob).toFixed(2)}</td>
         <td class="mono" title="${r.hash}">
           ${r.hash.slice(0,10)}…
-          <button class="verify-hash-btn" onclick="verifyHashDirectly('${r.hash}')" title="Verify this hash">
+          <button class="verify-hash-btn" onclick="verifyHashDirectly('${r.hash}', event)" title="Verify this hash">
             🔍
           </button>
         </td>
@@ -483,19 +479,15 @@ async function loadChain() {
   }
 }
 
-// Direct hash verification function
-async function verifyHashDirectly(hash) {
+// Fixed: Direct hash verification function with event parameter
+async function verifyHashDirectly(hash, event) {
   try {
     // Show verifying state
     const verifyBtn = event.target;
     verifyBtn.innerHTML = '⏳';
     verifyBtn.disabled = true;
 
-   const res = await fetch(`${BACKEND_URL}/api/verify`, {
-  method: "POST", 
-  headers: {"Content-Type": "application/json"},
-  body: JSON.stringify({ hash: hash })
-});
+    const res = await fetch(`${BACKEND_URL}/api/verify/${hash}`);
     const data = await res.json();
     
     if (data.verified) {
