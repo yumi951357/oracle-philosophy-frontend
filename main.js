@@ -395,7 +395,11 @@ function wireVerify() {
     verifyBtn.innerText = "Verifying...";
 
     try {
-      const res = await fetch(`${BACKEND_URL}/api/verify/${hash}`);
+      const res = await fetch(`${BACKEND_URL}/api/verify`, {
+  method: "POST",
+  headers: {"Content-Type": "application/json"},
+  body: JSON.stringify({ hash: hash })
+});
       const data = await res.json();
       
       document.getElementById("verifyResult").style.display = "block";
@@ -487,7 +491,11 @@ async function verifyHashDirectly(hash) {
     verifyBtn.innerHTML = '⏳';
     verifyBtn.disabled = true;
 
-    const res = await fetch(`${BACKEND_URL}/api/verify/${hash}`);
+   const res = await fetch(`${BACKEND_URL}/api/verify`, {
+  method: "POST", 
+  headers: {"Content-Type": "application/json"},
+  body: JSON.stringify({ hash: hash })
+});
     const data = await res.json();
     
     if (data.verified) {
