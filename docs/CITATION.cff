@@ -1,0 +1,20 @@
+cff-version: 1.2.0
+message: "If you use this software in your research, please cite it using the following metadata"
+title: "Oracle Ethics M1.5: Verifiable AI Audit Chain"
+authors:
+  - family-names: Ren
+    given-names: Shijian
+    affiliation: "Oracle Ethics Project"
+  - family-names: Wuyin
+    given-names: 
+    affiliation: "Oracle Ethics Project"
+version: 1.0
+date-released: 2024-01-15
+url: "https://github.com/yumi951357/oracle-philosophy-frontend"
+license: MIT
+keywords:
+  - "formal verification"
+  - "AI ethics" 
+  - "blockchain"
+  - "audit trails"
+abstract: "A formally specified framework for verifiable AI reasoning audit chains."
