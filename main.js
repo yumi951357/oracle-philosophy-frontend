@@ -157,82 +157,82 @@ function renderVision() {
   <div class="container">
     <div class="panel futuristic">
       <div class="vision-header">
-        <h1>🚀 Oracle Ethics M1.5</h1>
+        <h1>Oracle Ethics M1.5</h1>
         <div class="glow-text">Building Trustworthy AI for the Future</div>
       </div>
       
       <div class="manifesto-section">
-        <h2>🌌 Our Vision</h2>
+        <h2>Our Vision</h2>
         <p>In an era of information explosion and algorithmic black boxes, truth and trust have become scarce resources. Oracle Ethics is not just a Q&A tool, but a new paradigm for AI design: transparent, verifiable, and immutable.</p>
       </div>
 
       <div class="manifesto-section">
-        <h2>🎯 Our Mission</h2>
+        <h2>Our Mission</h2>
         <p>Build the world's first AI system that is:</p>
         <ul class="mission-list">
-          <li>🔗 Self-auditing with blockchain-style audit logs</li>
-          <li>🛡️ Equipped with multi-layer risk and deception detection</li>
-          <li>🔍 Independently verifiable by users</li>
-          <li>📜 Creates the first "trustworthy oracle" that can prove its own honesty</li>
+          <li>Self-auditing with blockchain-style audit logs</li>
+          <li>Equipped with multi-layer risk and deception detection</li>
+          <li>Independently verifiable by users</li>
+          <li>Creates the first "trustworthy oracle" that can prove its own honesty</li>
         </ul>
       </div>
 
       <div class="core-principles">
-        <h2>⭐ Core Principles</h2>
+        <h2>Core Principles</h2>
         <div class="principles-grid">
           <div class="principle-card">
-            <h3>🔍 Transparency</h3>
+            <h3>Transparency</h3>
             <p>Every answer generates an audit record, publicly accessible and traceable.</p>
           </div>
           <div class="principle-card">
-            <h3>🔒 Verifiability</h3>
+            <h3>Verifiability</h3>
             <p>Users can verify answer integrity through cryptographic hashes.</p>
           </div>
           <div class="principle-card">
-            <h3>🌐 Multi-perspective</h3>
+            <h3>Multi-perspective</h3>
             <p>Each question receives answers from multiple philosophical frameworks with risk assessments.</p>
           </div>
           <div class="principle-card">
-            <h3>🔄 Self-evolution</h3>
+            <h3>Self-evolution</h3>
             <p>Future versions will feature introspection mechanisms for enhanced reliability.</p>
           </div>
         </div>
       </div>
 
       <div class="manifesto-section">
-        <h2>💫 What Makes Us Different</h2>
+        <h2>What Makes Us Different</h2>
         <div class="differentiation">
           <div class="diff-item">
-            <strong>• Other AIs are black boxes;</strong> We are glass boxes (auditable, traceable)
+            <strong>Other AIs are black boxes;</strong> We are glass boxes (auditable, traceable)
           </div>
           <div class="diff-item">
-            <strong>• Other AIs disappear after answering;</strong> We preserve verifiable "Wisdom Logs"
+            <strong>Other AIs disappear after answering;</strong> We preserve verifiable "Wisdom Logs"
           </div>
           <div class="diff-item">
-            <strong>• Other AIs just output;</strong> We self-inspect and label deception/risk scores before output
+            <strong>Other AIs just output;</strong> We self-inspect and label deception/risk scores before output
           </div>
         </div>
       </div>
 
       <div class="roadmap">
-        <h2>🛣️ Our Roadmap</h2>
+        <h2>Our Roadmap</h2>
         <div class="timeline">
           <div class="timeline-item current">
-            <div class="timeline-marker">🚀</div>
+            <div class="timeline-marker">Now</div>
             <div class="timeline-content">
               <h3>M1.5 - NOW</h3>
               <p>Trustworthy Q&A + Audit Chains (Currently Live)</p>
             </div>
           </div>
           <div class="timeline-item future">
-            <div class="timeline-marker">🔮</div>
+            <div class="timeline-marker">Next</div>
             <div class="timeline-content">
               <h3>M2 - NEXT</h3>
               <p>Internal Self-check Engine + Advanced Risk Assessment</p>
             </div>
           </div>
           <div class="timeline-item future">
-            <div class="timeline-marker">🌍</div>
+            <div class="timeline-marker">Future</div>
             <div class="timeline-content">
               <h3>M3 - FUTURE</h3>
               <p>Collective Wisdom Module - AI and users co-evolving towards a new social contract</p>
@@ -244,7 +244,7 @@ function renderVision() {
       <div class="manifesto-final">
         <blockquote class="vision-quote">
           "After the blackout, the true light appears."
-          <footer>— Oracle Ethics Manifesto</footer>
+          <footer>Oracle Ethics Manifesto</footer>
         </blockquote>
         <p>Oracle Ethics is not just another AI project, but the blueprint for the next generation of trustworthy artificial intelligence.</p>
       </div>
@@ -307,6 +307,23 @@ function renderVerify() {
         <input type="text" id="hashInput" placeholder="Paste hash value here..." style="font-family: monospace; width: 100%">
         <button id="verifyBtn" style="margin-top:16px">Verify Hash</button>
       </div>
+
+      <div style="margin-top: 24px; padding: 16px; background: rgba(109, 169, 255, 0.1); border-radius: 8px;">
+        <h3>Verify Reference Hash</h3>
+        <p>Check if references match their cryptographic hash (for records with academic citations)</p>
+        
+        <label for="refHashInput">Reference Hash</label>
+        <input type="text" id="refHashInput" placeholder="Paste reference hash here..." style="font-family: monospace; width: 100%">
+        
+        <label for="refJsonInput">References JSON</label>
+        <textarea id="refJsonInput" rows="4" placeholder='Paste references JSON array here: [{"title":"...", "url":"...", "author":"...", "year":"...", "quote":"..."}]' style="font-family: monospace; width: 100%"></textarea>
+        
+        <button id="verifyRefBtn" style="margin-top:16px">Verify Reference Hash</button>
+        
+        <div style="margin-top: 8px; font-size: 0.9em; color: var(--muted);">
+          Note: Paste the references JSON exactly as shown in the record. Tracking query parameters are ignored for hashing. Any change will break the reference hash.
+        </div>
+      </div>
     </div>
 
     <div class="panel" id="verifyResult" style="display:none">
@@ -317,14 +334,17 @@ function renderVerify() {
     <div class="panel">
       <h2>How Verification Works</h2>
       <div class="verification-info">
-        <h3>🔗 Blockchain Integrity</h3>
+        <h3>Blockchain Integrity</h3>
         <p>Each record contains the hash of the previous record, creating an unbreakable chain. Any modification to a past record would break the chain.</p>
         
-        <h3>🔒 Cryptographic Security</h3>
+        <h3>Cryptographic Security</h3>
         <p>Hashes are generated using SHA-256. Changing even one character in a record produces a completely different hash.</p>
         
-        <h3>👁️ Public Verification</h3>
+        <h3>Public Verification</h3>
         <p>Anyone can verify any record at any time. No central authority needed - the truth is mathematically provable.</p>
+        
+        <h3>Reference Verification</h3>
+        <p>Academic references are also hashed and verified. This ensures citation integrity and prevents tampering with source materials.</p>
         
         <h3>Try It Yourself</h3>
         <p>Copy a hash from the audit chain, modify one character in the input field, and see how verification fails.</p>
@@ -389,10 +409,19 @@ function wireOracle() {
               <div style="margin-top: 8px;">
                   ${data.evidence.map(e => `
                       <a href="${e.url}" target="_blank" style="display: block; margin: 4px 0; color: var(--accent); text-decoration: none;">
-                          📚 ${escapeHtml(e.title)}
+                          ${escapeHtml(e.title)}
                       </a>
                   `).join('')}
               </div>
+          </div>
+      ` : '';
+
+      // Include reference hash if available
+      const refHashHtml = data.ref_hash ? `
+          <div style="margin-top: 12px;">
+              <strong>Reference Hash:</strong>
+              <div class="hash" style="margin-top: 4px;">${data.ref_hash}</div>
+              <small style="color: var(--muted);">Cryptographic hash of academic references</small>
           </div>
       ` : '';
 
@@ -401,6 +430,7 @@ function wireOracle() {
           <div style="margin-bottom: 16px;">${escapeHtml(data.answer)}</div>
           ${explanationHtml}
           ${evidenceHtml}
+          ${refHashHtml}
       `;
       
       // Update badge
@@ -502,7 +532,11 @@ function wireDiscussion() {
 function wireVerify() {
   const verifyBtn = document.getElementById("verifyBtn");
   const hashInput = document.getElementById("hashInput");
+  const verifyRefBtn = document.getElementById("verifyRefBtn");
+  const refHashInput = document.getElementById("refHashInput");
+  const refJsonInput = document.getElementById("refJsonInput");
 
+  // Main hash verification
   verifyBtn.onclick = async () => {
     const hash = hashInput.value.trim();
     
@@ -522,37 +556,44 @@ function wireVerify() {
       const resultContent = document.getElementById("resultContent");
       
       if (data.verified) {
-        // Use correct data path for verification results
         const record = data.record;
         const question = record.question || record.payload?.question || "N/A";
         const kind = record.kind || record.payload?.kind || "truth";
         const determinacy = record.determinacy ?? record.payload?.determinacy ?? 0;
         const deceptionProb = record.deception_prob ?? record.payload?.deception_prob ?? 0;
+        const refHash = record.ref_hash || "";
+        const references = record.references || [];
+        
+        const refHashHtml = refHash ? `
+            <p><strong>Reference Hash:</strong> <code>${refHash}</code></p>
+            <p><strong>References Count:</strong> ${references.length}</p>
+        ` : '<p><strong>Reference Hash:</strong> Not available for this record</p>';
         
         resultContent.innerHTML = `
           <div style="color: #00c851; font-size: 1.2em; margin-bottom: 16px;">
-            ✅ VERIFICATION SUCCESSFUL
+            VERIFICATION SUCCESSFUL
           </div>
           <div class="verification-details">
             <p><strong>Record Found:</strong> Yes</p>
-            <p><strong>Chain Integrity:</strong> ${data.chain_valid ? "✅ Valid" : "❌ Compromised"}</p>
+            <p><strong>Chain Integrity:</strong> ${data.chain_valid ? "Valid" : "Compromised"}</p>
             <p><strong>Timestamp:</strong> ${new Date(record.timestamp * 1000).toLocaleString()}</p>
             <p><strong>Question:</strong> "${escapeHtml(question)}"</p>
             <p><strong>Answer Type:</strong> ${kind}</p>
             <p><strong>Determinacy:</strong> ${determinacy}</p>
             <p><strong>Deception Probability:</strong> ${deceptionProb}</p>
+            ${refHashHtml}
           </div>
-          <div style="margin-top: 16px; padding: 12px; background: #f8f9fa; border-radius: 8px;">
+          <div style="margin-top: 16px; padding: 12px; background: rgba(0, 200, 81, 0.1); border-radius: 8px; border-left: 4px solid #00c851;">
             <small>This record is permanently stored in the immutable audit chain. Any modification would break the cryptographic links.</small>
           </div>
         `;
       } else {
         resultContent.innerHTML = `
           <div style="color: #ff4444; font-size: 1.2em; margin-bottom: 16px;">
-            ❌ VERIFICATION FAILED
+            VERIFICATION FAILED
           </div>
           <p>${data.error || "Hash not found or chain integrity compromised"}</p>
-          <div style="margin-top: 16px; padding: 12px; background: #fff3cd; border-radius: 8px;">
+          <div style="margin-top: 16px; padding: 12px; background: rgba(255, 68, 68, 0.1); border-radius: 8px; border-left: 4px solid #ff4444;">
             <small>This could mean: the hash doesn't exist, the record was tampered with, or the blockchain integrity is broken.</small>
           </div>
         `;
@@ -568,6 +609,95 @@ function wireVerify() {
       verifyBtn.innerText = "Verify Hash";
     }
   };
+
+  // Reference hash verification
+  verifyRefBtn.onclick = async () => {
+    const refHash = refHashInput.value.trim();
+    const refJson = refJsonInput.value.trim();
+    
+    if (!refHash) {
+      alert("Please enter a reference hash to verify.");
+      return;
+    }
+
+    if (!refJson) {
+      alert("Please enter references JSON to verify.");
+      return;
+    }
+
+    verifyRefBtn.disabled = true;
+    verifyRefBtn.innerText = "Verifying References...";
+
+    try {
+      const references = JSON.parse(refJson);
+      
+      const res = await fetch(`${BACKEND_URL}/api/verify_reference_hash`, {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify({ 
+          hash: refHash,
+          references: references
+        })
+      });
+
+      const data = await res.json();
+      
+      document.getElementById("verifyResult").style.display = "block";
+      const resultContent = document.getElementById("resultContent");
+      
+      if (data.ok) {
+        resultContent.innerHTML = `
+          <div style="color: #00c851; font-size: 1.2em; margin-bottom: 16px;">
+            REFERENCE HASH VERIFIED
+          </div>
+          <div class="verification-details">
+            <p><strong>Reference Hash:</strong> <code>${refHash}</code></p>
+            <p><strong>References Count:</strong> ${references.length}</p>
+            <p><strong>Status:</strong> References match the cryptographic hash</p>
+          </div>
+          <div style="margin-top: 16px; padding: 12px; background: rgba(0, 200, 81, 0.1); border-radius: 8px; border-left: 4px solid #00c851;">
+            <small>The provided references exactly match the cryptographic hash. No tampering detected.</small>
+          </div>
+        `;
+      } else {
+        resultContent.innerHTML = `
+          <div style="color: #ff4444; font-size: 1.2em; margin-bottom: 16px;">
+            REFERENCE HASH MISMATCH
+          </div>
+          <div class="verification-details">
+            <p><strong>Reference Hash:</strong> <code>${refHash}</code></p>
+            <p><strong>References Count:</strong> ${references.length}</p>
+            <p><strong>Status:</strong> References do not match the cryptographic hash</p>
+          </div>
+          <div style="margin-top: 16px; padding: 12px; background: rgba(255, 68, 68, 0.1); border-radius: 8px; border-left: 4px solid #ff4444;">
+            <small>The provided references do not match the cryptographic hash. This could indicate tampering or incorrect references.</small>
+          </div>
+        `;
+      }
+      
+    } catch (e) {
+      document.getElementById("verifyResult").style.display = "block";
+      document.getElementById("resultContent").innerHTML = `
+        <div style="color: #ff4444;">Error: Invalid JSON format or network error</div>
+        <div style="margin-top: 8px; font-size: 0.9em;">
+          Please check that your references are in valid JSON format: [{"title":"...", "url":"...", "author":"...", "year":"...", "quote":"..."}]
+        </div>
+      `;
+    } finally {
+      verifyRefBtn.disabled = false;
+      verifyRefBtn.innerText = "Verify Reference Hash";
+    }
+  };
+}
+
+// Reference hash verification helper function
+async function verifyReferenceHash(refHash, references) {
+  const res = await fetch(`${BACKEND_URL}/api/verify_reference_hash`, {
+    method: "POST",
+    headers: {"Content-Type": "application/json"},
+    body: JSON.stringify({ hash: refHash, references })
+  });
+  return await res.json();
 }
 
 // ===== ENHANCED FUNCTIONS =====
@@ -587,7 +717,7 @@ async function loadChain() {
         <td class="mono" title="${r.hash}">
           ${r.hash.slice(0,10)}…
           <button class="verify-hash-btn" onclick="verifyHashDirectly('${r.hash}', event)" title="Verify this hash">
-            🔍
+            Verify
           </button>
         </td>
       </tr>`;
@@ -604,7 +734,7 @@ async function verifyHashDirectly(hash, event) {
   try {
     // Show verifying state
     const verifyBtn = event.target;
-    verifyBtn.innerHTML = '⏳';
+    verifyBtn.innerHTML = 'Verifying...';
     verifyBtn.disabled = true;
 
     const res = await fetch(`${BACKEND_URL}/api/verify/${hash}`);
@@ -612,12 +742,14 @@ async function verifyHashDirectly(hash, event) {
     
     if (data.verified) {
       // Success verification - show green checkmark
-      verifyBtn.innerHTML = '✅';
+      verifyBtn.innerHTML = 'Verified';
+      verifyBtn.style.background = 'rgba(0, 200, 81, 0.2)';
       verifyBtn.style.color = '#00c851';
       
       // Restore after 3 seconds
       setTimeout(() => {
-        verifyBtn.innerHTML = '🔍';
+        verifyBtn.innerHTML = 'Verify';
+        verifyBtn.style.background = '';
         verifyBtn.style.color = '';
         verifyBtn.disabled = false;
       }, 3000);
@@ -626,11 +758,13 @@ async function verifyHashDirectly(hash, event) {
       showVerificationResult(data, hash);
     } else {
       // Verification failed - show red X
-      verifyBtn.innerHTML = '❌';
+      verifyBtn.innerHTML = 'Failed';
+      verifyBtn.style.background = 'rgba(255, 68, 68, 0.2)';
       verifyBtn.style.color = '#ff4444';
       
       setTimeout(() => {
-        verifyBtn.innerHTML = '🔍';
+        verifyBtn.innerHTML = 'Verify';
+        verifyBtn.style.background = '';
         verifyBtn.style.color = '';
         verifyBtn.disabled = false;
       }, 3000);
@@ -641,11 +775,13 @@ async function verifyHashDirectly(hash, event) {
   } catch (e) {
     // Error case
     const verifyBtn = event.target;
-    verifyBtn.innerHTML = '❌';
+    verifyBtn.innerHTML = 'Error';
+    verifyBtn.style.background = 'rgba(255, 68, 68, 0.2)';
     verifyBtn.style.color = '#ff4444';
     
     setTimeout(() => {
-      verifyBtn.innerHTML = '🔍';
+      verifyBtn.innerHTML = 'Verify';
+      verifyBtn.style.background = '';
       verifyBtn.style.color = '';
       verifyBtn.disabled = false;
     }, 3000);
@@ -678,21 +814,27 @@ function showVerificationResult(data, hash) {
   const kind = record.kind || record.payload?.kind || "truth";
   const determinacy = record.determinacy ?? record.payload?.determinacy ?? 0;
   const deceptionProb = record.deception_prob ?? record.payload?.deception_prob ?? 0;
+  const refHash = record.ref_hash || "";
+  
+  const refHashHtml = refHash ? `
+      <p><strong>Reference Hash:</strong> <code>${refHash}</code></p>
+  ` : '';
   
   modal.innerHTML = `
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-      <h3 style="margin: 0; color: #00c851;">✅ Verification Successful</h3>
+      <h3 style="margin: 0; color: #00c851;">Verification Successful</h3>
       <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.2em;">×</button>
     </div>
     <div style="margin-bottom: 16px;">
       <p><strong>Hash:</strong> <code>${hash}</code></p>
-      <p><strong>Record Found:</strong> ✅ Yes</p>
-      <p><strong>Chain Integrity:</strong> ${data.chain_valid ? "✅ Valid" : "❌ Compromised"}</p>
+      <p><strong>Record Found:</strong> Yes</p>
+      <p><strong>Chain Integrity:</strong> ${data.chain_valid ? "Valid" : "Compromised"}</p>
       <p><strong>Timestamp:</strong> ${new Date(record.timestamp * 1000).toLocaleString()}</p>
       <p><strong>Question:</strong> "${escapeHtml(question)}"</p>
       <p><strong>Answer Type:</strong> ${kind}</p>
       <p><strong>Determinacy:</strong> ${determinacy}</p>
       <p><strong>Deception Probability:</strong> ${deceptionProb}</p>
+      ${refHashHtml}
     </div>
     <div style="padding: 12px; background: rgba(0, 200, 81, 0.1); border-radius: 8px; border-left: 4px solid #00c851;">
       <small>This record is permanently stored in the immutable audit chain. Any modification would break the cryptographic links.</small>
@@ -734,7 +876,7 @@ async function loadMessages() {
         <div class="message-content">${escapeHtml(msg.message)}</div>
         <div class="message-footer">
           <button class="like-btn" onclick="likeMessage(${msg.id})">
-            👍 <span class="like-count">${msg.likes || 0}</span>
+            Like <span class="like-count">${msg.likes || 0}</span>
           </button>
         </div>
       </div>
@@ -790,3 +932,4 @@ function escapeHtml(s) {
 // Make functions globally available for onclick handlers
 window.verifyHashDirectly = verifyHashDirectly;
 window.likeMessage = likeMessage;
+window.verifyReferenceHash = verifyReferenceHash;
