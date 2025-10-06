@@ -140,6 +140,13 @@ function renderOracle() {
         <div class="panel" id="answerPanel" style="display:none">
             <h2>Oracle's Reply <span id="kindBadge" class="badge"></span></h2>
             <div id="answerText"></div>
+            
+            <!-- Knowledge Search Results -->
+            <div id="knowledgeResults" style="margin-top: 20px; display: none;">
+                <h3>📚 Related Knowledge</h3>
+                <div id="knowledgeList"></div>
+            </div>
+            
             <div class="kvp">
                 <div>Determinacy</div><div class="mono" id="det"></div>
                 <div>Deception Prob.</div><div class="mono" id="dec"></div>
@@ -391,6 +398,10 @@ function wireOracle() {
         btn.innerText = "Thinking…";
         
         try {
+            // Show loading state for knowledge search
+            document.getElementById("knowledgeResults").style.display = 'none';
+            document.getElementById("knowledgeList").innerHTML = '<div class="loading">Searching knowledge base...</div>';
+            
             const res = await fetch(`${BACKEND_URL}/api/consult`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
@@ -416,7 +427,8 @@ function wireOracle() {
                 explanation: safeString(data.explanation),
                 evidence: safeArray(data.evidence),
                 ref_hash: safeString(data.ref_hash),
-                references: safeArray(data.references)
+                references: safeArray(data.references),
+                knowledge_search: data.knowledge_search || {}
             };
 
             // Update answer display
@@ -468,6 +480,31 @@ function wireOracle() {
             document.getElementById("hash").innerText = safeData.hash;
             document.getElementById("prev").innerText = safeData.prev_hash;
             document.getElementById("ts").innerText = safeTimestamp(safeData.timestamp).toISOString();
+
+            // Display knowledge search results
+            if (safeData.knowledge_search.available && safeData.knowledge_search.results.length > 0) {
+                const knowledgeHtml = safeData.knowledge_search.results.map((result, index) => `
+                    <div style="margin-bottom: 16px; padding: 12px; background: rgba(109, 169, 255, 0.05); border-radius: 8px; border-left: 3px solid var(--accent);">
+                        <div style="font-weight: bold; color: var(--accent);">
+                            📄 ${result.file_name} (Relevance: ${result.score})
+                        </div>
+                        <div style="font-size: 0.9em; color: var(--muted); margin-top: 4px;">
+                            ${escapeHtml(result.content_preview || 'No preview available')}
+                        </div>
+                        <div style="font-size: 0.8em; color: #888; margin-top: 4px;">
+                            Keywords: ${result.keywords ? result.keywords.join(', ') : 'None'}
+                        </div>
+                    </div>
+                `).join('');
+                
+                document.getElementById("knowledgeList").innerHTML = knowledgeHtml;
+                document.getElementById("knowledgeResults").style.display = 'block';
+                
+                console.log(`📚 Found ${safeData.knowledge_search.results_count} relevant documents`);
+            } else {
+                document.getElementById("knowledgeResults").style.display = 'none';
+                console.log("📚 No relevant documents found");
+            }
 
             await loadChain();
         } catch (e) {
