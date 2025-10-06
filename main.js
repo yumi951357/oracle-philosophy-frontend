@@ -1,6 +1,63 @@
 // ===== CONFIG =====
 const BACKEND_URL = "https://oracle-philosophy-backend.onrender.com";
 
+// ===== MOBILE INITIALIZATION =====
+function initMobileFeatures() {
+  // Mobile menu toggle
+  const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+  const mainNav = document.getElementById('mainNav');
+  
+  if (mobileMenuToggle && mainNav) {
+    mobileMenuToggle.addEventListener('click', () => {
+      mainNav.classList.toggle('active');
+      mobileMenuToggle.textContent = mainNav.classList.contains('active') ? '✕' : '☰';
+    });
+    
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!mainNav.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
+        mainNav.classList.remove('active');
+        mobileMenuToggle.textContent = '☰';
+      }
+    });
+    
+    // Close menu when clicking a link
+    mainNav.addEventListener('click', (e) => {
+      if (e.target.tagName === 'A') {
+        mainNav.classList.remove('active');
+        mobileMenuToggle.textContent = '☰';
+      }
+    });
+  }
+  
+  // Prevent zoom on iOS
+  document.addEventListener('touchstart', function(e) {
+    if (e.touches.length > 1) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+  
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', function(e) {
+    const now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) {
+      e.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, false);
+  
+  // Handle virtual keyboard
+  const inputs = document.querySelectorAll('input, textarea');
+  inputs.forEach(input => {
+    input.addEventListener('focus', () => {
+      setTimeout(() => {
+        // Scroll to ensure input is visible above keyboard
+        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 100);
+    });
+  });
+}
+
 // ===== SIMPLE ROUTER =====
 const routes = {
   oracle: renderOracle,
@@ -15,11 +72,17 @@ function mount() {
   const hash = (location.hash || "#oracle").replace("#", "");
   const view = routes[hash] || renderOracle;
   document.getElementById("app").innerHTML = view();
+  
+  // Initialize mobile features after rendering
+  setTimeout(initMobileFeatures, 0);
+  
+  // Wire up page-specific logic
   if (hash === "oracle") wireOracle();
   if (hash === "vision") wireVision();
   if (hash === "discussion") wireDiscussion();
   if (hash === "verify") wireVerify();
 }
+
 window.addEventListener("hashchange", mount);
 window.addEventListener("load", mount);
 
@@ -29,11 +92,11 @@ function renderOracle() {
   <div class="container">
     <div class="panel">
       <h1>Consult the Oracle</h1>
-      <label>Question</label>
+      <label for="q">Question</label>
       <textarea id="q" rows="3" placeholder="Ask anything…"></textarea>
-      <label>Session ID (optional)</label>
+      <label for="sid">Session ID (optional)</label>
       <input id="sid" placeholder="auto-generate if empty"/>
-      <div style="margin-top:12px">
+      <div style="margin-top:16px">
         <button id="askBtn">Seek the Truth</button>
       </div>
     </div>
@@ -53,10 +116,12 @@ function renderOracle() {
 
     <div class="panel">
       <h2>Audit Chain (latest 10)</h2>
-      <table class="table" id="chainTable">
-        <thead><tr><th>Time</th><th>Type</th><th>Q</th><th>Det.</th><th>Dec.</th><th>Hash</th></tr></thead>
-        <tbody></tbody>
-      </table>
+      <div class="table-container">
+        <table class="table" id="chainTable">
+          <thead><tr><th>Time</th><th>Type</th><th>Q</th><th>Det.</th><th>Dec.</th><th>Hash</th></tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
     </div>
   </div>`;
 }
@@ -184,14 +249,14 @@ function renderDiscussion() {
       <p>Share your thoughts about philosophy, ethics, and the oracle (max 300 characters)</p>
       
       <div class="message-form">
-        <label>Your Name (optional)</label>
+        <label for="authorInput">Your Name (optional)</label>
         <input type="text" id="authorInput" placeholder="Anonymous" maxlength="50">
         
-        <label>Your Message</label>
+        <label for="messageInput">Your Message</label>
         <textarea id="messageInput" rows="4" placeholder="Share your philosophical insights..." maxlength="300"></textarea>
         <div class="char-count"><span id="charCount">0</span>/300 characters</div>
         
-        <button id="postMessageBtn" style="margin-top:12px">Post Message</button>
+        <button id="postMessageBtn" style="margin-top:16px">Post Message</button>
       </div>
     </div>
 
@@ -212,9 +277,9 @@ function renderVerify() {
       <p>Paste any hash from the audit chain to verify its authenticity and check the integrity of the entire blockchain.</p>
       
       <div class="verify-form">
-        <label>Hash to Verify</label>
+        <label for="hashInput">Hash to Verify</label>
         <input type="text" id="hashInput" placeholder="Paste hash value here..." style="font-family: monospace; width: 100%">
-        <button id="verifyBtn" style="margin-top:12px">Verify Hash</button>
+        <button id="verifyBtn" style="margin-top:16px">Verify Hash</button>
       </div>
     </div>
 
@@ -282,7 +347,7 @@ function wireOracle() {
       // Show answer panel
       document.getElementById("answerPanel").style.display = "block";
 
-      // 更新回答显示，包含解释和证据
+      // Update answer display with explanation and evidence
       const explanationHtml = data.explanation ? `
           <div style="margin-top: 16px; padding: 12px; background: rgba(109, 169, 255, 0.1); border-radius: 8px; border-left: 4px solid var(--accent);">
               <strong>Why this answer?</strong>
@@ -305,7 +370,7 @@ function wireOracle() {
           </div>
       ` : '';
 
-      // 使用 innerHTML 而不是 innerText 来显示富文本
+      // Use innerHTML instead of innerText for rich text display
       document.getElementById("answerText").innerHTML = `
           <div style="margin-bottom: 16px;">${escapeHtml(data.answer)}</div>
           ${explanationHtml}
@@ -431,7 +496,7 @@ function wireVerify() {
       const resultContent = document.getElementById("resultContent");
       
       if (data.verified) {
-        // FIXED: Use correct data path for verification results
+        // Use correct data path for verification results
         const record = data.record;
         const question = record.question || record.payload?.question || "N/A";
         const kind = record.kind || record.payload?.kind || "truth";
@@ -508,7 +573,7 @@ async function loadChain() {
   }
 }
 
-// Fixed: Direct hash verification function with event parameter
+// Direct hash verification function with event parameter
 async function verifyHashDirectly(hash, event) {
   try {
     // Show verifying state
@@ -581,7 +646,7 @@ function showVerificationResult(data, hash) {
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
   `;
   
-  // FIXED: Use correct data path for modal display
+  // Use correct data path for modal display
   const record = data.record;
   const question = record.question || record.payload?.question || "N/A";
   const kind = record.kind || record.payload?.kind || "truth";
