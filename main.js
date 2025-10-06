@@ -1,40 +1,43 @@
 // ===== CONFIG =====
 const BACKEND_URL = "https://oracle-philosophy-backend.onrender.com";
 
-// ===== SAFE TIMESTAMP HANDLING =====
+// ===== SAFE DATA HANDLING =====
 function safeTimestamp(timestamp) {
     if (!timestamp) return new Date();
     
     if (typeof timestamp === 'number') {
-        // If it's a number, assume Unix timestamp (seconds)
         return new Date(timestamp * 1000);
     }
     
     if (typeof timestamp === 'string') {
-        // Try to parse string timestamp
         let date = new Date(timestamp);
-        if (!isNaN(date.getTime())) {
-            return date;
-        }
+        if (!isNaN(date.getTime())) return date;
         
-        // Try alternative formats
         date = new Date(timestamp.replace('Z', '+00:00'));
-        if (!isNaN(date.getTime())) {
-            return date;
-        }
+        if (!isNaN(date.getTime())) return date;
         
-        // If all parsing fails, return current time
         console.warn('Failed to parse timestamp:', timestamp);
         return new Date();
     }
     
-    // Fallback for any other type
     return new Date();
+}
+
+function safeNumber(value, defaultValue = 0) {
+    const num = Number(value);
+    return isNaN(num) ? defaultValue : num;
+}
+
+function safeString(value, defaultValue = '') {
+    return value || defaultValue;
+}
+
+function safeArray(value, defaultValue = []) {
+    return Array.isArray(value) ? value : defaultValue;
 }
 
 // ===== FIXED MOBILE INITIALIZATION =====
 function initMobileFeatures() {
-    // Mobile menu toggle - FIXED: Proper event handling
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const mainNav = document.getElementById('mainNav');
     
@@ -48,7 +51,6 @@ function initMobileFeatures() {
             mobileMenuToggle.textContent = isActive ? '☰' : '✕';
         });
         
-        // FIXED: Close menu when clicking outside - improved detection
         document.addEventListener('click', (e) => {
             if (mainNav.classList.contains('active') && 
                 !mainNav.contains(e.target) && 
@@ -57,16 +59,12 @@ function initMobileFeatures() {
             }
         });
         
-        // FIXED: Close menu when clicking a link - with timeout for page transition
         mainNav.addEventListener('click', (e) => {
             if (e.target.tagName === 'A') {
-                setTimeout(() => {
-                    closeMobileMenu();
-                }, 100);
+                setTimeout(() => closeMobileMenu(), 100);
             }
         });
 
-        // Close menu on escape key
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape' && mainNav.classList.contains('active')) {
                 closeMobileMenu();
@@ -76,32 +74,17 @@ function initMobileFeatures() {
     
     // Prevent zoom on iOS
     document.addEventListener('touchstart', function(e) {
-        if (e.touches.length > 1) {
-            e.preventDefault();
-        }
+        if (e.touches.length > 1) e.preventDefault();
     }, { passive: false });
     
     let lastTouchEnd = 0;
     document.addEventListener('touchend', function(e) {
         const now = (new Date()).getTime();
-        if (now - lastTouchEnd <= 300) {
-            e.preventDefault();
-        }
+        if (now - lastTouchEnd <= 300) e.preventDefault();
         lastTouchEnd = now;
     }, false);
-    
-    // Handle virtual keyboard
-    const inputs = document.querySelectorAll('input, textarea');
-    inputs.forEach(input => {
-        input.addEventListener('focus', () => {
-            setTimeout(() => {
-                input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-            }, 100);
-        });
-    });
 }
 
-// NEW: Function to close mobile menu
 function closeMobileMenu() {
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
     const mainNav = document.getElementById('mainNav');
@@ -127,13 +110,9 @@ function mount() {
     const view = routes[hash] || renderOracle;
     document.getElementById("app").innerHTML = view();
     
-    // Initialize mobile features after rendering
     setTimeout(initMobileFeatures, 0);
-    
-    // FIXED: Ensure menu is closed on page change
     closeMobileMenu();
     
-    // Wire up page-specific logic
     if (hash === "oracle") wireOracle();
     if (hash === "vision") wireVision();
     if (hash === "discussion") wireDiscussion();
@@ -424,60 +403,71 @@ function wireOracle() {
             // Show answer panel
             document.getElementById("answerPanel").style.display = "block";
 
-            // Update answer display with explanation and evidence
-            const explanationHtml = data.explanation ? `
+            // Safe data extraction
+            const safeData = {
+                kind: safeString(data.kind, "unknown"),
+                answer: safeString(data.answer, "No answer provided"),
+                determinacy: safeNumber(data.determinacy, 0),
+                deception_prob: safeNumber(data.deception_prob, 0),
+                risk_tags: safeArray(data.risk_tags),
+                hash: safeString(data.hash, "N/A"),
+                prev_hash: safeString(data.prev_hash, "N/A"),
+                timestamp: data.timestamp || Date.now() / 1000,
+                explanation: safeString(data.explanation),
+                evidence: safeArray(data.evidence),
+                ref_hash: safeString(data.ref_hash),
+                references: safeArray(data.references)
+            };
+
+            // Update answer display
+            const explanationHtml = safeData.explanation ? `
                 <div style="margin-top: 16px; padding: 12px; background: rgba(109, 169, 255, 0.1); border-radius: 8px; border-left: 4px solid var(--accent);">
                     <strong>Why this answer?</strong>
                     <div style="margin-top: 8px; font-size: 0.9em; color: var(--muted);">
-                        ${escapeHtml(data.explanation)}
+                        ${escapeHtml(safeData.explanation)}
                     </div>
                 </div>
             ` : '';
 
-            const evidenceHtml = data.evidence && data.evidence.length > 0 ? `
+            const evidenceHtml = safeData.evidence.length > 0 ? `
                 <div style="margin-top: 12px;">
                     <strong>Evidence:</strong>
                     <div style="margin-top: 8px;">
-                        ${data.evidence.map(e => `
+                        ${safeData.evidence.map(e => `
                             <a href="${e.url}" target="_blank" style="display: block; margin: 4px 0; color: var(--accent); text-decoration: none;">
-                                ${escapeHtml(e.title)}
+                                ${escapeHtml(e.title || 'Unknown')}
                             </a>
                         `).join('')}
                     </div>
                 </div>
             ` : '';
 
-            // Include reference hash if available
-            const refHashHtml = data.ref_hash ? `
+            const refHashHtml = safeData.ref_hash ? `
                 <div style="margin-top: 12px;">
                     <strong>Reference Hash:</strong>
-                    <div class="hash" style="margin-top: 4px;">${data.ref_hash}</div>
+                    <div class="hash" style="margin-top: 4px;">${safeData.ref_hash}</div>
                     <small style="color: var(--muted);">Cryptographic hash of academic references</small>
                 </div>
             ` : '';
 
-            // Use innerHTML instead of innerText for rich text display
             document.getElementById("answerText").innerHTML = `
-                <div style="margin-bottom: 16px;">${escapeHtml(data.answer)}</div>
+                <div style="margin-bottom: 16px;">${escapeHtml(safeData.answer)}</div>
                 ${explanationHtml}
                 ${evidenceHtml}
                 ${refHashHtml}
             `;
             
-            // Update badge
+            // Update UI with safe data
             const badge = document.getElementById("kindBadge");
-            badge.innerText = data.kind;
-            badge.className = "badge " + (data.kind || "truth");
+            badge.innerText = safeData.kind;
+            badge.className = "badge " + safeData.kind;
             
-            // FIXED: Update metrics with safe number handling
-            document.getElementById("det").innerText = (Number(data.determinacy) || 0).toFixed(2);
-            document.getElementById("dec").innerText = (Number(data.deception_prob) || 0).toFixed(2);
-            document.getElementById("risk").innerText = (data.risk_tags || []).join(", ");
-            document.getElementById("hash").innerText = data.hash;
-            document.getElementById("prev").innerText = data.prev_hash;
-            
-            // FIXED: Use safe timestamp handling
-            document.getElementById("ts").innerText = safeTimestamp(data.timestamp).toISOString();
+            document.getElementById("det").innerText = safeData.determinacy.toFixed(2);
+            document.getElementById("dec").innerText = safeData.deception_prob.toFixed(2);
+            document.getElementById("risk").innerText = safeData.risk_tags.join(", ");
+            document.getElementById("hash").innerText = safeData.hash;
+            document.getElementById("prev").innerText = safeData.prev_hash;
+            document.getElementById("ts").innerText = safeTimestamp(safeData.timestamp).toISOString();
 
             await loadChain();
         } catch (e) {
@@ -492,7 +482,6 @@ function wireOracle() {
 }
 
 function wireVision() {
-    // Vision page logic can be added here
     console.log("Vision page loaded");
 }
 
@@ -502,14 +491,12 @@ function wireDiscussion() {
     const postBtn = document.getElementById("postMessageBtn");
     const charCount = document.getElementById("charCount");
 
-    // Character counter
     messageInput.addEventListener("input", () => {
         const count = messageInput.value.length;
         charCount.textContent = count;
         charCount.style.color = count > 280 ? "#ff4444" : "#888";
     });
 
-    // Post message
     postBtn.onclick = async () => {
         const message = messageInput.value.trim();
         const author = authorInput.value.trim();
@@ -531,22 +518,17 @@ function wireDiscussion() {
             const res = await fetch(`${BACKEND_URL}/api/messages`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ 
-                    message: message,
-                    author: author 
-                })
+                body: JSON.stringify({ message, author })
             });
 
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || "Failed to post message");
 
-            // Clear form
             messageInput.value = "";
             authorInput.value = "";
             charCount.textContent = "0";
             charCount.style.color = "#888";
 
-            // Reload messages
             loadMessages();
             alert("Message posted successfully!");
 
@@ -558,7 +540,6 @@ function wireDiscussion() {
         }
     };
 
-    // Load messages on page load
     loadMessages();
 }
 
@@ -569,7 +550,6 @@ function wireVerify() {
     const refHashInput = document.getElementById("refHashInput");
     const refJsonInput = document.getElementById("refJsonInput");
 
-    // Main hash verification
     verifyBtn.onclick = async () => {
         const hash = hashInput.value.trim();
         
@@ -589,21 +569,23 @@ function wireVerify() {
             const resultContent = document.getElementById("resultContent");
             
             if (data.verified) {
-                const record = data.record;
-                const question = record.question || record.payload?.question || "N/A";
-                const kind = record.kind || record.payload?.kind || "truth";
-                const determinacy = record.determinacy ?? record.payload?.determinacy ?? 0;
-                const deceptionProb = record.deception_prob ?? record.payload?.deception_prob ?? 0;
-                const refHash = record.ref_hash || "";
-                const references = record.references || [];
+                const record = data.record || {};
+                const safeRecord = {
+                    question: safeString(record.question || record.payload?.question, "N/A"),
+                    kind: safeString(record.kind || record.payload?.kind, "truth"),
+                    determinacy: safeNumber(record.determinacy ?? record.payload?.determinacy, 0),
+                    deception_prob: safeNumber(record.deception_prob ?? record.payload?.deception_prob, 0),
+                    ref_hash: safeString(record.ref_hash),
+                    references: safeArray(record.references),
+                    timestamp: record.timestamp
+                };
                 
-                const refHashHtml = refHash ? `
-                    <p><strong>Reference Hash:</strong> <code>${refHash}</code></p>
-                    <p><strong>References Count:</strong> ${references.length}</p>
+                const refHashHtml = safeRecord.ref_hash ? `
+                    <p><strong>Reference Hash:</strong> <code>${safeRecord.ref_hash}</code></p>
+                    <p><strong>References Count:</strong> ${safeRecord.references.length}</p>
                 ` : '<p><strong>Reference Hash:</strong> Not available for this record</p>';
                 
-                // FIXED: Use safe timestamp handling
-                const displayTime = safeTimestamp(record.timestamp).toLocaleString();
+                const displayTime = safeTimestamp(safeRecord.timestamp).toLocaleString();
                 
                 resultContent.innerHTML = `
                 <div style="color: #00c851; font-size: 1.2em; margin-bottom: 16px;">
@@ -613,10 +595,10 @@ function wireVerify() {
                     <p><strong>Record Found:</strong> Yes</p>
                     <p><strong>Chain Integrity:</strong> ${data.chain_valid ? "Valid" : "Compromised"}</p>
                     <p><strong>Timestamp:</strong> ${displayTime}</p>
-                    <p><strong>Question:</strong> "${escapeHtml(question)}"</p>
-                    <p><strong>Answer Type:</strong> ${kind}</p>
-                    <p><strong>Determinacy:</strong> ${determinacy}</p>
-                    <p><strong>Deception Probability:</strong> ${deceptionProb}</p>
+                    <p><strong>Question:</strong> "${escapeHtml(safeRecord.question)}"</p>
+                    <p><strong>Answer Type:</strong> ${safeRecord.kind}</p>
+                    <p><strong>Determinacy:</strong> ${safeRecord.determinacy.toFixed(2)}</p>
+                    <p><strong>Deception Probability:</strong> ${safeRecord.deception_prob.toFixed(2)}</p>
                     ${refHashHtml}
                 </div>
                 <div style="margin-top: 16px; padding: 12px; background: rgba(0, 200, 81, 0.1); border-radius: 8px; border-left: 4px solid #00c851;">
@@ -646,7 +628,6 @@ function wireVerify() {
         }
     };
 
-    // Reference hash verification
     verifyRefBtn.onclick = async () => {
         const refHash = refHashInput.value.trim();
         const refJson = refJsonInput.value.trim();
@@ -670,10 +651,7 @@ function wireVerify() {
             const res = await fetch(`${BACKEND_URL}/api/verify_reference_hash`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ 
-                    hash: refHash,
-                    references: references
-                })
+                body: JSON.stringify({ hash: refHash, references })
             });
 
             const data = await res.json();
@@ -726,7 +704,6 @@ function wireVerify() {
     };
 }
 
-// Reference hash verification helper function
 async function verifyReferenceHash(refHash, references) {
     const res = await fetch(`${BACKEND_URL}/api/verify_reference_hash`, {
         method: "POST",
@@ -742,17 +719,16 @@ async function loadChain() {
         const res = await fetch(`${BACKEND_URL}/api/audit/chain`);
         const data = await res.json();
         const rows = (data.records || []).slice(-10).reverse().map(r => {
-            // FIXED: Use safe timestamp handling
             const t = safeTimestamp(r.timestamp).toLocaleTimeString();
-            const kind = (r.deception_prob >= 0.6) ? "deception" : "truth";
+            const kind = (safeNumber(r.deception_prob) >= 0.6) ? "deception" : "truth";
             return `<tr>
                 <td>${t}</td>
                 <td>${kind}</td>
                 <td title="${escapeHtml(r.question)}">${escapeHtml(truncate(r.question, 42))}</td>
-                <td>${(Number(r.determinacy) || 0).toFixed(2)}</td>
-                <td>${(Number(r.deception_prob) || 0).toFixed(2)}</td>
+                <td>${safeNumber(r.determinacy).toFixed(2)}</td>
+                <td>${safeNumber(r.deception_prob).toFixed(2)}</td>
                 <td class="mono" title="${r.hash}">
-                ${r.hash.slice(0,10)}…
+                ${(r.hash || '').slice(0,10)}…
                 <button class="verify-hash-btn" onclick="verifyHashDirectly('${r.hash}', event)" title="Verify this hash">
                     Verify
                 </button>
@@ -766,10 +742,8 @@ async function loadChain() {
     }
 }
 
-// Direct hash verification function with event parameter
 async function verifyHashDirectly(hash, event) {
     try {
-        // Show verifying state
         const verifyBtn = event.target;
         verifyBtn.innerHTML = 'Verifying...';
         verifyBtn.disabled = true;
@@ -778,12 +752,10 @@ async function verifyHashDirectly(hash, event) {
         const data = await res.json();
         
         if (data.verified) {
-            // Success verification - show green checkmark
             verifyBtn.innerHTML = 'Verified';
             verifyBtn.style.background = 'rgba(0, 200, 81, 0.2)';
             verifyBtn.style.color = '#00c851';
             
-            // Restore after 3 seconds
             setTimeout(() => {
                 verifyBtn.innerHTML = 'Verify';
                 verifyBtn.style.background = '';
@@ -791,10 +763,8 @@ async function verifyHashDirectly(hash, event) {
                 verifyBtn.disabled = false;
             }, 3000);
             
-            // Show detailed verification result
             showVerificationResult(data, hash);
         } else {
-            // Verification failed - show red X
             verifyBtn.innerHTML = 'Failed';
             verifyBtn.style.background = 'rgba(255, 68, 68, 0.2)';
             verifyBtn.style.color = '#ff4444';
@@ -810,7 +780,6 @@ async function verifyHashDirectly(hash, event) {
         }
         
     } catch (e) {
-        // Error case
         const verifyBtn = event.target;
         verifyBtn.innerHTML = 'Error';
         verifyBtn.style.background = 'rgba(255, 68, 68, 0.2)';
@@ -827,7 +796,6 @@ async function verifyHashDirectly(hash, event) {
     }
 }
 
-// Show detailed verification result
 function showVerificationResult(data, hash) {
     const modal = document.createElement('div');
     modal.style.cssText = `
@@ -845,20 +813,21 @@ function showVerificationResult(data, hash) {
         box-shadow: 0 10px 30px rgba(0,0,0,0.3);
     `;
     
-    // Use correct data path for modal display
-    const record = data.record;
-    const question = record.question || record.payload?.question || "N/A";
-    const kind = record.kind || record.payload?.kind || "truth";
-    const determinacy = record.determinacy ?? record.payload?.determinacy ?? 0;
-    const deceptionProb = record.deception_prob ?? record.payload?.deception_prob ?? 0;
-    const refHash = record.ref_hash || "";
+    const record = data.record || {};
+    const safeRecord = {
+        question: safeString(record.question || record.payload?.question, "N/A"),
+        kind: safeString(record.kind || record.payload?.kind, "truth"),
+        determinacy: safeNumber(record.determinacy ?? record.payload?.determinacy, 0),
+        deception_prob: safeNumber(record.deception_prob ?? record.payload?.deception_prob, 0),
+        ref_hash: safeString(record.ref_hash),
+        timestamp: record.timestamp
+    };
     
-    const refHashHtml = refHash ? `
-        <p><strong>Reference Hash:</strong> <code>${refHash}</code></p>
+    const refHashHtml = safeRecord.ref_hash ? `
+        <p><strong>Reference Hash:</strong> <code>${safeRecord.ref_hash}</code></p>
     ` : '';
     
-    // FIXED: Use safe timestamp handling
-    const displayTime = safeTimestamp(record.timestamp).toLocaleString();
+    const displayTime = safeTimestamp(safeRecord.timestamp).toLocaleString();
     
     modal.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
@@ -870,10 +839,10 @@ function showVerificationResult(data, hash) {
             <p><strong>Record Found:</strong> Yes</p>
             <p><strong>Chain Integrity:</strong> ${data.chain_valid ? "Valid" : "Compromised"}</p>
             <p><strong>Timestamp:</strong> ${displayTime}</p>
-            <p><strong>Question:</strong> "${escapeHtml(question)}"</p>
-            <p><strong>Answer Type:</strong> ${kind}</p>
-            <p><strong>Determinacy:</strong> ${determinacy}</p>
-            <p><strong>Deception Probability:</strong> ${deceptionProb}</p>
+            <p><strong>Question:</strong> "${escapeHtml(safeRecord.question)}"</p>
+            <p><strong>Answer Type:</strong> ${safeRecord.kind}</p>
+            <p><strong>Determinacy:</strong> ${safeRecord.determinacy.toFixed(2)}</p>
+            <p><strong>Deception Probability:</strong> ${safeRecord.deception_prob.toFixed(2)}</p>
             ${refHashHtml}
         </div>
         <div style="padding: 12px; background: rgba(0, 200, 81, 0.1); border-radius: 8px; border-left: 4px solid #00c851;">
@@ -883,11 +852,8 @@ function showVerificationResult(data, hash) {
     
     document.body.appendChild(modal);
     
-    // Close when clicking background
     modal.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.remove();
-        }
+        if (e.target === modal) modal.remove();
     });
 }
 
@@ -938,7 +904,6 @@ async function likeMessage(messageId) {
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || "Failed to like message");
 
-        // Update like count in UI
         const likeBtn = document.querySelector(`.like-btn[onclick="likeMessage(${messageId})"]`);
         if (likeBtn) {
             const likeCount = likeBtn.querySelector('.like-count');
@@ -951,7 +916,6 @@ async function likeMessage(messageId) {
 }
 
 function formatTime(timestamp) {
-    // FIXED: Use safe timestamp handling
     return safeTimestamp(timestamp).toLocaleString();
 }
 
@@ -969,7 +933,7 @@ function escapeHtml(s) {
     }[m])); 
 }
 
-// Make functions globally available for onclick handlers
+// Make functions globally available
 window.verifyHashDirectly = verifyHashDirectly;
 window.likeMessage = likeMessage;
 window.verifyReferenceHash = verifyReferenceHash;
