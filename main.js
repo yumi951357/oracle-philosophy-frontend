@@ -1,23 +1,28 @@
 // ===== CONFIG =====
 const BACKEND_URL = "https://oracle-philosophy-backend.onrender.com";
 
-// ===== MOBILE INITIALIZATION =====
+// ===== FIXED MOBILE FEATURES =====
 function initMobileFeatures() {
-  // Mobile menu toggle
+  // Mobile menu toggle - Fixed logic
   const mobileMenuToggle = document.getElementById('mobileMenuToggle');
   const mainNav = document.getElementById('mainNav');
   
   if (mobileMenuToggle && mainNav) {
-    mobileMenuToggle.addEventListener('click', () => {
+    mobileMenuToggle.addEventListener('click', (e) => {
+      e.stopPropagation();
       mainNav.classList.toggle('active');
       mobileMenuToggle.textContent = mainNav.classList.contains('active') ? '✕' : '☰';
+      mobileMenuToggle.setAttribute('aria-label', 
+        mainNav.classList.contains('active') ? 'Close menu' : 'Open menu'
+      );
     });
     
-    // Close menu when clicking outside
+    // Close menu when clicking outside - Fixed
     document.addEventListener('click', (e) => {
       if (!mainNav.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
         mainNav.classList.remove('active');
         mobileMenuToggle.textContent = '☰';
+        mobileMenuToggle.setAttribute('aria-label', 'Open menu');
       }
     });
     
@@ -26,33 +31,29 @@ function initMobileFeatures() {
       if (e.target.tagName === 'A') {
         mainNav.classList.remove('active');
         mobileMenuToggle.textContent = '☰';
+        mobileMenuToggle.setAttribute('aria-label', 'Open menu');
+      }
+    });
+
+    // Close menu on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && mainNav.classList.contains('active')) {
+        mainNav.classList.remove('active');
+        mobileMenuToggle.textContent = '☰';
+        mobileMenuToggle.setAttribute('aria-label', 'Open menu');
       }
     });
   }
   
-  // Prevent zoom on iOS
-  document.addEventListener('touchstart', function(e) {
-    if (e.touches.length > 1) {
-      e.preventDefault();
-    }
-  }, { passive: false });
-  
-  let lastTouchEnd = 0;
-  document.addEventListener('touchend', function(e) {
-    const now = (new Date()).getTime();
-    if (now - lastTouchEnd <= 300) {
-      e.preventDefault();
-    }
-    lastTouchEnd = now;
-  }, false);
-  
-  // Handle virtual keyboard
+  // Improved virtual keyboard handling
   const inputs = document.querySelectorAll('input, textarea');
   inputs.forEach(input => {
     input.addEventListener('focus', () => {
       setTimeout(() => {
-        // Scroll to ensure input is visible above keyboard
-        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        const rect = input.getBoundingClientRect();
+        if (rect.bottom > window.innerHeight - 200) {
+          input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
       }, 100);
     });
   });
@@ -370,7 +371,6 @@ function wireOracle() {
           </div>
       ` : '';
 
-      // Use innerHTML instead of innerText for rich text display
       document.getElementById("answerText").innerHTML = `
           <div style="margin-bottom: 16px;">${escapeHtml(data.answer)}</div>
           ${explanationHtml}
@@ -496,7 +496,6 @@ function wireVerify() {
       const resultContent = document.getElementById("resultContent");
       
       if (data.verified) {
-        // Use correct data path for verification results
         const record = data.record;
         const question = record.question || record.payload?.question || "N/A";
         const kind = record.kind || record.payload?.kind || "truth";
@@ -561,7 +560,7 @@ async function loadChain() {
         <td class="mono" title="${r.hash}">
           ${r.hash.slice(0,10)}…
           <button class="verify-hash-btn" onclick="verifyHashDirectly('${r.hash}', event)" title="Verify this hash">
-            🔍
+            🔍 Verify
           </button>
         </td>
       </tr>`;
@@ -578,36 +577,45 @@ async function verifyHashDirectly(hash, event) {
   try {
     // Show verifying state
     const verifyBtn = event.target;
-    verifyBtn.innerHTML = '⏳';
+    const originalText = verifyBtn.innerHTML;
+    verifyBtn.innerHTML = '⏳ Verifying...';
     verifyBtn.disabled = true;
 
     const res = await fetch(`${BACKEND_URL}/api/verify/${hash}`);
     const data = await res.json();
     
     if (data.verified) {
-      // Success verification - show green checkmark
-      verifyBtn.innerHTML = '✅';
+      // Success verification
+      verifyBtn.innerHTML = '✅ Verified';
+      verifyBtn.style.background = 'rgba(0, 200, 81, 0.2)';
+      verifyBtn.style.borderColor = '#00c851';
       verifyBtn.style.color = '#00c851';
-      
-      // Restore after 3 seconds
-      setTimeout(() => {
-        verifyBtn.innerHTML = '🔍';
-        verifyBtn.style.color = '';
-        verifyBtn.disabled = false;
-      }, 3000);
       
       // Show detailed verification result
       showVerificationResult(data, hash);
+      
+      // Restore after 5 seconds
+      setTimeout(() => {
+        verifyBtn.innerHTML = originalText;
+        verifyBtn.style.background = '';
+        verifyBtn.style.borderColor = '';
+        verifyBtn.style.color = '';
+        verifyBtn.disabled = false;
+      }, 5000);
     } else {
-      // Verification failed - show red X
-      verifyBtn.innerHTML = '❌';
+      // Verification failed
+      verifyBtn.innerHTML = '❌ Failed';
+      verifyBtn.style.background = 'rgba(255, 68, 68, 0.2)';
+      verifyBtn.style.borderColor = '#ff4444';
       verifyBtn.style.color = '#ff4444';
       
       setTimeout(() => {
-        verifyBtn.innerHTML = '🔍';
+        verifyBtn.innerHTML = originalText;
+        verifyBtn.style.background = '';
+        verifyBtn.style.borderColor = '';
         verifyBtn.style.color = '';
         verifyBtn.disabled = false;
-      }, 3000);
+      }, 5000);
       
       alert(`Verification failed: ${data.error || 'Hash not found'}`);
     }
@@ -615,14 +623,18 @@ async function verifyHashDirectly(hash, event) {
   } catch (e) {
     // Error case
     const verifyBtn = event.target;
-    verifyBtn.innerHTML = '❌';
+    verifyBtn.innerHTML = '❌ Error';
+    verifyBtn.style.background = 'rgba(255, 68, 68, 0.2)';
+    verifyBtn.style.borderColor = '#ff4444';
     verifyBtn.style.color = '#ff4444';
     
     setTimeout(() => {
-      verifyBtn.innerHTML = '🔍';
+      verifyBtn.innerHTML = '🔍 Verify';
+      verifyBtn.style.background = '';
+      verifyBtn.style.borderColor = '';
       verifyBtn.style.color = '';
       verifyBtn.disabled = false;
-    }, 3000);
+    }, 5000);
     
     alert("Verification error: " + e.message);
   }
@@ -646,7 +658,6 @@ function showVerificationResult(data, hash) {
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
   `;
   
-  // Use correct data path for modal display
   const record = data.record;
   const question = record.question || record.payload?.question || "N/A";
   const kind = record.kind || record.payload?.kind || "truth";
@@ -760,3 +771,7 @@ function escapeHtml(s) {
     "'": '&#039;'
   }[m])); 
 }
+
+// Make functions globally available
+window.verifyHashDirectly = verifyHashDirectly;
+window.likeMessage = likeMessage;
