@@ -439,8 +439,8 @@ function wireOracle() {
       badge.className = "badge " + (data.kind || "truth");
       
       // Update metrics
-      document.getElementById("det").innerText = data.determinacy.toFixed(2);
-      document.getElementById("dec").innerText = data.deception_prob.toFixed(2);
+document.getElementById("det").innerText = (Number(data.determinacy) || 0).toFixed(2);
+document.getElementById("dec").innerText = (Number(data.deception_prob) || 0).toFixed(2);
       document.getElementById("risk").innerText = (data.risk_tags || []).join(", ");
       document.getElementById("hash").innerText = data.hash;
       document.getElementById("prev").innerText = data.prev_hash;
