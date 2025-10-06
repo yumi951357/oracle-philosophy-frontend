@@ -1,62 +1,84 @@
 // ===== CONFIG =====
 const BACKEND_URL = "https://oracle-philosophy-backend.onrender.com";
 
-// ===== FIXED MOBILE FEATURES =====
+// ===== FIXED MOBILE INITIALIZATION =====
 function initMobileFeatures() {
-  // Mobile menu toggle - Fixed logic
+  // Mobile menu toggle - FIXED: Proper event handling
   const mobileMenuToggle = document.getElementById('mobileMenuToggle');
   const mainNav = document.getElementById('mainNav');
   
   if (mobileMenuToggle && mainNav) {
     mobileMenuToggle.addEventListener('click', (e) => {
+      e.preventDefault();
       e.stopPropagation();
+      
+      const isActive = mainNav.classList.contains('active');
       mainNav.classList.toggle('active');
-      mobileMenuToggle.textContent = mainNav.classList.contains('active') ? '✕' : '☰';
-      mobileMenuToggle.setAttribute('aria-label', 
-        mainNav.classList.contains('active') ? 'Close menu' : 'Open menu'
-      );
+      mobileMenuToggle.textContent = isActive ? '☰' : '✕';
     });
     
-    // Close menu when clicking outside - Fixed
+    // FIXED: Close menu when clicking outside - improved detection
     document.addEventListener('click', (e) => {
-      if (!mainNav.contains(e.target) && !mobileMenuToggle.contains(e.target)) {
-        mainNav.classList.remove('active');
-        mobileMenuToggle.textContent = '☰';
-        mobileMenuToggle.setAttribute('aria-label', 'Open menu');
+      if (mainNav.classList.contains('active') && 
+          !mainNav.contains(e.target) && 
+          !mobileMenuToggle.contains(e.target)) {
+        closeMobileMenu();
       }
     });
     
-    // Close menu when clicking a link
+    // FIXED: Close menu when clicking a link - with timeout for page transition
     mainNav.addEventListener('click', (e) => {
       if (e.target.tagName === 'A') {
-        mainNav.classList.remove('active');
-        mobileMenuToggle.textContent = '☰';
-        mobileMenuToggle.setAttribute('aria-label', 'Open menu');
+        setTimeout(() => {
+          closeMobileMenu();
+        }, 100);
       }
     });
 
     // Close menu on escape key
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && mainNav.classList.contains('active')) {
-        mainNav.classList.remove('active');
-        mobileMenuToggle.textContent = '☰';
-        mobileMenuToggle.setAttribute('aria-label', 'Open menu');
+        closeMobileMenu();
       }
     });
   }
   
-  // Improved virtual keyboard handling
+  // Prevent zoom on iOS
+  document.addEventListener('touchstart', function(e) {
+    if (e.touches.length > 1) {
+      e.preventDefault();
+    }
+  }, { passive: false });
+  
+  let lastTouchEnd = 0;
+  document.addEventListener('touchend', function(e) {
+    const now = (new Date()).getTime();
+    if (now - lastTouchEnd <= 300) {
+      e.preventDefault();
+    }
+    lastTouchEnd = now;
+  }, false);
+  
+  // Handle virtual keyboard
   const inputs = document.querySelectorAll('input, textarea');
   inputs.forEach(input => {
     input.addEventListener('focus', () => {
       setTimeout(() => {
-        const rect = input.getBoundingClientRect();
-        if (rect.bottom > window.innerHeight - 200) {
-          input.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        }
+        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
       }, 100);
     });
   });
+}
+
+// NEW: Function to close mobile menu
+function closeMobileMenu() {
+  const mobileMenuToggle = document.getElementById('mobileMenuToggle');
+  const mainNav = document.getElementById('mainNav');
+  
+  if (mainNav && mobileMenuToggle) {
+    mainNav.classList.remove('active');
+    mobileMenuToggle.textContent = '☰';
+  }
 }
 
 // ===== SIMPLE ROUTER =====
@@ -76,6 +98,9 @@ function mount() {
   
   // Initialize mobile features after rendering
   setTimeout(initMobileFeatures, 0);
+  
+  // FIXED: Ensure menu is closed on page change
+  closeMobileMenu();
   
   // Wire up page-specific logic
   if (hash === "oracle") wireOracle();
@@ -371,6 +396,7 @@ function wireOracle() {
           </div>
       ` : '';
 
+      // Use innerHTML instead of innerText for rich text display
       document.getElementById("answerText").innerHTML = `
           <div style="margin-bottom: 16px;">${escapeHtml(data.answer)}</div>
           ${explanationHtml}
@@ -496,6 +522,7 @@ function wireVerify() {
       const resultContent = document.getElementById("resultContent");
       
       if (data.verified) {
+        // Use correct data path for verification results
         const record = data.record;
         const question = record.question || record.payload?.question || "N/A";
         const kind = record.kind || record.payload?.kind || "truth";
@@ -560,7 +587,7 @@ async function loadChain() {
         <td class="mono" title="${r.hash}">
           ${r.hash.slice(0,10)}…
           <button class="verify-hash-btn" onclick="verifyHashDirectly('${r.hash}', event)" title="Verify this hash">
-            🔍 Verify
+            🔍
           </button>
         </td>
       </tr>`;
@@ -577,45 +604,36 @@ async function verifyHashDirectly(hash, event) {
   try {
     // Show verifying state
     const verifyBtn = event.target;
-    const originalText = verifyBtn.innerHTML;
-    verifyBtn.innerHTML = '⏳ Verifying...';
+    verifyBtn.innerHTML = '⏳';
     verifyBtn.disabled = true;
 
     const res = await fetch(`${BACKEND_URL}/api/verify/${hash}`);
     const data = await res.json();
     
     if (data.verified) {
-      // Success verification
-      verifyBtn.innerHTML = '✅ Verified';
-      verifyBtn.style.background = 'rgba(0, 200, 81, 0.2)';
-      verifyBtn.style.borderColor = '#00c851';
+      // Success verification - show green checkmark
+      verifyBtn.innerHTML = '✅';
       verifyBtn.style.color = '#00c851';
+      
+      // Restore after 3 seconds
+      setTimeout(() => {
+        verifyBtn.innerHTML = '🔍';
+        verifyBtn.style.color = '';
+        verifyBtn.disabled = false;
+      }, 3000);
       
       // Show detailed verification result
       showVerificationResult(data, hash);
-      
-      // Restore after 5 seconds
-      setTimeout(() => {
-        verifyBtn.innerHTML = originalText;
-        verifyBtn.style.background = '';
-        verifyBtn.style.borderColor = '';
-        verifyBtn.style.color = '';
-        verifyBtn.disabled = false;
-      }, 5000);
     } else {
-      // Verification failed
-      verifyBtn.innerHTML = '❌ Failed';
-      verifyBtn.style.background = 'rgba(255, 68, 68, 0.2)';
-      verifyBtn.style.borderColor = '#ff4444';
+      // Verification failed - show red X
+      verifyBtn.innerHTML = '❌';
       verifyBtn.style.color = '#ff4444';
       
       setTimeout(() => {
-        verifyBtn.innerHTML = originalText;
-        verifyBtn.style.background = '';
-        verifyBtn.style.borderColor = '';
+        verifyBtn.innerHTML = '🔍';
         verifyBtn.style.color = '';
         verifyBtn.disabled = false;
-      }, 5000);
+      }, 3000);
       
       alert(`Verification failed: ${data.error || 'Hash not found'}`);
     }
@@ -623,18 +641,14 @@ async function verifyHashDirectly(hash, event) {
   } catch (e) {
     // Error case
     const verifyBtn = event.target;
-    verifyBtn.innerHTML = '❌ Error';
-    verifyBtn.style.background = 'rgba(255, 68, 68, 0.2)';
-    verifyBtn.style.borderColor = '#ff4444';
+    verifyBtn.innerHTML = '❌';
     verifyBtn.style.color = '#ff4444';
     
     setTimeout(() => {
-      verifyBtn.innerHTML = '🔍 Verify';
-      verifyBtn.style.background = '';
-      verifyBtn.style.borderColor = '';
+      verifyBtn.innerHTML = '🔍';
       verifyBtn.style.color = '';
       verifyBtn.disabled = false;
-    }, 5000);
+    }, 3000);
     
     alert("Verification error: " + e.message);
   }
@@ -658,6 +672,7 @@ function showVerificationResult(data, hash) {
     box-shadow: 0 10px 30px rgba(0,0,0,0.3);
   `;
   
+  // Use correct data path for modal display
   const record = data.record;
   const question = record.question || record.payload?.question || "N/A";
   const kind = record.kind || record.payload?.kind || "truth";
@@ -772,6 +787,6 @@ function escapeHtml(s) {
   }[m])); 
 }
 
-// Make functions globally available
+// Make functions globally available for onclick handlers
 window.verifyHashDirectly = verifyHashDirectly;
 window.likeMessage = likeMessage;
