@@ -850,35 +850,40 @@ async function verifyHashDirectly(hash, event) {
         verifyBtn.innerHTML = 'Verifying...';
         verifyBtn.disabled = true;
 
-        const res = await fetch(`${BACKEND_URL}/api/verify/${hash}`);
+        // ✅ FIX: Add timestamp to prevent caching
+        const res = await fetch(`${BACKEND_URL}/api/verify/${hash}?t=${Date.now()}`);
         const data = await res.json();
+        
+        console.log("🔍 Verification response:", data);
         
         if (data.verified) {
             verifyBtn.innerHTML = 'Verified';
             verifyBtn.style.background = 'rgba(0, 200, 81, 0.2)';
             verifyBtn.style.color = '#00c851';
             
+            // ✅ FIX: Show correct verification result
+            showVerificationResult(data, hash);
+            
             setTimeout(() => {
                 verifyBtn.innerHTML = 'Verify';
                 verifyBtn.style.background = '';
                 verifyBtn.style.color = '';
                 verifyBtn.disabled = false;
             }, 3000);
-            
-            showVerificationResult(data, hash);
         } else {
             verifyBtn.innerHTML = 'Failed';
             verifyBtn.style.background = 'rgba(255, 68, 68, 0.2)';
             verifyBtn.style.color = '#ff4444';
             
+            // ✅ FIX: Show detailed error message
+            alert(`Verification failed: ${data.error || 'Unknown error'}`);
+            
             setTimeout(() => {
                 verifyBtn.innerHTML = 'Verify';
                 verifyBtn.style.background = '';
                 verifyBtn.style.color = '';
                 verifyBtn.disabled = false;
             }, 3000);
-            
-            alert(`Verification failed: ${data.error || 'Hash not found'}`);
         }
         
     } catch (e) {
@@ -887,14 +892,14 @@ async function verifyHashDirectly(hash, event) {
         verifyBtn.style.background = 'rgba(255, 68, 68, 0.2)';
         verifyBtn.style.color = '#ff4444';
         
+        alert("Verification error: " + e.message);
+        
         setTimeout(() => {
             verifyBtn.innerHTML = 'Verify';
             verifyBtn.style.background = '';
             verifyBtn.style.color = '';
             verifyBtn.disabled = false;
         }, 3000);
-        
-        alert("Verification error: " + e.message);
     }
 }
 
@@ -916,39 +921,31 @@ function showVerificationResult(data, hash) {
     `;
     
     const record = data.record || {};
-    const safeRecord = {
-        question: safeString(record.question || record.payload?.question, "N/A"),
-        kind: safeString(record.kind || record.payload?.kind, "truth"),
-        determinacy: safeNumber(record.determinacy ?? record.payload?.determinacy, 0),
-        deception_prob: safeNumber(record.deception_prob ?? record.payload?.deception_prob, 0),
-        ref_hash: safeString(record.ref_hash),
-        timestamp: record.timestamp
-    };
     
-    const refHashHtml = safeRecord.ref_hash ? `
-        <p><strong>Reference Hash:</strong> <code>${safeRecord.ref_hash}</code></p>
-    ` : '';
-    
-    const displayTime = safeTimestamp(safeRecord.timestamp).toLocaleString();
+    // ✅ FIX: Correctly display chain integrity status
+    const chainStatus = data.chain_valid ? "Valid" : "Compromised";
+    const chainColor = data.chain_valid ? "#00c851" : "#ff4444";
     
     modal.innerHTML = `
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
-            <h3 style="margin: 0; color: #00c851;">Verification Successful</h3>
+            <h3 style="margin: 0; color: ${chainColor};">Verification ${data.chain_valid ? "Successful" : "Failed"}</h3>
             <button onclick="this.parentElement.parentElement.remove()" style="background: none; border: none; color: var(--muted); cursor: pointer; font-size: 1.2em;">×</button>
         </div>
         <div style="margin-bottom: 16px;">
             <p><strong>Hash:</strong> <code>${hash}</code></p>
-            <p><strong>Record Found:</strong> Yes</p>
-            <p><strong>Chain Integrity:</strong> ${data.chain_valid ? "Valid" : "Compromised"}</p>
-            <p><strong>Timestamp:</strong> ${displayTime}</p>
-            <p><strong>Question:</strong> "${escapeHtml(safeRecord.question)}"</p>
-            <p><strong>Answer Type:</strong> ${safeRecord.kind}</p>
-            <p><strong>Determinacy:</strong> ${safeRecord.determinacy.toFixed(2)}</p>
-            <p><strong>Deception Probability:</strong> ${safeRecord.deception_prob.toFixed(2)}</p>
-            ${refHashHtml}
+            <p><strong>Record Found:</strong> ${data.verified ? "Yes" : "No"}</p>
+            <p><strong>Chain Integrity:</strong> <span style="color: ${chainColor}">${chainStatus}</span></p>
+            <p><strong>Timestamp:</strong> ${safeTimestamp(record.timestamp).toLocaleString()}</p>
+            <p><strong>Question:</strong> "${escapeHtml(record.question || 'N/A')}"</p>
+            <p><strong>Answer Type:</strong> ${record.kind || 'truth'}</p>
+            <p><strong>Determinacy:</strong> ${safeNumber(record.determinacy).toFixed(2)}</p>
+            <p><strong>Deception Probability:</strong> ${safeNumber(record.deception_prob).toFixed(2)}</p>
+            ${record.ref_hash ? `<p><strong>Reference Hash:</strong> <code>${record.ref_hash}</code></p>` : ''}
         </div>
         <div style="padding: 12px; background: rgba(0, 200, 81, 0.1); border-radius: 8px; border-left: 4px solid #00c851;">
-            <small>This record is permanently stored in the immutable audit chain. Any modification would break the cryptographic links.</small>
+            <small>${data.chain_valid ? 
+                "This record is permanently stored in the immutable audit chain. Any modification would break the cryptographic links." : 
+                "Warning: Chain integrity compromised. This may indicate tampering or synchronization issues."}</small>
         </div>
     `;
     
