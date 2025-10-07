@@ -781,38 +781,66 @@ async function verifyReferenceHash(refHash, references) {
 // ===== ENHANCED FUNCTIONS =====
 async function loadChain() {
     try {
-        // ✅ FIX: Add timestamp to prevent caching
+        // Add timestamp to prevent caching
         const timestamp = new Date().getTime();
         const res = await fetch(`${BACKEND_URL}/api/audit/chain?t=${timestamp}`);
+        
+        if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        
         const data = await res.json();
         
-        if (!res.ok) throw new Error(data.error || "Failed to load audit chain");
+        console.log(`🔍 Audit chain API response:`, data);
         
-        const rows = (data.records || []).slice(-10).reverse().map(r => {
-            const t = safeTimestamp(r.timestamp).toLocaleTimeString();
-            const kind = (safeNumber(r.deception_prob) >= 0.45) ? "deception" : "truth"; // Use 0.45 threshold
+        if (!data.records) {
+            throw new Error("Audit chain data format error");
+        }
+        
+        // Ensure sorting by time in descending order (newest first)
+        const sortedRecords = [...data.records].sort((a, b) => {
+            const timeA = safeTimestamp(a.timestamp || a.created_at).getTime();
+            const timeB = safeTimestamp(b.timestamp || b.created_at).getTime();
+            return timeB - timeA; // Newest first
+        });
+        
+        // Only show the latest 10 records
+        const displayRecords = sortedRecords.slice(0, 10);
+        
+        console.log(`📊 Displaying ${displayRecords.length} records (total ${sortedRecords.length})`);
+        
+        const rows = displayRecords.map(r => {
+            const t = safeTimestamp(r.timestamp || r.created_at).toLocaleTimeString();
+            const kind = (safeNumber(r.deception_prob) >= 0.45) ? "deception" : "truth";
+            const questionText = escapeHtml(truncate(r.question, 42));
+            
             return `<tr>
                 <td>${t}</td>
                 <td>${kind}</td>
-                <td title="${escapeHtml(r.question)}">${escapeHtml(truncate(r.question, 42))}</td>
+                <td title="${escapeHtml(r.question)}">${questionText}</td>
                 <td>${safeNumber(r.determinacy).toFixed(2)}</td>
                 <td>${safeNumber(r.deception_prob).toFixed(2)}</td>
                 <td class="mono" title="${r.hash}">
-                ${(r.hash || '').slice(0,10)}…
-                <button class="verify-hash-btn" onclick="verifyHashDirectly('${r.hash}', event)" title="Verify this hash">
-                    Verify
-                </button>
+                    ${(r.hash || '').slice(0,10)}…
+                    <button class="verify-hash-btn" onclick="verifyHashDirectly('${r.hash}', event)" title="Verify this hash">
+                        Verify
+                    </button>
                 </td>
             </tr>`;
         }).join("");
         
-        document.querySelector("#chainTable tbody").innerHTML = rows || "<tr><td colspan='6'>No records</td></tr>";
-        
-        console.log(`✅ Loaded ${data.records ? data.records.length : 0} audit records`);
+        const tbody = document.querySelector("#chainTable tbody");
+        if (tbody) {
+            tbody.innerHTML = rows || "<tr><td colspan='6'>No records</td></tr>";
+            console.log("✅ Audit chain table updated");
+        } else {
+            console.error("❌ Cannot find audit chain table tbody element");
+        }
         
     } catch(e) {
-        console.error("Failed to load audit chain:", e);
-        document.querySelector("#chainTable tbody").innerHTML = "<tr><td colspan='6'>Failed to load chain</td></tr>";
+        console.error("❌ Failed to load audit chain:", e);
+        const tbody = document.querySelector("#chainTable tbody");
+        if (tbody) {
+            tbody.innerHTML = `<tr><td colspan='6'>Load failed: ${e.message}</td></tr>`;
+        }
     }
 }
 
@@ -895,7 +923,7 @@ function showVerificationResult(data, hash) {
         deception_prob: safeNumber(record.deception_prob ?? record.payload?.deception_prob, 0),
         ref_hash: safeString(record.ref_hash),
         timestamp: record.timestamp
-};
+    };
     
     const refHashHtml = safeRecord.ref_hash ? `
         <p><strong>Reference Hash:</strong> <code>${safeRecord.ref_hash}</code></p>
