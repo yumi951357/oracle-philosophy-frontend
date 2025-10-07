@@ -154,6 +154,7 @@ function renderOracle() {
                 <div>Hash</div><div class="hash" id="hash"></div>
                 <div>Prev Hash</div><div class="hash" id="prev"></div>
                 <div>Timestamp</div><div class="mono" id="ts"></div>
+                <div>Source</div><div class="mono" id="source"></div>
             </div>
         </div>
 
@@ -428,7 +429,8 @@ function wireOracle() {
                 evidence: safeArray(data.evidence),
                 ref_hash: safeString(data.ref_hash),
                 references: safeArray(data.references),
-                knowledge_search: data.knowledge_search || {}
+                knowledge_search: data.knowledge_search || {},
+                source: safeString(data.source, "unknown")
             };
 
             // Update answer display
@@ -462,6 +464,7 @@ function wireOracle() {
                 </div>
             ` : '';
 
+            // 主要答案显示
             document.getElementById("answerText").innerHTML = `
                 <div style="margin-bottom: 16px;">${escapeHtml(safeData.answer)}</div>
                 ${explanationHtml}
@@ -480,30 +483,50 @@ function wireOracle() {
             document.getElementById("hash").innerText = safeData.hash;
             document.getElementById("prev").innerText = safeData.prev_hash;
             document.getElementById("ts").innerText = safeTimestamp(safeData.timestamp).toISOString();
+            document.getElementById("source").innerText = safeData.source;
 
-            // Display knowledge search results
-            if (safeData.knowledge_search.available && safeData.knowledge_search.results.length > 0) {
-                const knowledgeHtml = safeData.knowledge_search.results.map((result, index) => `
-                    <div style="margin-bottom: 16px; padding: 12px; background: rgba(109, 169, 255, 0.05); border-radius: 8px; border-left: 3px solid var(--accent);">
-                        <div style="font-weight: bold; color: var(--accent);">
-                            📄 ${result.file_name} (Relevance: ${result.score})
+            // 显示知识搜索结果 - 修复版本
+            if (safeData.knowledge_search.available) {
+                if (safeData.knowledge_search.from_ultimate && safeData.knowledge_search.oracle_response) {
+                    // 如果来自终极搜索且有Oracle回复，显示来源信息
+                    const sourceInfo = `
+                        <div style="margin-bottom: 16px; padding: 12px; background: rgba(0, 200, 81, 0.1); border-radius: 8px; border-left: 4px solid #00c851;">
+                            <div style="font-weight: bold; color: #00c851;">
+                                ✅ Answer from Knowledge Base
+                            </div>
+                            <div style="font-size: 0.9em; color: var(--muted); margin-top: 4px;">
+                                Source: ${safeData.knowledge_search.source} | Confidence: ${(safeData.knowledge_search.determinacy * 100).toFixed(1)}%
+                            </div>
                         </div>
-                        <div style="font-size: 0.9em; color: var(--muted); margin-top: 4px;">
-                            ${escapeHtml(result.content_preview || 'No preview available')}
+                    `;
+                    document.getElementById("knowledgeList").innerHTML = sourceInfo;
+                    document.getElementById("knowledgeResults").style.display = 'block';
+                    
+                    console.log(`✅ Using ultimate search answer from: ${safeData.knowledge_search.source}`);
+                } else if (safeData.knowledge_search.results.length > 0) {
+                    // 显示普通搜索结果
+                    const knowledgeHtml = safeData.knowledge_search.results.map((result, index) => `
+                        <div style="margin-bottom: 16px; padding: 12px; background: rgba(109, 169, 255, 0.05); border-radius: 8px; border-left: 3px solid var(--accent);">
+                            <div style="font-weight: bold; color: var(--accent);">
+                                📄 ${result.file_name} (Relevance: ${result.score})
+                            </div>
+                            <div style="font-size: 0.9em; color: var(--muted); margin-top: 4px;">
+                                ${escapeHtml(result.content_preview || 'No preview available')}
+                            </div>
                         </div>
-                        <div style="font-size: 0.8em; color: #888; margin-top: 4px;">
-                            Keywords: ${result.keywords ? result.keywords.join(', ') : 'None'}
-                        </div>
-                    </div>
-                `).join('');
-                
-                document.getElementById("knowledgeList").innerHTML = knowledgeHtml;
-                document.getElementById("knowledgeResults").style.display = 'block';
-                
-                console.log(`📚 Found ${safeData.knowledge_search.results_count} relevant documents`);
+                    `).join('');
+                    
+                    document.getElementById("knowledgeList").innerHTML = knowledgeHtml;
+                    document.getElementById("knowledgeResults").style.display = 'block';
+                    
+                    console.log(`📚 Found ${safeData.knowledge_search.results_count} relevant documents`);
+                } else {
+                    document.getElementById("knowledgeResults").style.display = 'none';
+                    console.log("📚 No relevant documents found");
+                }
             } else {
                 document.getElementById("knowledgeResults").style.display = 'none';
-                console.log("📚 No relevant documents found");
+                console.log("📚 Knowledge search not available");
             }
 
             await loadChain();
