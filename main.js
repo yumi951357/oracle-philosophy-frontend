@@ -464,7 +464,7 @@ function wireOracle() {
                 </div>
             ` : '';
 
-            // 主要答案显示
+            // Main answer display
             document.getElementById("answerText").innerHTML = `
                 <div style="margin-bottom: 16px;">${escapeHtml(safeData.answer)}</div>
                 ${explanationHtml}
@@ -485,10 +485,10 @@ function wireOracle() {
             document.getElementById("ts").innerText = safeTimestamp(safeData.timestamp).toISOString();
             document.getElementById("source").innerText = safeData.source;
 
-            // 显示知识搜索结果 - 修复版本
+            // Display knowledge search results - fixed version
             if (safeData.knowledge_search.available) {
                 if (safeData.knowledge_search.from_ultimate && safeData.knowledge_search.oracle_response) {
-                    // 如果来自终极搜索且有Oracle回复，显示来源信息
+                    // If from ultimate search and has Oracle response, show source info
                     const sourceInfo = `
                         <div style="margin-bottom: 16px; padding: 12px; background: rgba(0, 200, 81, 0.1); border-radius: 8px; border-left: 4px solid #00c851;">
                             <div style="font-weight: bold; color: #00c851;">
@@ -504,7 +504,7 @@ function wireOracle() {
                     
                     console.log(`✅ Using ultimate search answer from: ${safeData.knowledge_search.source}`);
                 } else if (safeData.knowledge_search.results.length > 0) {
-                    // 显示普通搜索结果
+                    // Display regular search results
                     const knowledgeHtml = safeData.knowledge_search.results.map((result, index) => `
                         <div style="margin-bottom: 16px; padding: 12px; background: rgba(109, 169, 255, 0.05); border-radius: 8px; border-left: 3px solid var(--accent);">
                             <div style="font-weight: bold; color: var(--accent);">
@@ -529,7 +529,12 @@ function wireOracle() {
                 console.log("📚 Knowledge search not available");
             }
 
-            await loadChain();
+            // ✅ FIX: Force reload audit chain with delay to ensure backend has saved
+            setTimeout(async () => {
+                await loadChain();
+                console.log("✅ Audit chain reloaded after new question");
+            }, 500);
+
         } catch (e) {
             alert("Error: " + e.message);
         } finally {
@@ -776,11 +781,16 @@ async function verifyReferenceHash(refHash, references) {
 // ===== ENHANCED FUNCTIONS =====
 async function loadChain() {
     try {
-        const res = await fetch(`${BACKEND_URL}/api/audit/chain`);
+        // ✅ FIX: Add timestamp to prevent caching
+        const timestamp = new Date().getTime();
+        const res = await fetch(`${BACKEND_URL}/api/audit/chain?t=${timestamp}`);
         const data = await res.json();
+        
+        if (!res.ok) throw new Error(data.error || "Failed to load audit chain");
+        
         const rows = (data.records || []).slice(-10).reverse().map(r => {
             const t = safeTimestamp(r.timestamp).toLocaleTimeString();
-            const kind = (safeNumber(r.deception_prob) >= 0.6) ? "deception" : "truth";
+            const kind = (safeNumber(r.deception_prob) >= 0.45) ? "deception" : "truth"; // Use 0.45 threshold
             return `<tr>
                 <td>${t}</td>
                 <td>${kind}</td>
@@ -797,7 +807,11 @@ async function loadChain() {
         }).join("");
         
         document.querySelector("#chainTable tbody").innerHTML = rows || "<tr><td colspan='6'>No records</td></tr>";
+        
+        console.log(`✅ Loaded ${data.records ? data.records.length : 0} audit records`);
+        
     } catch(e) {
+        console.error("Failed to load audit chain:", e);
         document.querySelector("#chainTable tbody").innerHTML = "<tr><td colspan='6'>Failed to load chain</td></tr>";
     }
 }
@@ -881,7 +895,7 @@ function showVerificationResult(data, hash) {
         deception_prob: safeNumber(record.deception_prob ?? record.payload?.deception_prob, 0),
         ref_hash: safeString(record.ref_hash),
         timestamp: record.timestamp
-    };
+};
     
     const refHashHtml = safeRecord.ref_hash ? `
         <p><strong>Reference Hash:</strong> <code>${safeRecord.ref_hash}</code></p>
