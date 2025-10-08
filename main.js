@@ -433,7 +433,11 @@ function wireOracle() {
             const res = await fetch(`${BACKEND_URL}/api/consult`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ question, session_id })
+                body: JSON.stringify({
+                    question: question,
+                    session_id: session_id,
+                    lang: navigator.language.startsWith("zh") ? "zh" : "en"
+                })
             });
             
             // ✅ IMMEDIATE FIX: Add timeout handling
