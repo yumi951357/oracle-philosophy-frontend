@@ -1,3 +1,20 @@
+// ===== REQUEST LOCK SYSTEM =====
+window.requestLocks = new Map();
+window.requestQueue = [];
+window.maxConcurrentRequests = 2; // Maximum 2 concurrent requests
+
+function acquireLock(key) {
+    if (window.requestLocks.has(key)) {
+        return false;
+    }
+    window.requestLocks.set(key, true);
+    return true;
+}
+
+function releaseLock(key) {
+    window.requestLocks.delete(key);
+}
+
 // ===== CONFIG =====
 const BACKEND_URL = "https://oracle-philosophy-backend.onrender.com";
 
@@ -392,6 +409,14 @@ function wireOracle() {
     btn.onclick = async () => {
         const question = qEl.value.trim();
         if (!question) return alert("Please enter a question.");
+        
+        // ✅ IMMEDIATE FIX: Add request lock
+        const requestKey = `ask_${Date.now()}`;
+        if (!acquireLock(requestKey)) {
+            console.log("🔄 Request already in progress, please wait...");
+            return;
+        }
+        
         const session_id = sidEl.value.trim() || ("session_" + Date.now());
         sidEl.value = session_id;
 
@@ -403,13 +428,21 @@ function wireOracle() {
             document.getElementById("knowledgeResults").style.display = 'none';
             document.getElementById("knowledgeList").innerHTML = '<div class="loading">Searching knowledge base...</div>';
             
+            console.log("🚀 Sending request to backend...");
+            
             const res = await fetch(`${BACKEND_URL}/api/consult`, {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
                 body: JSON.stringify({ question, session_id })
             });
             
-            const data = await res.json();
+            // ✅ IMMEDIATE FIX: Add timeout handling
+            const timeoutPromise = new Promise((_, reject) => 
+                setTimeout(() => reject(new Error("Request timeout")), 30000)
+            );
+            
+            const data = await Promise.race([res.json(), timeoutPromise]);
+            
             if (!res.ok) throw new Error(data.error || "Request failed");
 
             // Show answer panel
@@ -536,8 +569,11 @@ function wireOracle() {
             }, 500);
 
         } catch (e) {
+            console.error("❌ Request failed:", e);
             alert("Error: " + e.message);
         } finally {
+            // ✅ IMMEDIATE FIX: Ensure lock is released
+            releaseLock(requestKey);
             btn.disabled = false; 
             btn.innerText = "Seek the Truth";
         }
@@ -780,7 +816,14 @@ async function verifyReferenceHash(refHash, references) {
 
 // ===== ENHANCED FUNCTIONS =====
 async function loadChain() {
+    // ✅ IMMEDIATE FIX: Add chain loading lock
+    if (!acquireLock('loadChain')) {
+        return;
+    }
+    
     try {
+        console.log("🔍 Loading audit chain...");
+        
         // Add timestamp to prevent caching
         const timestamp = new Date().getTime();
         const res = await fetch(`${BACKEND_URL}/api/audit/chain?t=${timestamp}`);
@@ -841,15 +884,28 @@ async function loadChain() {
         if (tbody) {
             tbody.innerHTML = `<tr><td colspan='6'>Load failed: ${e.message}</td></tr>`;
         }
+    } finally {
+        // ✅ IMMEDIATE FIX: Release lock
+        releaseLock('loadChain');
     }
 }
 
 async function verifyHashDirectly(hash, event) {
+    // ✅ IMMEDIATE FIX: Add verification lock
+    const verifyKey = `verify_${hash}`;
+    if (!acquireLock(verifyKey)) {
+        return;
+    }
+    
+    const verifyBtn = event.target;
+    const originalHTML = verifyBtn.innerHTML;
+    
     try {
-        const verifyBtn = event.target;
         verifyBtn.innerHTML = 'Verifying...';
         verifyBtn.disabled = true;
 
+        console.log(`🔍 Verifying hash: ${hash}`);
+        
         // ✅ FIX: Add timestamp to prevent caching
         const res = await fetch(`${BACKEND_URL}/api/verify/${hash}?t=${Date.now()}`);
         const data = await res.json();
@@ -863,13 +919,6 @@ async function verifyHashDirectly(hash, event) {
             
             // ✅ FIX: Show correct verification result
             showVerificationResult(data, hash);
-            
-            setTimeout(() => {
-                verifyBtn.innerHTML = 'Verify';
-                verifyBtn.style.background = '';
-                verifyBtn.style.color = '';
-                verifyBtn.disabled = false;
-            }, 3000);
         } else {
             verifyBtn.innerHTML = 'Failed';
             verifyBtn.style.background = 'rgba(255, 68, 68, 0.2)';
@@ -877,29 +926,23 @@ async function verifyHashDirectly(hash, event) {
             
             // ✅ FIX: Show detailed error message
             alert(`Verification failed: ${data.error || 'Unknown error'}`);
-            
-            setTimeout(() => {
-                verifyBtn.innerHTML = 'Verify';
-                verifyBtn.style.background = '';
-                verifyBtn.style.color = '';
-                verifyBtn.disabled = false;
-            }, 3000);
         }
         
     } catch (e) {
-        const verifyBtn = event.target;
+        console.error("❌ Verification error:", e);
         verifyBtn.innerHTML = 'Error';
         verifyBtn.style.background = 'rgba(255, 68, 68, 0.2)';
         verifyBtn.style.color = '#ff4444';
-        
         alert("Verification error: " + e.message);
-        
+    } finally {
+        // ✅ IMMEDIATE FIX: Reset button state after 2 seconds
         setTimeout(() => {
-            verifyBtn.innerHTML = 'Verify';
+            verifyBtn.innerHTML = originalHTML;
             verifyBtn.style.background = '';
             verifyBtn.style.color = '';
             verifyBtn.disabled = false;
-        }, 3000);
+            releaseLock(verifyKey);
+        }, 2000);
     }
 }
 
