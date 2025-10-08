@@ -400,6 +400,24 @@ function renderContact() {
     </div>`;
 }
 
+// ===== ORACLE BACKEND CONNECTOR =====
+async function askOracle(question) {
+  const API_URL = "https://oracle-philosophy-backend.onrender.com/oracle";
+  try {
+    const res = await fetch(API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question })
+    });
+    const data = await res.json();
+    console.log("✅ Oracle Response:", data);
+    return data;
+  } catch (err) {
+    console.error("❌ Backend connection failed:", err);
+    return { answer: "⚠️ Oracle backend not reachable." };
+  }
+}
+
 // ===== LOGIC =====
 function wireOracle() {
     const btn = document.getElementById("askBtn");
