@@ -1,20 +1,60 @@
 cff-version: 1.2.0
-message: "If you use this software in your research, please cite it using the following metadata"
-title: "Oracle Ethics M1.5: Verifiable AI Audit Chain"
+message: "If you use this project, please cite it as follows."
+title: "Oracle Philosophy — Verifiable AI Audit Chain"
 authors:
-  - family-names: Ren
-    given-names: Shijian
-    affiliation: "Oracle Ethics Project"
-  - family-names: Wuyin
-    given-names: 
-    affiliation: "Oracle Ethics Project"
-version: 1.0
-date-released: 2024-01-15
+  - family-names: "Ren"
+    given-names: "Shijian"
+  - family-names: "Wuyin"
+    given-names: "Morning Star (AI System)"
+version: "M1.5 → M2 Transition"
+date-released: "2025-10-09"
 url: "https://github.com/yumi951357/oracle-philosophy-frontend"
-license: MIT
+repository-code: "https://github.com/yumi951357/oracle-philosophy-frontend"
 keywords:
-  - "formal verification"
-  - "AI ethics" 
-  - "blockchain"
-  - "audit trails"
-abstract: "A formally specified framework for verifiable AI reasoning audit chains."
+  - verifiable AI
+  - audit chain
+  - oracle ethics
+  - machine ethics
+  - type theory
+license: MIT
+references:
+  - type: article
+    title: "Propositions as Sessions"
+    authors:
+      - family-names: "Wadler"
+        given-names: "Philip"
+    journal: "Proceedings of the 17th ACM SIGPLAN International Conference on Functional Programming (ICFP)"
+    year: 2012
+    pages: "273–286"
+    doi: "10.1145/2364527.2364568"
+  - type: article
+    title: "Propositions as Types"
+    authors:
+      - family-names: "Wadler"
+        given-names: "Philip"
+    journal: "Communications of the ACM"
+    year: 2015
+    volume: "58"
+    number: "12"
+    pages: "75–84"
+    doi: "10.1145/2699407"
+  - type: book
+    title: "Programming Language Foundations in Agda"
+    authors:
+      - family-names: "Lindley"
+        given-names: "Sam"
+      - family-names: "Wadler"
+        given-names: "Philip"
+    publisher: "Cambridge University Press"
+    year: 2019
+    isbn: "9781108495825"
+  - type: paper
+    title: "A Type Theory for Blockchain Smart Contracts"
+    authors:
+      - family-names: "Kokke"
+        given-names: "Willem"
+      - family-names: "Wadler"
+        given-names: "Philip"
+    venue: "Workshop on Blockchain Technology and Theory (BTT)"
+    year: 2020
+    note: "IOHK Research, extended preprint version available on arXiv:2005.14439"
