@@ -1,20 +1,3 @@
-// ===== REQUEST LOCK SYSTEM =====
-window.requestLocks = new Map();
-window.requestQueue = [];
-window.maxConcurrentRequests = 2; // Maximum 2 concurrent requests
-
-function acquireLock(key) {
-    if (window.requestLocks.has(key)) {
-        return false;
-    }
-    window.requestLocks.set(key, true);
-    return true;
-}
-
-function releaseLock(key) {
-    window.requestLocks.delete(key);
-}
-
 // ===== CONFIG =====
 const BACKEND_URL = "https://oracle-philosophy-backend.onrender.com";
 
@@ -408,6 +391,23 @@ async function askOracle(question) {
     console.error("❌ Backend connection failed:", err);
     return { answer: "⚠️ Oracle backend not reachable." };
   }
+}
+
+// ===== REQUEST LOCK SYSTEM =====
+window.requestLocks = new Map();
+window.requestQueue = [];
+window.maxConcurrentRequests = 2; // Maximum 2 concurrent requests
+
+function acquireLock(key) {
+    if (window.requestLocks.has(key)) {
+        return false;
+    }
+    window.requestLocks.set(key, true);
+    return true;
+}
+
+function releaseLock(key) {
+    window.requestLocks.delete(key);
 }
 
 // ===== LOGIC =====
