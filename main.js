@@ -173,90 +173,68 @@ function renderOracle() {
 function renderVision() {
     return `
     <div class="container">
-        <div class="panel futuristic">
-            <div class="vision-header">
-                <h1>Oracle Ethics M2.3</h1>
-                <div class="glow-text">Semantic Fusion & Ethical Resonance</div>
-            </div>
+        <div class="panel">
+            <h1>Oracle Ethics M2.3</h1>
+            <div style="color: #6da9ff; font-size: 1.2em; margin-bottom: 20px;">Semantic Fusion & Ethical Resonance</div>
             
-            <div class="manifesto-section">
-                <h2>Our Evolution</h2>
-                <p>M2.3 introduces advanced semantic understanding and ethical resonance, creating AI that not only answers but understands intent, context, and ethical implications.</p>
-            </div>
+            <h2>Our Evolution</h2>
+            <p>M2.3 introduces advanced semantic understanding and ethical resonance, creating AI that not only answers but understands intent, context, and ethical implications.</p>
 
-            <div class="manifesto-section">
-                <h2>M2.3 Breakthrough Features</h2>
-                <ul class="mission-list">
-                    <li><strong>Semantic Bridge:</strong> Real-time intent detection and topic analysis</li>
-                    <li><strong>Ethical Resonator:</strong> Dynamic adjustment of determinacy based on ethical context</li>
-                    <li><strong>Valence Scoring:</strong> Emotional tone analysis (-1 to +1 scale)</li>
-                    <li><strong>Confidence Calibration:</strong> Semantic-aware confidence scoring</li>
-                    <li><strong>Risk-Aware Responses:</strong> Automatic ethical weight adjustment for sensitive topics</li>
-                </ul>
-            </div>
+            <h2>M2.3 Breakthrough Features</h2>
+            <ul>
+                <li><strong>Semantic Bridge:</strong> Real-time intent detection and topic analysis</li>
+                <li><strong>Ethical Resonator:</strong> Dynamic adjustment of determinacy based on ethical context</li>
+                <li><strong>Valence Scoring:</strong> Emotional tone analysis (-1 to +1 scale)</li>
+                <li><strong>Confidence Calibration:</strong> Semantic-aware confidence scoring</li>
+                <li><strong>Risk-Aware Responses:</strong> Automatic ethical weight adjustment for sensitive topics</li>
+            </ul>
 
-            <div class="core-principles">
-                <h2>Enhanced Core Principles</h2>
-                <div class="principles-grid">
-                    <div class="principle-card">
-                        <h3>Semantic Intelligence</h3>
-                        <p>Understands user intent, topics, and emotional valence beyond literal meaning.</p>
-                    </div>
-                    <div class="principle-card">
-                        <h3>Ethical Resonance</h3>
-                        <p>Dynamically adjusts response characteristics based on ethical context and risk factors.</p>
-                    </div>
-                    <div class="principle-card">
-                        <h3>Contextual Confidence</h3>
-                        <p>Semantic-aware confidence scoring that reflects true understanding certainty.</p>
-                    </div>
-                    <div class="principle-card">
-                        <h3>Adaptive Ethics</h3>
-                        <p>Automatic ethical weight adjustment for philosophy, truth, and risk-related queries.</p>
-                    </div>
+            <h2>Enhanced Core Principles</h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0;">
+                <div style="padding: 16px; background: rgba(109, 169, 255, 0.1); border-radius: 8px;">
+                    <h3>Semantic Intelligence</h3>
+                    <p>Understands user intent, topics, and emotional valence beyond literal meaning.</p>
+                </div>
+                <div style="padding: 16px; background: rgba(109, 169, 255, 0.1); border-radius: 8px;">
+                    <h3>Ethical Resonance</h3>
+                    <p>Dynamically adjusts response characteristics based on ethical context and risk factors.</p>
+                </div>
+                <div style="padding: 16px; background: rgba(109, 169, 255, 0.1); border-radius: 8px;">
+                    <h3>Contextual Confidence</h3>
+                    <p>Semantic-aware confidence scoring that reflects true understanding certainty.</p>
+                </div>
+                <div style="padding: 16px; background: rgba(109, 169, 255, 0.1); border-radius: 8px;">
+                    <h3>Adaptive Ethics</h3>
+                    <p>Automatic ethical weight adjustment for philosophy, truth, and risk-related queries.</p>
                 </div>
             </div>
 
-            <div class="roadmap">
-                <h2>Our Evolution Path</h2>
-                <div class="timeline">
-                    <div class="timeline-item completed">
-                        <div class="timeline-marker">M1.5</div>
-                        <div class="timeline-content">
-                            <h3>Trust Foundation</h3>
-                            <p>Audit Chains + Basic Risk Detection</p>
-                        </div>
-                    </div>
-                    <div class="timeline-item completed">
-                        <div class="timeline-marker">M2.0</div>
-                        <div class="timeline-content">
-                            <h3>Philosophical Core</h3>
-                            <p>Multi-framework Wisdom + Self-check Engine</p>
-                        </div>
-                    </div>
-                    <div class="timeline-item current">
-                        <div class="timeline-marker">M2.3</div>
-                        <div class="timeline-content">
-                            <h3>Semantic Fusion</h3>
-                            <p>Intent Detection + Ethical Resonance (Current)</p>
-                        </div>
-                    </div>
-                    <div class="timeline-item future">
-                        <div class="timeline-marker">M3.0</div>
-                        <div class="timeline-content">
-                            <h3>Collective Wisdom</h3>
-                            <p>AI-Human Co-evolution + Social Contract</p>
-                        </div>
-                    </div>
+            <h2>Our Evolution Path</h2>
+            <div style="margin: 20px 0;">
+                <div style="display: flex; align-items: center; margin: 10px 0; padding: 12px; background: rgba(0, 200, 81, 0.1); border-radius: 8px;">
+                    <div style="background: #00c851; color: white; padding: 8px 12px; border-radius: 6px; margin-right: 12px;">M1.5</div>
+                    <div><strong>Trust Foundation</strong><br>Audit Chains + Basic Risk Detection</div>
+                </div>
+                <div style="display: flex; align-items: center; margin: 10px 0; padding: 12px; background: rgba(0, 200, 81, 0.1); border-radius: 8px;">
+                    <div style="background: #00c851; color: white; padding: 8px 12px; border-radius: 6px; margin-right: 12px;">M2.0</div>
+                    <div><strong>Philosophical Core</strong><br>Multi-framework Wisdom + Self-check Engine</div>
+                </div>
+                <div style="display: flex; align-items: center; margin: 10px 0; padding: 12px; background: rgba(109, 169, 255, 0.2); border-radius: 8px; border: 2px solid #6da9ff;">
+                    <div style="background: #6da9ff; color: white; padding: 8px 12px; border-radius: 6px; margin-right: 12px;">M2.3</div>
+                    <div><strong>Semantic Fusion</strong><br>Intent Detection + Ethical Resonance (Current)</div>
+                </div>
+                <div style="display: flex; align-items: center; margin: 10px 0; padding: 12px; background: rgba(153, 153, 153, 0.1); border-radius: 8px;">
+                    <div style="background: #999; color: white; padding: 8px 12px; border-radius: 6px; margin-right: 12px;">M3.0</div>
+                    <div><strong>Collective Wisdom</strong><br>AI-Human Co-evolution + Social Contract</div>
                 </div>
             </div>
 
-            <div class="manifesto-final">
-                <blockquote class="vision-quote">
+            <div style="margin-top: 30px; padding: 20px; background: rgba(109, 169, 255, 0.05); border-radius: 8px; border-left: 4px solid #6da9ff;">
+                <blockquote style="margin: 0; font-style: italic; font-size: 1.1em;">
                     "Truth emerges when semantics meet ethics in resonant understanding."
-                    <footer>Oracle Ethics M2.3 Manifesto</footer>
+                    <footer style="margin-top: 8px; font-size: 0.9em; color: #666;">Oracle Ethics M2.3 Manifesto</footer>
                 </blockquote>
-                <p>Oracle Ethics M2.3 represents the next evolution in trustworthy AI - systems that don't just process information, but understand meaning and context.</p>
+                <p style="margin-top: 16px;">Oracle Ethics M2.3 represents the next evolution in trustworthy AI - systems that don't just process information, but understand meaning and context.</p>
             </div>
         </div>
     </div>`;
