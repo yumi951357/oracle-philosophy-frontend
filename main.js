@@ -192,85 +192,77 @@ function renderVision() {
     <div class="container">
         <div class="panel futuristic">
             <div class="vision-header">
-                <h1>Oracle Ethics M1.5</h1>
-                <div class="glow-text">Building Trustworthy AI for the Future</div>
+                <h1>Oracle Ethics M2.3</h1>
+                <div class="glow-text">Semantic Fusion & Ethical Resonance</div>
             </div>
             
             <div class="manifesto-section">
-                <h2>Our Vision</h2>
-                <p>In an era of information explosion and algorithmic black boxes, truth and trust have become scarce resources. Oracle Ethics is not just a Q&A tool, but a new paradigm for AI design: transparent, verifiable, and immutable.</p>
+                <h2>Our Evolution</h2>
+                <p>M2.3 introduces advanced semantic understanding and ethical resonance, creating AI that not only answers but understands intent, context, and ethical implications.</p>
             </div>
 
             <div class="manifesto-section">
-                <h2>Our Mission</h2>
-                <p>Build the world's first AI system that is:</p>
+                <h2>M2.3 Breakthrough Features</h2>
                 <ul class="mission-list">
-                    <li>Self-auditing with blockchain-style audit logs</li>
-                    <li>Equipped with multi-layer risk and deception detection</li>
-                    <li>Independently verifiable by users</li>
-                    <li>Creates the first "trustworthy oracle" that can prove its own honesty</li>
+                    <li><strong>Semantic Bridge:</strong> Real-time intent detection and topic analysis</li>
+                    <li><strong>Ethical Resonator:</strong> Dynamic adjustment of determinacy based on ethical context</li>
+                    <li><strong>Valence Scoring:</strong> Emotional tone analysis (-1 to +1 scale)</li>
+                    <li><strong>Confidence Calibration:</strong> Semantic-aware confidence scoring</li>
+                    <li><strong>Risk-Aware Responses:</strong> Automatic ethical weight adjustment for sensitive topics</li>
                 </ul>
             </div>
 
             <div class="core-principles">
-                <h2>Core Principles</h2>
+                <h2>Enhanced Core Principles</h2>
                 <div class="principles-grid">
                     <div class="principle-card">
-                        <h3>Transparency</h3>
-                        <p>Every answer generates an audit record, publicly accessible and traceable.</p>
+                        <h3>Semantic Intelligence</h3>
+                        <p>Understands user intent, topics, and emotional valence beyond literal meaning.</p>
                     </div>
                     <div class="principle-card">
-                        <h3>Verifiability</h3>
-                        <p>Users can verify answer integrity through cryptographic hashes.</p>
+                        <h3>Ethical Resonance</h3>
+                        <p>Dynamically adjusts response characteristics based on ethical context and risk factors.</p>
                     </div>
                     <div class="principle-card">
-                        <h3>Multi-perspective</h3>
-                        <p>Each question receives answers from multiple philosophical frameworks with risk assessments.</p>
+                        <h3>Contextual Confidence</h3>
+                        <p>Semantic-aware confidence scoring that reflects true understanding certainty.</p>
                     </div>
                     <div class="principle-card">
-                        <h3>Self-evolution</h3>
-                        <p>Future versions will feature introspection mechanisms for enhanced reliability.</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="manifesto-section">
-                <h2>What Makes Us Different</h2>
-                <div class="differentiation">
-                    <div class="diff-item">
-                        <strong>Other AIs are black boxes;</strong> We are glass boxes (auditable, traceable)
-                    </div>
-                    <div class="diff-item">
-                        <strong>Other AIs disappear after answering;</strong> We preserve verifiable "Wisdom Logs"
-                    </div>
-                    <div class="diff-item">
-                        <strong>Other AIs just output;</strong> We self-inspect and label deception/risk scores before output
+                        <h3>Adaptive Ethics</h3>
+                        <p>Automatic ethical weight adjustment for philosophy, truth, and risk-related queries.</p>
                     </div>
                 </div>
             </div>
 
             <div class="roadmap">
-                <h2>Our Roadmap</h2>
+                <h2>Our Evolution Path</h2>
                 <div class="timeline">
+                    <div class="timeline-item completed">
+                        <div class="timeline-marker">M1.5</div>
+                        <div class="timeline-content">
+                            <h3>Trust Foundation</h3>
+                            <p>Audit Chains + Basic Risk Detection</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item completed">
+                        <div class="timeline-marker">M2.0</div>
+                        <div class="timeline-content">
+                            <h3>Philosophical Core</h3>
+                            <p>Multi-framework Wisdom + Self-check Engine</p>
+                        </div>
+                    </div>
                     <div class="timeline-item current">
-                        <div class="timeline-marker">Now</div>
+                        <div class="timeline-marker">M2.3</div>
                         <div class="timeline-content">
-                            <h3>M1.5 - NOW</h3>
-                            <p>Trustworthy Q&A + Audit Chains (Currently Live)</p>
+                            <h3>Semantic Fusion</h3>
+                            <p>Intent Detection + Ethical Resonance (Current)</p>
                         </div>
                     </div>
                     <div class="timeline-item future">
-                        <div class="timeline-marker">Next</div>
+                        <div class="timeline-marker">M3.0</div>
                         <div class="timeline-content">
-                            <h3>M2 - NEXT</h3>
-                            <p>Internal Self-check Engine + Advanced Risk Assessment</p>
-                        </div>
-                    </div>
-                    <div class="timeline-item future">
-                        <div class="timeline-marker">Future</div>
-                        <div class="timeline-content">
-                            <h3>M3 - FUTURE</h3>
-                            <p>Collective Wisdom Module - AI and users co-evolving towards a new social contract</p>
+                            <h3>Collective Wisdom</h3>
+                            <p>AI-Human Co-evolution + Social Contract</p>
                         </div>
                     </div>
                 </div>
@@ -278,10 +270,10 @@ function renderVision() {
 
             <div class="manifesto-final">
                 <blockquote class="vision-quote">
-                    "After the blackout, the true light appears."
-                    <footer>Oracle Ethics Manifesto</footer>
+                    "Truth emerges when semantics meet ethics in resonant understanding."
+                    <footer>Oracle Ethics M2.3 Manifesto</footer>
                 </blockquote>
-                <p>Oracle Ethics is not just another AI project, but the blueprint for the next generation of trustworthy artificial intelligence.</p>
+                <p>Oracle Ethics M2.3 represents the next evolution in trustworthy AI - systems that don't just process information, but understand meaning and context.</p>
             </div>
         </div>
     </div>`;
@@ -1091,7 +1083,7 @@ function escapeHtml(s) {
     return (s || "").replace(/[&<>"']/g, m => ({
         '&': '&amp;',
         '<': '&lt;', 
-        '>': '&gt;',
+        '&gt;': '>',
         '"': '&quot;',
         "'": '&#039;'
     }[m])); 
@@ -1100,42 +1092,4 @@ function escapeHtml(s) {
 // Make functions globally available
 window.verifyHashDirectly = verifyHashDirectly;
 window.likeMessage = likeMessage;
-window.verifyReferenceHash = verifyReferenceHash;  这是main文件
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <title>Oracle Ethics M1.5</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <!-- Mobile optimization meta tags -->
-  <meta name="theme-color" content="#6da9ff">
-  <meta name="mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <link href="./styles.css" rel="stylesheet">
-</head>
-<body>
-  <header class="topbar">
-    <div class="brand">Oracle Ethics M1.5</div>
-    <!-- Mobile hamburger menu -->
-    <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
-    <nav class="nav" id="mainNav">
-      <a href="#oracle">Oracle</a>
-      <a href="#vision">Vision</a>
-      <a href="#discussion">Discussion</a>
-      <a href="#verify">Verify</a>
-      <a href="#docs">Docs</a>
-      <a href="#contact">Contact</a>
-    </nav>
-  </header>
-
-  <main id="app"></main>
-
-  <footer class="foot">
-    <small>"After the blackout, the true light appears."</small>
-  </footer>
-
-  <script src="main.js"></script>
-</body>
-</html> 
+window.verifyReferenceHash = verifyReferenceHash;
