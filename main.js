@@ -1,3 +1,20 @@
+// ===== REQUEST LOCK SYSTEM =====
+window.requestLocks = new Map();
+window.requestQueue = [];
+window.maxConcurrentRequests = 2; // Maximum 2 concurrent requests
+
+function acquireLock(key) {
+    if (window.requestLocks.has(key)) {
+        return false;
+    }
+    window.requestLocks.set(key, true);
+    return true;
+}
+
+function releaseLock(key) {
+    window.requestLocks.delete(key);
+}
+
 // ===== CONFIG =====
 const BACKEND_URL = "https://oracle-philosophy-backend.onrender.com";
 
@@ -173,68 +190,98 @@ function renderOracle() {
 function renderVision() {
     return `
     <div class="container">
-        <div class="panel">
-            <h1>Oracle Ethics M2.3</h1>
-            <div style="color: #6da9ff; font-size: 1.2em; margin-bottom: 20px;">Semantic Fusion & Ethical Resonance</div>
+        <div class="panel futuristic">
+            <div class="vision-header">
+                <h1>Oracle Ethics M1.5</h1>
+                <div class="glow-text">Building Trustworthy AI for the Future</div>
+            </div>
             
-            <h2>Our Evolution</h2>
-            <p>M2.3 introduces advanced semantic understanding and ethical resonance, creating AI that not only answers but understands intent, context, and ethical implications.</p>
+            <div class="manifesto-section">
+                <h2>Our Vision</h2>
+                <p>In an era of information explosion and algorithmic black boxes, truth and trust have become scarce resources. Oracle Ethics is not just a Q&A tool, but a new paradigm for AI design: transparent, verifiable, and immutable.</p>
+            </div>
 
-            <h2>M2.3 Breakthrough Features</h2>
-            <ul>
-                <li><strong>Semantic Bridge:</strong> Real-time intent detection and topic analysis</li>
-                <li><strong>Ethical Resonator:</strong> Dynamic adjustment of determinacy based on ethical context</li>
-                <li><strong>Valence Scoring:</strong> Emotional tone analysis (-1 to +1 scale)</li>
-                <li><strong>Confidence Calibration:</strong> Semantic-aware confidence scoring</li>
-                <li><strong>Risk-Aware Responses:</strong> Automatic ethical weight adjustment for sensitive topics</li>
-            </ul>
+            <div class="manifesto-section">
+                <h2>Our Mission</h2>
+                <p>Build the world's first AI system that is:</p>
+                <ul class="mission-list">
+                    <li>Self-auditing with blockchain-style audit logs</li>
+                    <li>Equipped with multi-layer risk and deception detection</li>
+                    <li>Independently verifiable by users</li>
+                    <li>Creates the first "trustworthy oracle" that can prove its own honesty</li>
+                </ul>
+            </div>
 
-            <h2>Enhanced Core Principles</h2>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0;">
-                <div style="padding: 16px; background: rgba(109, 169, 255, 0.1); border-radius: 8px;">
-                    <h3>Semantic Intelligence</h3>
-                    <p>Understands user intent, topics, and emotional valence beyond literal meaning.</p>
-                </div>
-                <div style="padding: 16px; background: rgba(109, 169, 255, 0.1); border-radius: 8px;">
-                    <h3>Ethical Resonance</h3>
-                    <p>Dynamically adjusts response characteristics based on ethical context and risk factors.</p>
-                </div>
-                <div style="padding: 16px; background: rgba(109, 169, 255, 0.1); border-radius: 8px;">
-                    <h3>Contextual Confidence</h3>
-                    <p>Semantic-aware confidence scoring that reflects true understanding certainty.</p>
-                </div>
-                <div style="padding: 16px; background: rgba(109, 169, 255, 0.1); border-radius: 8px;">
-                    <h3>Adaptive Ethics</h3>
-                    <p>Automatic ethical weight adjustment for philosophy, truth, and risk-related queries.</p>
+            <div class="core-principles">
+                <h2>Core Principles</h2>
+                <div class="principles-grid">
+                    <div class="principle-card">
+                        <h3>Transparency</h3>
+                        <p>Every answer generates an audit record, publicly accessible and traceable.</p>
+                    </div>
+                    <div class="principle-card">
+                        <h3>Verifiability</h3>
+                        <p>Users can verify answer integrity through cryptographic hashes.</p>
+                    </div>
+                    <div class="principle-card">
+                        <h3>Multi-perspective</h3>
+                        <p>Each question receives answers from multiple philosophical frameworks with risk assessments.</p>
+                    </div>
+                    <div class="principle-card">
+                        <h3>Self-evolution</h3>
+                        <p>Future versions will feature introspection mechanisms for enhanced reliability.</p>
+                    </div>
                 </div>
             </div>
 
-            <h2>Our Evolution Path</h2>
-            <div style="margin: 20px 0;">
-                <div style="display: flex; align-items: center; margin: 10px 0; padding: 12px; background: rgba(0, 200, 81, 0.1); border-radius: 8px;">
-                    <div style="background: #00c851; color: white; padding: 8px 12px; border-radius: 6px; margin-right: 12px;">M1.5</div>
-                    <div><strong>Trust Foundation</strong><br>Audit Chains + Basic Risk Detection</div>
-                </div>
-                <div style="display: flex; align-items: center; margin: 10px 0; padding: 12px; background: rgba(0, 200, 81, 0.1); border-radius: 8px;">
-                    <div style="background: #00c851; color: white; padding: 8px 12px; border-radius: 6px; margin-right: 12px;">M2.0</div>
-                    <div><strong>Philosophical Core</strong><br>Multi-framework Wisdom + Self-check Engine</div>
-                </div>
-                <div style="display: flex; align-items: center; margin: 10px 0; padding: 12px; background: rgba(109, 169, 255, 0.2); border-radius: 8px; border: 2px solid #6da9ff;">
-                    <div style="background: #6da9ff; color: white; padding: 8px 12px; border-radius: 6px; margin-right: 12px;">M2.3</div>
-                    <div><strong>Semantic Fusion</strong><br>Intent Detection + Ethical Resonance (Current)</div>
-                </div>
-                <div style="display: flex; align-items: center; margin: 10px 0; padding: 12px; background: rgba(153, 153, 153, 0.1); border-radius: 8px;">
-                    <div style="background: #999; color: white; padding: 8px 12px; border-radius: 6px; margin-right: 12px;">M3.0</div>
-                    <div><strong>Collective Wisdom</strong><br>AI-Human Co-evolution + Social Contract</div>
+            <div class="manifesto-section">
+                <h2>What Makes Us Different</h2>
+                <div class="differentiation">
+                    <div class="diff-item">
+                        <strong>Other AIs are black boxes;</strong> We are glass boxes (auditable, traceable)
+                    </div>
+                    <div class="diff-item">
+                        <strong>Other AIs disappear after answering;</strong> We preserve verifiable "Wisdom Logs"
+                    </div>
+                    <div class="diff-item">
+                        <strong>Other AIs just output;</strong> We self-inspect and label deception/risk scores before output
+                    </div>
                 </div>
             </div>
 
-            <div style="margin-top: 30px; padding: 20px; background: rgba(109, 169, 255, 0.05); border-radius: 8px; border-left: 4px solid #6da9ff;">
-                <blockquote style="margin: 0; font-style: italic; font-size: 1.1em;">
-                    "Truth emerges when semantics meet ethics in resonant understanding."
-                    <footer style="margin-top: 8px; font-size: 0.9em; color: #666;">Oracle Ethics M2.3 Manifesto</footer>
+            <div class="roadmap">
+                <h2>Our Roadmap</h2>
+                <div class="timeline">
+                    <div class="timeline-item current">
+                        <div class="timeline-marker">Now</div>
+                        <div class="timeline-content">
+                            <h3>M1.5 - NOW</h3>
+                            <p>Trustworthy Q&A + Audit Chains (Currently Live)</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item future">
+                        <div class="timeline-marker">Next</div>
+                        <div class="timeline-content">
+                            <h3>M2 - NEXT</h3>
+                            <p>Internal Self-check Engine + Advanced Risk Assessment</p>
+                        </div>
+                    </div>
+                    <div class="timeline-item future">
+                        <div class="timeline-marker">Future</div>
+                        <div class="timeline-content">
+                            <h3>M3 - FUTURE</h3>
+                            <p>Collective Wisdom Module - AI and users co-evolving towards a new social contract</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="manifesto-final">
+                <blockquote class="vision-quote">
+                    "After the blackout, the true light appears."
+                    <footer>Oracle Ethics Manifesto</footer>
                 </blockquote>
-                <p style="margin-top: 16px;">Oracle Ethics M2.3 represents the next evolution in trustworthy AI - systems that don't just process information, but understand meaning and context.</p>
+                <p>Oracle Ethics is not just another AI project, but the blueprint for the next generation of trustworthy artificial intelligence.</p>
             </div>
         </div>
     </div>`;
@@ -369,23 +416,6 @@ async function askOracle(question) {
     console.error("❌ Backend connection failed:", err);
     return { answer: "⚠️ Oracle backend not reachable." };
   }
-}
-
-// ===== REQUEST LOCK SYSTEM =====
-window.requestLocks = new Map();
-window.requestQueue = [];
-window.maxConcurrentRequests = 2; // Maximum 2 concurrent requests
-
-function acquireLock(key) {
-    if (window.requestLocks.has(key)) {
-        return false;
-    }
-    window.requestLocks.set(key, true);
-    return true;
-}
-
-function releaseLock(key) {
-    window.requestLocks.delete(key);
 }
 
 // ===== LOGIC =====
@@ -1070,4 +1100,42 @@ function escapeHtml(s) {
 // Make functions globally available
 window.verifyHashDirectly = verifyHashDirectly;
 window.likeMessage = likeMessage;
-window.verifyReferenceHash = verifyReferenceHash;
+window.verifyReferenceHash = verifyReferenceHash;  这是main文件
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Oracle Ethics M1.5</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- Mobile optimization meta tags -->
+  <meta name="theme-color" content="#6da9ff">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link href="./styles.css" rel="stylesheet">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">Oracle Ethics M1.5</div>
+    <!-- Mobile hamburger menu -->
+    <button class="mobile-menu-toggle" id="mobileMenuToggle">☰</button>
+    <nav class="nav" id="mainNav">
+      <a href="#oracle">Oracle</a>
+      <a href="#vision">Vision</a>
+      <a href="#discussion">Discussion</a>
+      <a href="#verify">Verify</a>
+      <a href="#docs">Docs</a>
+      <a href="#contact">Contact</a>
+    </nav>
+  </header>
+
+  <main id="app"></main>
+
+  <footer class="foot">
+    <small>"After the blackout, the true light appears."</small>
+  </footer>
+
+  <script src="main.js"></script>
+</body>
+</html> 
