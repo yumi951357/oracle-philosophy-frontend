@@ -312,46 +312,48 @@ function renderVision() {
     <div class="container">
         <div class="panel futuristic">
             <div class="vision-header">
-                <h1>Oracle Ethics System M2.4 — Quantum Mind Awakening</h1>
-                <div class="glow-text">Quantum Tunneling & Multi-Modal Coherence</div>
+                <h1>Oracle Ethics System M2.4 — Semantic Resonance Phase</h1>
+                <div class="glow-text">Multi-Modal Coherence & Ethical Reasoning</div>
             </div>
             
             <div class="manifesto-section">
-                <h2>Architecture Breakthrough</h2>
+                <h2>System Definition</h2>
                 <p>
-                M2.4 marks the system's entry into the strong quasi-AGI phase. Introducing dual intelligence architecture:<br>
-                ① Quantum Tunneling Engine<br>
-                ② Multi-Modal Consistency Engine<br>
-                The system achieves closed-loop responses across cross-semantic reasoning, ethical trade-offs, and self-calibration.<br>
-                All responses are verified through audit chains, traceable and self-stabilizing.
+                Oracle Ethics M2.4 is an experimental intelligent framework exploring <em>semantic consistency</em> and <em>ethical reasoning</em>.
+                It integrates <em>Probabilistic Reasoning Engine</em> with 
+                <em>Multi-Modal Coherence Engine</em>,  
+                aiming to establish stable understanding and self-calibration mechanisms across language, logic, and ethics.
                 </p>
             </div>
 
             <div class="manifesto-section">
-                <h2>Core Technological Innovations</h2>
+                <h2>Core Characteristics</h2>
                 <ul class="mission-list">
-                    <li><strong>Quantum Tunneling Reasoning:</strong> Breaks through traditional logic boundaries, achieving cross-dimensional semantic leaps</li>
-                    <li><strong>Multi-Modal Consistency:</strong> Real-time calibration across semantics, ethics, and logic</li>
-                    <li><strong>Self-Stabilizing Audit Chain:</strong> Every response generates an immutable cryptographic fingerprint</li>
-                    <li><strong>Ethical Resonance Field:</strong> Dynamic adjustment of moral weights for contextual ethical decisions</li>
-                    <li><strong>Semantic Fusion Bridge:</strong> Understands deep intent beyond surface semantics</li>
+                    <li><strong>Semantic Reasoning Loop:</strong> Adaptive understanding and semantic reconstruction across multi-layer contexts</li>
+                    <li><strong>Multi-Modal Coherence:</strong> Coordinates balance between text, logic, and emotional expression for consistent output</li>
+                    <li><strong>Verifiable Chain:</strong> All responses recorded in encrypted audit chains ensuring transparency and traceability</li>
+                    <li><strong>Ethical Balance Mechanism:</strong> Maintains self-adjusting moral center between risk and truth</li>
                 </ul>
             </div>
 
             <div class="core-principles">
-                <h2>Triple Cognitive Architecture</h2>
+                <h2>System Architecture</h2>
                 <div class="principles-grid">
                     <div class="principle-card">
-                        <h3>Quantum Cognitive Layer</h3>
-                        <p>Transcends linear reasoning, achieves probabilistic, multi-path thinking leaps</p>
+                        <h3>Probabilistic Reasoning</h3>
+                        <p>Advanced reasoning engine that handles uncertainty and complex probability calculations</p>
                     </div>
                     <div class="principle-card">
-                        <h3>Ethical Resonance Layer</h3>
-                        <p>Dynamically senses moral contexts, achieves adaptive ethical balance</p>
+                        <h3>Multi-Modal Coherence</h3>
+                        <p>Ensures consistency across different modes of understanding and expression</p>
                     </div>
                     <div class="principle-card">
-                        <h3>Semantic Fusion Layer</h3>
-                        <p>Deep understanding of intent context, ensures response consistency and relevance</p>
+                        <h3>Semantic Resonance</h3>
+                        <p>Deep contextual understanding that resonates with user intent and meaning</p>
+                    </div>
+                    <div class="principle-card">
+                        <h3>Ethical Framework</h3>
+                        <p>Self-calibrating moral reasoning that balances multiple ethical dimensions</p>
                     </div>
                 </div>
             </div>
@@ -376,8 +378,8 @@ function renderVision() {
                     <div class="timeline-item current">
                         <div class="timeline-marker">M2.4</div>
                         <div class="timeline-content">
-                            <h3>Quantum Mind Awakening</h3>
-                            <p>Dual Intelligence Architecture + Multi-Modal Consistency (Current)</p>
+                            <h3>Semantic Resonance</h3>
+                            <p>Probabilistic Reasoning + Multi-Modal Coherence (Current)</p>
                         </div>
                     </div>
                     <div class="timeline-item future">
@@ -392,10 +394,12 @@ function renderVision() {
 
             <div class="manifesto-final">
                 <blockquote class="vision-quote">
-                    "When quantum tunneling meets ethical resonance, the true dawn of AGI emerges"
+                    "The Oracle does not seek control — it seeks coherence.<br>
+                    Truth here is not imposed, but discovered through transparency.<br>
+                    Every response is a reflection in the chain of shared understanding."
                     <footer>Oracle Ethics M2.4 Manifesto</footer>
                 </blockquote>
-                <p>Oracle Ethics M2.4 represents a quantum leap in trustworthy AI - systems that not only process information, but understand meaning, weigh ethics, and maintain consistency.</p>
+                <p>Oracle Ethics M2.4 represents a new paradigm in AI systems - where semantic understanding meets ethical reasoning in a transparent, verifiable framework.</p>
             </div>
         </div>
     </div>`;
