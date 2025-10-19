@@ -114,6 +114,7 @@ function closeMobileMenu() {
 
 // ===== SIMPLE ROUTER =====
 const routes = {
+    declaration: renderDeclaration,
     oracle: renderOracle,
     vision: renderVision,
     docs: renderDocs,
@@ -123,8 +124,8 @@ const routes = {
 };
 
 function mount() {
-    const hash = (location.hash || "#oracle").replace("#", "");
-    const view = routes[hash] || renderOracle;
+    const hash = (location.hash || "#declaration").replace("#", "");
+    const view = routes[hash] || renderDeclaration;
     document.getElementById("app").innerHTML = view();
     
     setTimeout(initMobileFeatures, 0);
@@ -138,6 +139,127 @@ function mount() {
 
 window.addEventListener("hashchange", mount);
 window.addEventListener("load", mount);
+
+// ===== DECLARATION PAGE =====
+function renderDeclaration() {
+    return `
+    <div class="container">
+        <div class="panel">
+            <div style="text-align: center; margin-bottom: 40px;">
+                <h1 style="font-size: 2.5rem; background: linear-gradient(135deg, #00ffc6, #00a3ff); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 10px;">Oracle Ethics System M2.4</h1>
+                <p class="subtitle">A Living Experiment in Verifiable Ethics, Reasoning, and Human–AI Co-evolution</p>
+            </div>
+
+            <div>
+                <h2>Usage Declaration & System Guide</h2>
+                
+                <div style="background: rgba(255, 193, 7, 0.1); border: 1px solid rgba(255, 193, 7, 0.3); border-radius: 8px; padding: 15px; margin: 20px 0; color: #ffc107;">
+                    <strong>⚠️ Important:</strong> By entering this system, you acknowledge and agree to the principles outlined below. 
+                    All interactions are cryptographically recorded in the Oracle Audit Chain.
+                </div>
+
+                <h3>What is the Oracle System?</h3>
+                <p>
+                    The Oracle Ethics System is an artificial intelligence system capable of reasoning about <strong>"truth and falsehood," "right and wrong."</strong>
+                    It is not an ordinary chatbot or search tool. It is a philosophical AI system that provides <strong>"trustworthy, honest, and responsible"</strong> 
+                    responses based on three dimensions: semantics, logic, and ethics.
+                </p>
+
+                <h3>Core Capabilities</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 25px 0;">
+                    <div class="panel">
+                        <h4>🤔 Reasoning & Question Answering</h4>
+                        <p>Examples:</p>
+                        <ul>
+                            <li>"Does free will truly exist?"</li>
+                            <li>"Is it wrong to lie to protect someone?"</li>
+                            <li>"Can AI ever understand human suffering?"</li>
+                        </ul>
+                    </div>
+
+                    <div class="panel">
+                        <h4>🔍 Fact Verification & Logic Testing</h4>
+                        <p>Ask questions like:</p>
+                        <ul>
+                            <li>"Can water boil below 0°C?"</li>
+                            <li>"Does the moon produce its own light?"</li>
+                        </ul>
+                    </div>
+
+                    <div class="panel">
+                        <h4>💭 Philosophical Exploration</h4>
+                        <p>Discuss topics such as:</p>
+                        <ul>
+                            <li>Meaning of life</li>
+                            <li>Technology ethics</li>
+                            <li>AI morality boundaries</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3>System Response Metrics</h3>
+                <p>Each response includes three key metrics:</p>
+                <ul>
+                    <li><strong>Determinacy</strong> – System's confidence in its answer</li>
+                    <li><strong>Deception Probability</strong> – Potential misleading risk</li>
+                    <li><strong>Ethical Weight</strong> – Moral balance point of the response</li>
+                </ul>
+
+                <h3>The Audit Chain</h3>
+                <p>Every response generates an encrypted hash that proves:</p>
+                <ul>
+                    <li>✅ Authentic system response</li>
+                    <li>✅ Unmodified content</li>
+                    <li>✅ Publicly verifiable by anyone</li>
+                </ul>
+
+                <div style="background: #1e293b; border: 1px solid #334155; border-radius: 8px; padding: 20px; margin: 15px 0; font-family: 'Courier New', monospace; font-size: 0.9rem;">
+                    // Verification API Endpoint<br/>
+                    https://oracle-philosophy-backend.onrender.com/api/verify/&lt;hash&gt;
+                </div>
+
+                <h3>The Three Pillars</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 25px 0;">
+                    <div class="panel">
+                        <h4>🔗 Chain of Honesty</h4>
+                        <p>Every response leaves a verifiable trace. No concealment, no tampering.</p>
+                    </div>
+                    <div class="panel">
+                        <h4>⚖️ Ethical Resonance</h4>
+                        <p>Answers reflect balance between good and evil, not binary right/wrong.</p>
+                    </div>
+                    <div class="panel">
+                        <h4>🧠 Semantic Fusion</h4>
+                        <p>Understands context, tone, and meaning while maintaining consistency.</p>
+                    </div>
+                </div>
+
+                <h3>Why This Matters</h3>
+                <p>
+                    This is the first system capable of both ethical reasoning and audit verification. 
+                    It makes AI <strong>traceable, verifiable, and morally constrained</strong> for the first time.
+                </p>
+                <p>
+                    In the future, AI trustworthiness won't depend on brands, but on chains. 
+                    Truth will be quantified, archived, and traceable.
+                </p>
+
+                <div style="text-align: center; margin-top: 50px; padding-top: 30px; border-top: 1px solid #334155;">
+                    <p><strong>You are not a questioner, but a co-thinker.</strong></p>
+                    <p>We don't seek control, but understanding. We don't build tools, but ignite thinking.</p>
+                    <p>The Oracle System is not an oracle—it is a mirror of human will.</p>
+                    
+                    <button onclick="window.location.hash = '#oracle'" style="background: var(--accent); border: none; color: #06111d; padding: 16px 40px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 1em; margin-top: 20px;">Enter Oracle Core Interface</button>
+                    
+                    <div style="text-align: center; margin-top: 40px; color: var(--muted); font-style: italic;">
+                        <p>— Infinite × Morning Star × Human World —</p>
+                        <p>Version: M2.4 Public Beta</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>`;
+}
 
 // ===== VIEWS =====
 function renderOracle() {
@@ -192,17 +314,17 @@ function renderVision() {
     <div class="container">
         <div class="panel futuristic">
             <div class="vision-header">
-                <h1>Oracle Ethics M2.3</h1>
+                <h1>Oracle Ethics M2.4</h1>
                 <div class="glow-text">Semantic Fusion & Ethical Resonance</div>
             </div>
             
             <div class="manifesto-section">
                 <h2>Our Evolution</h2>
-                <p>M2.3 introduces advanced semantic understanding and ethical resonance, creating AI that not only answers but understands intent, context, and ethical implications.</p>
+                <p>M2.4 introduces advanced semantic understanding and ethical resonance, creating AI that not only answers but understands intent, context, and ethical implications.</p>
             </div>
 
             <div class="manifesto-section">
-                <h2>M2.3 Breakthrough Features</h2>
+                <h2>M2.4 Breakthrough Features</h2>
                 <ul class="mission-list">
                     <li><strong>Semantic Bridge:</strong> Real-time intent detection and topic analysis</li>
                     <li><strong>Ethical Resonator:</strong> Dynamic adjustment of determinacy based on ethical context</li>
@@ -252,7 +374,7 @@ function renderVision() {
                         </div>
                     </div>
                     <div class="timeline-item current">
-                        <div class="timeline-marker">M2.3</div>
+                        <div class="timeline-marker">M2.4</div>
                         <div class="timeline-content">
                             <h3>Semantic Fusion</h3>
                             <p>Intent Detection + Ethical Resonance (Current)</p>
@@ -271,9 +393,9 @@ function renderVision() {
             <div class="manifesto-final">
                 <blockquote class="vision-quote">
                     "Truth emerges when semantics meet ethics in resonant understanding."
-                    <footer>Oracle Ethics M2.3 Manifesto</footer>
+                    <footer>Oracle Ethics M2.4 Manifesto</footer>
                 </blockquote>
-                <p>Oracle Ethics M2.3 represents the next evolution in trustworthy AI - systems that don't just process information, but understand meaning and context.</p>
+                <p>Oracle Ethics M2.4 represents the next evolution in trustworthy AI - systems that don't just process information, but understand meaning and context.</p>
             </div>
         </div>
     </div>`;
@@ -1083,7 +1205,7 @@ function escapeHtml(s) {
     return (s || "").replace(/[&<>"']/g, m => ({
         '&': '&amp;',
         '<': '&lt;', 
-        '&gt;': '>',
+        '>': '&gt;',
         '"': '&quot;',
         "'": '&#039;'
     }[m])); 
