@@ -53,6 +53,25 @@ function safeArray(value, defaultValue = []) {
     return Array.isArray(value) ? value : defaultValue;
 }
 
+// ===== HUMAN-READABLE METRICS FUNCTIONS =====
+function toHumanClarity(score) {
+    if (score > 0.7) return "Very certain";
+    if (score > 0.4) return "Fairly clear";
+    return "Open thinking";
+}
+
+function toHumanHonesty(prob) {
+    if (prob < 0.01) return "Completely sincere";
+    if (prob < 0.05) return "Basically sincere";
+    return "Requires caution";
+}
+
+function toHumanDepth(tags) {
+    if (tags.includes("philosophy") || tags.includes("truth")) return "Philosophical layer";
+    if (tags.includes("ethics")) return "Humanity layer";
+    return "Daily layer";
+}
+
 // ===== FIXED MOBILE INITIALIZATION =====
 function initMobileFeatures() {
     const mobileMenuToggle = document.getElementById('mobileMenuToggle');
@@ -282,6 +301,13 @@ function renderOracle() {
             <div id="knowledgeResults" style="margin-top: 20px; display: none;">
                 <h3>📚 Related Knowledge</h3>
                 <div id="knowledgeList"></div>
+            </div>
+            
+            <div class="metrics-human">
+                <p>🌗 <b>Answer Confidence</b>: <span id="humanClarity"></span></p>
+                <p>❤️ <b>Sincerity Index</b>: <span id="humanHonesty"></span></p>
+                <p>⚡️ <b>Soul Depth</b>: <span id="humanDepth"></span></p>
+                <p>🔒 This response has been stored in the honesty record</p>
             </div>
             
             <div class="kvp">
@@ -649,6 +675,11 @@ function wireOracle() {
             document.getElementById("prev").innerText = safeData.prev_hash;
             document.getElementById("ts").innerText = safeTimestamp(safeData.timestamp).toISOString();
             document.getElementById("source").innerText = safeData.source;
+
+            // Update human-readable metrics
+            document.getElementById("humanClarity").innerText = toHumanClarity(safeData.determinacy);
+            document.getElementById("humanHonesty").innerText = toHumanHonesty(safeData.deception_prob);
+            document.getElementById("humanDepth").innerText = toHumanDepth(safeData.risk_tags);
 
             if (safeData.knowledge_search.available) {
                 if (safeData.knowledge_search.from_ultimate && safeData.knowledge_search.oracle_response) {
