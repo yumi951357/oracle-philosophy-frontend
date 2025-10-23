@@ -554,3 +554,11 @@ button:hover:not(:disabled) {
   padding: 20px;
   color: var(--muted);
 }
+
+/* ===== PRODUCT HUNT BADGE RESPONSIVE STYLES ===== */
+@media (max-width: 480px) {
+  .foot a img {
+    width: 180px !important;
+    height: 39px !important;
+  }
+}
