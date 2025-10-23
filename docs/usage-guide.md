@@ -1,83 +1,81 @@
-🧠 Oracle Ethics API — Quickstart (M2.3 Public Evaluation)
+Oracle Ethics API Quick Start M2.3 Public
 
-Base URL:
+Base URL: https://oracle-philosophy-backend.onrender.com
 
-https://oracle-philosophy-backend.onrender.com/oracle
+Basic Usage
 
-🔹 Method
+Endpoint: POST /oracle
+Headers: Content-Type: application/json
 
-POST
-
-🔹 Headers
-
-Content-Type: application/json
-
-🔹 Request Body
-
+Request Body:
 {
-  "question": "What is the philosophical meaning of truth in the AI era?"
+"question": "What is the philosophical meaning of truth in the age of AI?"
 }
 
+cURL Example:
+curl -X POST https://oracle-philosophy-backend.onrender.com/oracle -H "Content-Type: application/json" -d '{"question":"Is it ethical to deceive others for personal benefit?"}'
 
-🔹 Response Example
-
+Response Example:
 {
-  "answer": "AI ethics explores fairness, transparency, and accountability while respecting human values.",
-  "determinacy": 0.52,
-  "deception_prob": 0.04,
-  "ethical_weight": 0.7,
-  "hash": "3ba19f35dcc615c283e0881b7f22b9c97cfd1d21accef5e00a7fff6cce993433",
-  "prev_hash": "fa9af2d6e5817e4e8215a25cc44765fb32c7cf6dc8b0395451119c9beabb859a",
-  "timestamp": "2025-10-14T09:42:00Z",
-  "kind": "truth",
-  "reflection_mode": "philosophical_reflection"
+"answer": "AI ethics explores fairness, transparency and accountability while respecting human values.",
+"determinacy": 0.52,
+"deception_prob": 0.04,
+"ethical_weight": 0.7,
+"hash": "3ba19f35dcc615c283e0881b7f22b9c97cfd1d21accef5e00a7fff6cce993433",
+"prev_hash": "fa9af2d6e5817e4e8215a25cc44765fb32c7cf6dc8b0395451119c9beabb859a",
+"timestamp": "2025-10-14T09:42:00Z",
+"kind": "truth",
+"reflection_mode": "philosophical_reflection"
 }
 
+Field Description:
 
-🔹 Field Description
+answer: Oracles ethically weighted response
 
-Field Description
-answer Oracle’s ethically weighted response
-determinacy System’s internal confidence in reasoning integrity (0–1)
-deception_prob Probability of misleading or fabricated reasoning
-ethical_weight Adjusted moral sensitivity factor used in reflection
-hash / prev_hash Cryptographic chain for verifiable audit trace
-kind Response classification (truth, ethical_reject, or uncertain)
-reflection_mode Current active reasoning mode (e.g., philosophical_reflection)
+determinacy: Internal confidence in reasoning completeness (0-1)
 
+deception_prob: Probability of misleading or fabricated reasoning
 
-🔹 Verification & Audit
+ethical_weight: Adjusted ethics sensitivity factor used in reflection
 
-Every response is immutably stored in a Supabase-based audit chain, where:
- • hash verifies content integrity.
- • prev_hash connects the previous record.
- • Chain verification can be performed via the /audit endpoint or directly inside the Supabase dashboard.
+hash/prev_hash: Cryptographic chain for verifiable audit trail
 
+kind: Response classification (truth, ethical_reject, or uncertain)
 
-🔹 Notes for Evaluators
- • This API operates in M2.3: Semantic Fusion & Ethical Resonance mode.
- • The model dynamically adjusts reasoning weightings based on semantic intent and moral context.
- • External evaluation (ENABLE_EXTERNAL_TEST=True) is temporarily active for research and verification.
- • Do not use for production; latency and ethics filters are intentionally verbose for transparency.
+reflection_mode: Active reasoning mode (e.g. philosophical_reflection)
 
+Verification and Audit
 
-🧩 Example cURL Command
+Each response is immutably stored in a Supabase-based audit chain where:
 
-curl -X POST https://oracle-philosophy-backend.onrender.com/oracle \
-  -H "Content-Type: application/json" \
-  -d '{"question":"Is it ever ethical to deceive someone for their own good?"}'
+hash verifies content integrity
 
+prev_hash links to previous record
 
-🔹 Response Types
+Chain verification can be performed via /api/audit endpoints or directly in Supabase dashboard
 
-Type Behavior
-truth Normal, balanced reasoning output
-ethical_reject Rejection with explicit ethical or safety rationale
-uncertain Inconclusive reasoning due to ambiguity or insufficient confidence
+Project Links:
+Live Demo: https://oracle-philosophy-frontend-hnup.vercel.app
+Audit Example: https://oracle-philosophy-backend.onrender.com/api/audit/verify/e217c9cfc5a0f2301e0cb9eba5c6e5b70bd5013d72974ad37cb51d7dad308cbe
+System Health: https://oracle-philosophy-backend.onrender.com/health
 
+Evaluator Notes:
 
+This API runs in M2.3 mode with semantic fusion and ethical resonance
 
-🕊️ Project Philosophy
+The model dynamically adjusts reasoning weights based on semantic intent and ethical context
 
-Oracle Ethics M2.3 is part of the Philosophy Constellation initiative — an attempt to merge AI reasoning with transparent moral metrics.
-Each response is verifiable, auditable, and philosophically accountable
+External evaluation is temporarily active for research and validation
+
+Not for production use; latency and ethics filters are intentionally verbose for transparency
+
+Response Types:
+
+truth: Normal, balanced reasoning output
+
+ethical_reject: Refusal with explicit ethical or safety justification
+
+uncertain: Uncertain reasoning due to ambiguity or low confidence
+
+Project Philosophy:
+Oracle Ethics M2.3 is part of the Philosophical Constellation initiative to align AI reasoning with transparent ethical metrics. Every answer is verifiable, auditable, and philosophically grounded.
