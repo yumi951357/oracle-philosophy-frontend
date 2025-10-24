@@ -45,16 +45,16 @@ references:
         given-names: "Sam"
       - family-names: "Wadler"
         given-names: "Philip"
-    publisher: "Cambridge University Press"
+    publisher:
+      name: "Cambridge University Press"
     year: 2019
     isbn: "9781108495825"
-  - type: paper
+  - type: unpublished
     title: "A Type Theory for Blockchain Smart Contracts"
     authors:
       - family-names: "Kokke"
         given-names: "Willem"
       - family-names: "Wadler"
         given-names: "Philip"
-    venue: "Workshop on Blockchain Technology and Theory (BTT)"
     year: 2020
-    note: "IOHK Research, extended preprint version available on arXiv:2005.14439"
+    url: "https://arxiv.org/abs/2005.14439"
