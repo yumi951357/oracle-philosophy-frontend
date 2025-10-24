@@ -17,6 +17,7 @@ keywords:
   - machine ethics
   - type theory
 license: MIT
+
 references:
   - type: article
     title: "Propositions as Sessions"
@@ -24,20 +25,26 @@ references:
       - family-names: "Wadler"
         given-names: "Philip"
     journal: "Proceedings of the 17th ACM SIGPLAN International Conference on Functional Programming (ICFP)"
+    publisher:
+      name: "Association for Computing Machinery"
     year: 2012
-    pages: "273–286"
+    pages: "pp. 273–286"
     doi: "10.1145/2364527.2364568"
+
   - type: article
     title: "Propositions as Types"
     authors:
       - family-names: "Wadler"
         given-names: "Philip"
     journal: "Communications of the ACM"
+    publisher:
+      name: "Association for Computing Machinery"
     year: 2015
     volume: "58"
     number: "12"
-    pages: "75–84"
+    pages: "pp. 75–84"
     doi: "10.1145/2699407"
+
   - type: book
     title: "Programming Language Foundations in Agda"
     authors:
@@ -48,7 +55,9 @@ references:
     publisher:
       name: "Cambridge University Press"
     year: 2019
-    isbn: "9781108495825"
+    isbn: "978-1-108-49582-5"
+    pages: "1–450"
+
   - type: unpublished
     title: "A Type Theory for Blockchain Smart Contracts"
     authors:
