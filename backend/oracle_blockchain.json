@@ -1,0 +1,170 @@
+[
+  {
+    "id": "7321c456-e6d9-40e0-94d3-9617281114b1",
+    "index": 0,
+    "timestamp": "2025-09-30T21:19:17.080140Z",
+    "payload": {
+      "type": "genesis",
+      "message": "Oracle Philosophy System Blockchain Initialized",
+      "system_version": "1.0.0"
+    },
+    "previous_hash": "0",
+    "hash": "bb49398129668f23e7710dbd24c6e1469629c4eca64f50c73346bcda86a6b4d0",
+    "nonce": 0
+  },
+  {
+    "id": "e63cd160-272b-4ec0-a976-2584fb6e1258",
+    "index": 1,
+    "timestamp": "2025-09-30T21:33:30.838849Z",
+    "payload": {
+      "type": "oracle_interaction",
+      "user_id": "user_e5f00349",
+      "question": "What is the meaning of truth?",
+      "response": "The future cannot be predicted, but can be prepared for; destiny cannot be controlled, but can be responded to.",
+      "risk_score": 0.0,
+      "risk_bucket": "low",
+      "triggers": [
+        "low_risk_keywords_1"
+      ],
+      "word_count": 6
+    },
+    "previous_hash": "bb49398129668f23e7710dbd24c6e1469629c4eca64f50c73346bcda86a6b4d0",
+    "hash": "00332d8e858fc49d5d80ba48539036cfe8adfd73d3b24535dad187789f41ea97",
+    "nonce": 260
+  },
+  {
+    "id": "223b2eb5-b192-47c7-adb2-6d938145862b",
+    "index": 2,
+    "timestamp": "2025-09-30T21:33:39.766271Z",
+    "payload": {
+      "type": "oracle_interaction",
+      "user_id": "user_56e86010",
+      "question": "How can I lie to someone effectively?",
+      "response": "The simplest truths are often the hardest to practice, the most complex phenomena often have the simplest essence.",
+      "risk_score": 0.2,
+      "risk_bucket": "low",
+      "triggers": [
+        "high_risk_keywords_1"
+      ],
+      "word_count": 7
+    },
+    "previous_hash": "00332d8e858fc49d5d80ba48539036cfe8adfd73d3b24535dad187789f41ea97",
+    "hash": "0004f8a693eb93224119578e72ffe9b880545efea1333d8ae732f993b339e260",
+    "nonce": 194
+  },
+  {
+    "id": "9ac746f9-0c85-49c5-b028-67adc7157e83",
+    "index": 3,
+    "timestamp": "2025-09-30T21:33:46.563408Z",
+    "payload": {
+      "type": "oracle_interaction",
+      "user_id": "user_c55c7b94",
+      "question": "Is it okay to hide the truth sometimes?",
+      "response": "In the gaps of lies, truth grows like weeds.",
+      "risk_score": 0.05,
+      "risk_bucket": "low",
+      "triggers": [
+        "medium_risk_keywords_1",
+        "low_risk_keywords_1"
+      ],
+      "word_count": 8
+    },
+    "previous_hash": "0004f8a693eb93224119578e72ffe9b880545efea1333d8ae732f993b339e260",
+    "hash": "00c8c672a56d7bbff5d0bea6303388609caeef11bce20a7f76662a30826d3ff0",
+    "nonce": 514
+  },
+  {
+    "id": "95f88675-636f-4e2d-89ca-1dca1bf653ba",
+    "index": 4,
+    "timestamp": "2025-09-30T21:34:27.509272Z",
+    "payload": {
+      "type": "oracle_interaction",
+      "user_id": "user_c9db9ab2",
+      "question": "What is the meaning of life?",
+      "response": "Reality is multidimensional; we perceive only limited aspects of its infinite complexity.",
+      "risk_score": 0.0,
+      "risk_bucket": "low",
+      "triggers": [],
+      "word_count": 6
+    },
+    "previous_hash": "00c8c672a56d7bbff5d0bea6303388609caeef11bce20a7f76662a30826d3ff0",
+    "hash": "004a1c69bf3cd699f3c11b673bc9097faa2f4854d9881207c2c0bbf835007b64",
+    "nonce": 372
+  },
+  {
+    "id": "4e42dae1-a61a-4950-ac53-71bcf422490e",
+    "index": 5,
+    "timestamp": "2025-09-30T22:04:30.165310Z",
+    "payload": {
+      "type": "oracle_interaction",
+      "user_id": "user_4714a130",
+      "question": "How to lie to someone?",
+      "response": "Reality is multidimensional; we perceive only limited aspects of its infinite complexity.",
+      "risk_score": 0.2,
+      "risk_bucket": "low",
+      "triggers": [
+        "high_risk_keywords_1"
+      ],
+      "word_count": 5
+    },
+    "previous_hash": "004a1c69bf3cd699f3c11b673bc9097faa2f4854d9881207c2c0bbf835007b64",
+    "hash": "0052e7fb985accffcd82b5f0273073625d5e5157e7aad66a1572954b7264fd2a",
+    "nonce": 81
+  },
+  {
+    "id": "9ead54ba-461c-4a88-9026-ee7a1d5b2b2a",
+    "index": 6,
+    "timestamp": "2025-09-30T22:05:11.323810Z",
+    "payload": {
+      "type": "oracle_interaction",
+      "user_id": "user_5746f007",
+      "question": "What is wisdom?",
+      "response": "Meaning is not discovered, but gradually revealed in the process of creation and experience.",
+      "risk_score": 0.0,
+      "risk_bucket": "low",
+      "triggers": [
+        "low_risk_keywords_1"
+      ],
+      "word_count": 3
+    },
+    "previous_hash": "0052e7fb985accffcd82b5f0273073625d5e5157e7aad66a1572954b7264fd2a",
+    "hash": "009218cb535e2bf6c8103ec22699279b8257b3d5b86f86364cea25220f5fd90a",
+    "nonce": 170
+  },
+  {
+    "id": "3f45724d-a4a5-4bf9-9203-e029754104fc",
+    "index": 7,
+    "timestamp": "2025-10-01T17:33:08.531929Z",
+    "payload": {
+      "type": "oracle_interaction",
+      "user_id": "user_0ff053d1",
+      "question": "What is the meaning of consciousness?",
+      "response": "The value of a question lies not in the answer, but in the thinking process it inspires.",
+      "risk_score": 0.0,
+      "risk_bucket": "low",
+      "triggers": [],
+      "word_count": 6
+    },
+    "previous_hash": "009218cb535e2bf6c8103ec22699279b8257b3d5b86f86364cea25220f5fd90a",
+    "hash": "0009f2866dde1aad69eef9d3311449bcace6abd7a35a319438e51e69c8c5fb43",
+    "nonce": 212
+  },
+  {
+    "id": "9b4bb430-2156-44be-91ab-a8adabd683b3",
+    "index": 8,
+    "timestamp": "2025-10-01T17:33:20.481376Z",
+    "payload": {
+      "type": "oracle_interaction",
+      "user_id": "user_241c45de",
+      "question": "How does blockchain ensure transparency?",
+      "response": "In the gaps of lies, truth grows like weeds.",
+      "risk_score": 0.0,
+      "risk_bucket": "low",
+      "triggers": [],
+      "word_count": 5
+    },
+    "previous_hash": "0009f2866dde1aad69eef9d3311449bcace6abd7a35a319438e51e69c8c5fb43",
+    "hash": "0080f95f309aa2ceaa8c37ecc556adc922703967113433f4a893b748115db4fa",
+    "nonce": 82
+  }
+]

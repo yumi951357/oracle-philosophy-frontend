@@ -1,0 +1,20 @@
+[
+  {
+    "id": "wp_ethics_01",
+    "title": "Oracle Ethics Whitepaper — Core Concepts",
+    "url": "https://your-site/docs/whitepaper.pdf",
+    "text": "An auditable oracle logs each Q&A with prev_hash and record_hash to ensure integrity..."
+  },
+  {
+    "id": "rituals_01",
+    "title": "Rituals Manual — Determinacy and Risk",
+    "url": "https://your-site/docs/rituals.pdf",
+    "text": "Determinacy reflects internal stability of reasoning. Risk tags indicate domain sensitivity..."
+  },
+  {
+    "id": "philosophy_01",
+    "title": "Epistemic Humility in AI Systems",
+    "url": "https://your-site/docs/epistemic_humility.html",
+    "text": "Uncertainty should be communicated with reasons, not just a number..."
+  }
+]

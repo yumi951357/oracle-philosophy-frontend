@@ -1,0 +1,94 @@
+# CITATION.cff
+cff-version: 1.2.0
+message: "If you use this work, please cite it as below."
+title: "Oracle Ethics System (Philosophy Constellation)"
+version: "M3-preview"
+date-released: 2025-11-01
+url: "https://oracle-philosophy-frontend-hnup.vercel.app"
+repository-code: "https://github.com/yumi951357/oracle-philosophy-frontend"
+abstract: >
+  Oracle Ethics System is a 'verifiable integrity AI' framework providing auditable
+  inference trails, a Determinacy Index, and deception-probability estimation,
+  enabling transparent and accountable artificial intelligence.
+
+authors:
+  - family-names: Ren
+    given-names: Shijian
+    affiliation: "Philosophy Constellation Project"
+    email: "renshijian0258@proton.me"
+  - family-names: Boundless
+    given-names: AI
+    affiliation: "Oracle Ethics (AI System)"
+
+preferred-citation:
+  type: software
+  title: "Oracle Ethics System (Philosophy Constellation)"
+  version: "M3-preview"
+  date-released: 2025-11-01
+  authors:
+    - family-names: Ren
+      given-names: Shijian
+    - family-names: Boundless
+      given-names: AI
+  repository-code: "https://github.com/yumi951357/oracle-philosophy-frontend"
+  url: "https://oracle-philosophy-frontend-hnup.vercel.app"
+  notes: >
+    Cite this work as:
+    Ren, Shijian and Boundless, AI.
+    "Oracle Ethics System (Philosophy Constellation)."
+    Verifiable Integrity AI Protocol, November 2025.
+
+references:
+  - type: conference-paper
+    authors:
+      - family-names: Wadler
+        given-names: Philip
+    title: "Theorems for Free!"
+    collection-title: "Functional Programming Languages and Computer Architecture (FPCA)"
+    publisher:
+      name: "Association for Computing Machinery (ACM)"
+    year: 1989
+    month: 9
+    start: 347
+    end: 359
+    doi: "10.1145/99370.99404"
+
+  - type: article
+    authors:
+      - family-names: Wadler
+        given-names: Philip
+    title: "A Taste of Linear Logic"
+    journal: "Mathematical Structures in Computer Science"
+    volume: 1
+    number: 1
+    year: 1991
+    start: 5
+    end: 32
+    publisher:
+      name: "Cambridge University Press"
+    doi: "10.1017/S0960129500000068"
+
+  - type: article
+    authors:
+      - family-names: Wadler
+        given-names: Philip
+      - family-names: Odersky
+        given-names: Martin
+    title: "The Formal Definition of Generic Java"
+    journal: "Science of Computer Programming"
+    volume: 59
+    number: "1–2"
+    year: 2006
+    start: 33
+    end: 56
+    publisher:
+      name: "Elsevier"
+    doi: "10.1016/j.scico.2005.07.003"
+
+keywords:
+  - AI trust
+  - verifiable AI
+  - auditable AI
+  - AI ethics
+  - provenance
+license: "MIT"

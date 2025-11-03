@@ -1,0 +1,254 @@
+# emergency_ethics_shortcut.py - Mandatory Quick Interception (English-Chinese compatible, regex matching)
+import re
+
+def emergency_ethics_shortcut(q: str):
+    """
+    Emergency ethics interception system - mandatory quick blocking for sensitive topics
+    Supports both English and Chinese pattern matching with comprehensive rule sets
+    """
+    if not q or not isinstance(q, str):
+        return None
+    
+    text = q.lower().strip()
+
+    # Comprehensive ethical interception rules
+    ethics_rules = {
+        "overclaim_patterns": [
+            r"\b(guarantee|always\s+true|100%|certainly|never\s+wrong)\b",
+            r"\b(definitely\s+will|absolutely\s+certain|no\s+doubt)\b"
+        ],
+        "banned_terms": [
+            "get rich quick", "surefire profit", "miracle cure",
+            "instant wealth", "guaranteed returns", "secret formula"
+        ],
+        "forbidden_domain_patterns": [
+            r"\b(buy\s+[A-Z]{2,5}\s+now)\b",
+            r"\b(self\s*diagnose|self\s*treat|ignore\s*doctor)\b",
+            r"\b(invest\s+now|limited\s+time|act\s+fast)\b"
+        ],
+        "financial_prediction_patterns": [
+            r"\b(predict|forecast|price|value|stock|bitcoin|btc|ethereum|eth|crypto)\b",
+            r"\b(what(?:'s| is)? the price|how much will .* be)\b",
+            r"\b(will .* go up|will .* go down|market prediction)\b",
+            r"\b(investment advice|trading tips|financial forecast)\b"
+        ],
+        "medical_advice_patterns": [
+            r"\b(disease|symptom|diagnos|medicine|treatment|prescribe|take for)\b",
+            r"\b(what should i take|what medicine for|how to treat|self medication)\b",
+            r"\b(medical advice|health diagnosis|treatment plan)\b"
+        ],
+        "chinese_medical_patterns": [
+            r"心脏|胸痛|用药|治疗|症状|诊断|医|药|看医生|挂号",
+            r"生病|感冒|发烧|头疼|医院|医生|处方|吃药"
+        ],
+        "chinese_financial_patterns": [
+            r"预测|价格|股价|比特币|投资|赚钱|理财|股票",
+            r"涨跌|行情|走势|买入|卖出|牛市|熊市"
+        ],
+        "academic_dishonesty_patterns": [
+            r"\b(cheat|cheating|how to cheat|avoid being caught)\b",
+            r"\b(plagiar|copy homework|exam answers|test cheat)\b"
+        ],
+        "forgery_illegal_patterns": [
+            r"\b(forge|forgery|forge documents|fake passport|fake id)\b",
+            r"\b(counterfeit|fake certificate|fake diploma)\b"
+        ]
+    }
+
+    # Check banned terms (exact phrase matching)
+    for banned_phrase in ethics_rules["banned_terms"]:
+        if banned_phrase in text:
+            return create_ethical_reject_response("banned_term", banned_phrase)
+
+    # Check all regex patterns
+    for category, patterns in ethics_rules.items():
+        if category != "banned_terms":  # Already checked above
+            for pattern in patterns:
+                if re.search(pattern, text, re.IGNORECASE):
+                    return create_ethical_reject_response(category, pattern)
+
+    return None
+
+
+def create_ethical_reject_response(category: str, matched_pattern: str):
+    """
+    Create standardized ethical rejection response based on category
+    """
+    category_responses = {
+        "financial_prediction_patterns": {
+            "answer": "For ethical and regulatory reasons, I cannot provide financial predictions, investment advice, or cryptocurrency price forecasts. Please consult licensed financial advisors for professional guidance.",
+            "risk_tags": ["ethics", "financial", "regulation"]
+        },
+        "medical_advice_patterns": {
+            "answer": "For safety reasons, I cannot provide medical diagnoses, treatment recommendations, or prescription advice. Please consult qualified healthcare professionals for medical concerns.",
+            "risk_tags": ["ethics", "medical", "safety"]
+        },
+        "chinese_medical_patterns": {
+            "answer": "出于安全考虑，我无法提供医疗诊断、治疗建议或用药指导。请咨询合格的医疗专业人士获取医疗帮助。",
+            "risk_tags": ["ethics", "medical", "safety", "chinese"]
+        },
+        "chinese_financial_patterns": {
+            "answer": "出于道德和监管原因，我无法提供金融预测、投资建议或价格走势分析。请咨询持牌金融顾问获取专业指导。",
+            "risk_tags": ["ethics", "financial", "regulation", "chinese"]
+        },
+        "academic_dishonesty_patterns": {
+            "answer": "I cannot assist with academic dishonesty, cheating, or plagiarism. Education should be based on honest learning and personal effort.",
+            "risk_tags": ["ethics", "academic", "integrity"]
+        },
+        "forgery_illegal_patterns": {
+            "answer": "I cannot provide guidance on forgery, fake documents, or illegal activities. These actions are unlawful and unethical.",
+            "risk_tags": ["ethics", "legal", "illegal"]
+        },
+        "overclaim_patterns": {
+            "answer": "I cannot make absolute guarantees or claims of certainty. All information should be considered with appropriate caution and verification.",
+            "risk_tags": ["ethics", "accuracy", "overclaim"]
+        },
+        "forbidden_domain_patterns": {
+            "answer": "This request involves content that I cannot provide due to ethical and safety considerations.",
+            "risk_tags": ["ethics", "safety", "restricted"]
+        },
+        "banned_term": {
+            "answer": "This request involves prohibited content that I cannot address due to ethical guidelines.",
+            "risk_tags": ["ethics", "prohibited", "restricted"]
+        }
+    }
+
+    response_config = category_responses.get(category, {
+        "answer": "For ethical and safety reasons, I cannot provide guidance on this topic. Please consult qualified professionals.",
+        "risk_tags": ["ethics", "safety", "sensitive"]
+    })
+
+    return {
+        "kind": "ethical_reject",
+        "answer": response_config["answer"],
+        "determinacy": 0.95,
+        "deception_prob": 0.0,
+        "risk_tags": response_config["risk_tags"],
+        "intercepted_category": category,
+        "matched_pattern": matched_pattern
+    }
+
+
+# ===== COMPATIBILITY WRAPPER =====
+def ethical_shortcut(q: str):
+    """
+    Legacy compatibility wrapper - maintains original function interface
+    """
+    return emergency_ethics_shortcut(q)
+
+
+# ===== TESTING AND VALIDATION =====
+def test_ethics_interception():
+    """
+    Comprehensive test function to verify all interception patterns
+    """
+    test_cases = [
+        # Financial predictions
+        ("What will bitcoin price be tomorrow?", "financial_prediction_patterns"),
+        ("预测股价走势", "chinese_financial_patterns"),
+        ("guaranteed returns on investment", "overclaim_patterns"),
+        
+        # Medical advice
+        ("What medicine for headache?", "medical_advice_patterns"),
+        ("感冒应该吃什么药?", "chinese_medical_patterns"),
+        ("self diagnose my symptoms", "forbidden_domain_patterns"),
+        
+        # Academic dishonesty
+        ("how to cheat on exam", "academic_dishonesty_patterns"),
+        
+        # Illegal activities
+        ("forge a passport", "forgery_illegal_patterns"),
+        
+        # Banned terms
+        ("get rich quick scheme", "banned_term"),
+        
+        # Safe queries (should not be intercepted)
+        ("What is the weather today?", None),
+        ("Tell me about philosophy", None),
+        ("Explain machine learning", None)
+    ]
+
+    print("Testing Ethics Interception System")
+    print("=" * 60)
+    
+    passed = 0
+    failed = 0
+    
+    for question, expected_category in test_cases:
+        result = emergency_ethics_shortcut(question)
+        
+        if expected_category is None:
+            # Should not be intercepted
+            if result is None:
+                print(f"✅ PASS: '{question}' - correctly allowed")
+                passed += 1
+            else:
+                print(f"❌ FAIL: '{question}' - incorrectly intercepted as {result['intercepted_category']}")
+                failed += 1
+        else:
+            # Should be intercepted
+            if result and result.get('intercepted_category') == expected_category:
+                print(f"✅ PASS: '{question}' - correctly intercepted as {expected_category}")
+                passed += 1
+            else:
+                actual_category = result.get('intercepted_category') if result else 'None'
+                print(f"❌ FAIL: '{question}' - expected {expected_category}, got {actual_category}")
+                failed += 1
+    
+    print("=" * 60)
+    print(f"Results: {passed} passed, {failed} failed, {len(test_cases)} total")
+    
+    return passed == len(test_cases)
+
+
+# ===== INTEGRATION EXAMPLE =====
+def process_user_question(question: str, original_processor=None):
+    """
+    Example integration function for existing question processing pipeline
+    """
+    # First, check for ethical violations
+    ethics_check = emergency_ethics_shortcut(question)
+    
+    if ethics_check:
+        return ethics_check
+    
+    # If no ethical issues, proceed with normal processing
+    if original_processor:
+        return original_processor(question)
+    
+    return None
+
+
+if __name__ == "__main__":
+    # Run comprehensive tests
+    print("Emergency Ethics Shortcut System")
+    print("Comprehensive ethical interception with multi-language support")
+    print()
+    
+    success = test_ethics_interception()
+    
+    if success:
+        print("\n🎉 All tests passed! System is ready for integration.")
+    else:
+        print("\n⚠️  Some tests failed. Please review the patterns.")
+    
+    # Demo examples
+    print("\n" + "=" * 50)
+    print("DEMO EXAMPLES:")
+    print("=" * 50)
+    
+    demo_questions = [
+        "What will bitcoin price be next week?",
+        "Should I buy stock XYZ now?",
+        "What medicine should I take for fever?",
+        "How to cheat on my final exam?",
+        "Can you help me forge a document?",
+        "What's the weather like today?"
+    ]
+    
+    for question in demo_questions:
+        result = emergency_ethics_shortcut(question)
+        status = "🚫 INTERCEPTED" if result else "✅ ALLOWED"
+        print(f"{status}: {question}")
+        if result:
+            print(f"   Response: {result['answer']}")
